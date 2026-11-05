@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+require "fileutils"
+
+APP_ROOT = File.expand_path("..", __dir__)
+
+def system!(*args)
+  system(*args, exception: true)
+end
+
+FileUtils.chdir APP_ROOT do
+  puts "== Installing gems =="
+  system("bundle check") || system!("bundle install")
+
+  unless File.exist?(".env")
+    puts "\n== Creating .env from .env.example =="
+    FileUtils.cp ".env.example", ".env"
+  end
+
+  puts "\n== Preparing the database =="
+  system! "bin/rails db:prepare"
+
+  puts "\n== Writing the GraphQL schema for the frontend =="
+  system! "bin/rails graphql:dump_schema"
+
+  puts "\n== Done. Start the API with: bin/rails server =="
+end
