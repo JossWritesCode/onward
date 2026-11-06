@@ -14,6 +14,10 @@ module Types
     field :delete_stage, mutation: Mutations::DeleteStage
     field :reorder_stages, mutation: Mutations::ReorderStages
 
+    field :log_activity, mutation: Mutations::LogActivity
+    field :delete_activity, mutation: Mutations::DeleteActivity
+    field :update_time_zone, mutation: Mutations::UpdateTimeZone
+
     field :create_contact, mutation: Mutations::CreateContact
     field :update_contact, mutation: Mutations::UpdateContact
     field :delete_contact, mutation: Mutations::DeleteContact

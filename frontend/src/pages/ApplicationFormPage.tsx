@@ -153,7 +153,7 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
     setForm((current) => ({ ...current, contactIds: [...current.contactIds, newId] }));
   }
 
-  const refetchQueries = ['Board', 'JobApplications', 'Contacts'];
+  const refetchQueries = ['Board', 'JobApplications', 'Contacts', 'Streak', 'Progress'];
   const [createApplication, { loading: creating }] = useMutation(CreateJobApplicationMutation, { refetchQueries });
   const [updateApplication, { loading: updating }] = useMutation(UpdateJobApplicationMutation, { refetchQueries });
   const [deleteApplication, { loading: deleting }] = useMutation(DeleteJobApplicationMutation, { refetchQueries });

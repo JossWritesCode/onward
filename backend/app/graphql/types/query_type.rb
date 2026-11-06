@@ -11,6 +11,8 @@ module Types
       argument :id, ID, required: true
     end
 
+    field :progress, Types::ProgressType, null: false, description: "Your streak and activity history."
+
     field :stages, [ Types::StageType ], null: false, description: "Your board columns, left to right."
 
     field :contacts, [ Types::ContactType ], null: false, description: "Your contacts, alphabetically."
@@ -30,6 +32,10 @@ module Types
 
     def job_application(id:)
       current_user!.job_applications.find(id)
+    end
+
+    def progress
+      current_user!
     end
 
     def stages

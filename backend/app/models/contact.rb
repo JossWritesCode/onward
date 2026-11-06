@@ -2,6 +2,7 @@ class Contact < ApplicationRecord
   belongs_to :user
   has_many :job_application_contacts, dependent: :destroy
   has_many :job_applications, through: :job_application_contacts
+  has_many :activities, dependent: :nullify
 
   normalizes :name, :title, :company, :email, :phone, :linkedin_url,
     with: ->(value) { value.strip.presence }

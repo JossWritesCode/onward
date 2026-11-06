@@ -8,6 +8,7 @@ import ApplicationFormPage from './pages/ApplicationFormPage';
 import ContactsPage from './pages/ContactsPage';
 import ContactFormPage from './pages/ContactFormPage';
 import ColumnsPage from './pages/ColumnsPage';
+import ProgressPage from './pages/ProgressPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="/applications/new" element={<ApplicationFormPage />} />
           <Route path="/applications/:id" element={<ApplicationFormPage />} />
           <Route path="/columns" element={<ColumnsPage />} />
+          <Route path="/progress" element={<ProgressPage />} />
           <Route path="/contacts" element={<ContactsPage />} />
           <Route path="/contacts/new" element={<ContactFormPage />} />
           <Route path="/contacts/:id" element={<ContactFormPage />} />

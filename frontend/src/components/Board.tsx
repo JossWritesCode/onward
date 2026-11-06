@@ -280,7 +280,7 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
 
     moveApplication({
       variables: { id: card.id, stageId: overStageId, position: overIndex },
-      refetchQueries: ['Board'],
+      refetchQueries: ['Board', 'Streak', 'Progress'],
     }).catch(() => {
       showToast('gentle', "That move didn't save", 'Check that the Onward server is running, then try again.');
       setColumns(toColumns(stages));

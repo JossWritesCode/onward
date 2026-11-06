@@ -1,6 +1,6 @@
 # Onward
 
-A job hunt tracker that makes the search feel rewarding. Track your applications on a drag-and-drop board, get a little celebration every time you move forward, and (in upcoming milestones) earn XP, keep streaks, and level up for the work you put in, whether or not it pays off right away.
+A job hunt tracker that makes the search feel rewarding. Track your applications on a drag-and-drop board, get a little celebration every time you move forward, keep a daily streak, and watch your effort fill in a GitHub-style heat map, whether or not it pays off right away.
 
 ![The job board](docs/screenshot.png)
 
@@ -24,7 +24,16 @@ Onward is being built in milestones. So far:
 - A sound toggle in the header. Confetti is skipped when your device is set to reduce motion.
 - Add a contact right from an application's form.
 
-Coming next: XP, streaks, and skill levels (milestone 2); daily quests, interview prep, a study timer, custom actions, and nudges (milestone 3); visual polish and sounds (milestone 4).
+**Milestone 2: streak and progress**
+- A daily streak, shown as a flame in the header. Any activity counts, and the day follows your own time zone.
+- Streak freezes: earn one for every 7 days in a row, hold up to 2, and a missed day uses one automatically.
+- A Progress page with "Log a win" buttons for networking messages, coffee chats, follow-ups, and tailored resumes or cover letters.
+- Applying, interviews, offers, and rejections on the board are logged for you, once per application for each stage type.
+- A GitHub-style heat map of your activity: a year on computers, about four months on phones.
+- A weekly recap you can copy as text or share as an image, with company names left out unless you include them.
+- Celebrations at streak milestones like 7, 30, and 100 days.
+
+Coming next: daily quests, interview prep, a study timer, custom actions, and nudges (milestone 3), then visual polish and deployment (milestone 4).
 
 ## Tech stack
 
@@ -200,7 +209,7 @@ All the queries and mutations the frontend sends live in `frontend/src/graphql/o
 ```
 backend/
   app/graphql/        GraphQL schema: types, queries, and mutations
-  app/models/         Users, sessions, board columns (stages), job applications, contacts
+  app/models/         Users, board columns (stages), applications, contacts, activities, streaks
   db/migrate/         Database tables
   test/               Model and API tests
   schema.graphql      Generated schema the frontend reads

@@ -184,3 +184,65 @@ export const ChevronRightIcon = (props: IconProps) => (
     <path d="m9 6 6 6-6 6" />
   </Icon>
 );
+
+export const FlameIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 21c-3.9 0-7-2.8-7-6.6 0-3.1 2.1-5 3.6-7 .4 1.7 1.3 2.8 2.6 3.4C11.4 7.2 13 4.4 15.4 3c-.3 2.6.5 4.4 1.9 6 1.2 1.4 1.7 2.9 1.7 4.7C19 17.8 15.9 21 12 21Z" />
+    <path d="M12 21c-1.7 0-3-1.3-3-3 0-1.9 1.6-2.8 2.3-4.4.9 1 2.2 1.6 2.9 2.8.5.8.8 1.4.8 2.1 0 1.4-1.3 2.5-3 2.5Z" />
+  </Icon>
+);
+
+export const SnowflakeIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 2.5v19M3.8 7.25l16.4 9.5M3.8 16.75l16.4-9.5" />
+    <path d="m9.5 4 2.5 2 2.5-2M9.5 20l2.5-2 2.5 2M4 10.6l3.1-.5-.9-3M20 13.4l-3.1.5.9 3M4 13.4l3.1.5-.9 3M20 10.6l-3.1-.5.9-3" />
+  </Icon>
+);
+
+export const ChatIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M20 12.5a7.5 7.5 0 0 1-11 6.6L4 20l1-4.4A7.5 7.5 0 1 1 20 12.5Z" />
+    <path d="M9 11.5h.01M12.5 11.5h.01M16 11.5h.01" />
+  </Icon>
+);
+
+export const CoffeeIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5Z" />
+    <path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16M8 3v2M12 3v2" />
+  </Icon>
+);
+
+export const ReplyIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M9 14 4 9l5-5" />
+    <path d="M4 9h10.5A5.5 5.5 0 0 1 20 14.5 5.5 5.5 0 0 1 14.5 20H11" />
+  </Icon>
+);
+
+export const FileTextIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" />
+    <path d="M14 3v5h5M9 13h6M9 17h4" />
+  </Icon>
+);
+
+export const SendIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M21 3 10 14M21 3l-7 18-4-7-7-4Z" />
+  </Icon>
+);
+
+export const ShareIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 3v12M8 7l4-4 4 4" />
+    <path d="M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" />
+  </Icon>
+);
+
+export const CopyIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="8" y="8" width="12" height="12" rx="2.5" />
+    <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+  </Icon>
+);

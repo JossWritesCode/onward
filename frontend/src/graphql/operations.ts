@@ -8,6 +8,7 @@ export const MeQuery = graphql(`
     me {
       id
       emailAddress
+      timeZone
     }
   }
 `);
@@ -358,6 +359,94 @@ export const DeleteContactMutation = graphql(`
   mutation DeleteContact($id: ID!) {
     deleteContact(id: $id) {
       id
+    }
+  }
+`);
+
+export const UpdateTimeZoneMutation = graphql(`
+  mutation UpdateTimeZone($timeZone: String!) {
+    updateTimeZone(timeZone: $timeZone) {
+      user {
+        id
+        timeZone
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+// Small and cheap, for the flame in the header on every page.
+export const StreakQuery = graphql(`
+  query Streak {
+    progress {
+      today
+      streak {
+        current
+        activeToday
+        freezes
+      }
+    }
+  }
+`);
+
+export const ProgressQuery = graphql(`
+  query Progress($since: ISO8601Date!) {
+    progress {
+      today
+      streak {
+        current
+        longest
+        freezes
+        activeToday
+        frozenDates
+      }
+      activities(since: $since) {
+        id
+        kind
+        category
+        occurredOn
+        note
+        automatic
+        createdAt
+        jobApplication {
+          id
+          company
+          role
+        }
+        contact {
+          id
+          name
+        }
+      }
+    }
+  }
+`);
+
+export const LogActivityMutation = graphql(`
+  mutation LogActivity($kind: ActivityKind!, $jobApplicationId: ID, $contactId: ID, $note: String) {
+    logActivity(kind: $kind, jobApplicationId: $jobApplicationId, contactId: $contactId, note: $note) {
+      activity {
+        id
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const DeleteActivityMutation = graphql(`
+  mutation DeleteActivity($id: ID!) {
+    deleteActivity(id: $id) {
+      id
+      errors {
+        field
+        message
+      }
     }
   }
 `);

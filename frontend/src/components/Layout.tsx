@@ -1,9 +1,11 @@
+import { useEffect } from 'react';
 import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 import { NavLink, Outlet, useNavigate } from 'react-router';
-import { MeQuery, SignOutMutation } from '../graphql/operations';
+import { MeQuery, SignOutMutation, UpdateTimeZoneMutation } from '../graphql/operations';
 import { useMuted } from '../lib/preferences';
 import { playSound } from '../lib/sounds';
 import Logo from './Logo';
+import StreakFlame from './StreakFlame';
 import Toaster from './Toaster';
 import { LogOutIcon, UsersIcon, VolumeIcon, VolumeOffIcon } from './icons';
 
@@ -19,6 +21,17 @@ export default function Layout() {
   const { data } = useQuery(MeQuery, { fetchPolicy: 'cache-first' });
   const [signOut, { loading: signingOut }] = useMutation(SignOutMutation);
   const [muted, setMuted] = useMuted();
+  const [updateTimeZone] = useMutation(UpdateTimeZoneMutation, { refetchQueries: ['Streak', 'Progress'] });
+
+  // Days and streaks follow your own clock, so keep the server's copy of your time zone current.
+  const savedTimeZone = data?.me?.timeZone;
+  useEffect(() => {
+    if (!savedTimeZone) return;
+    const browserTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (browserTimeZone && browserTimeZone !== savedTimeZone) {
+      void updateTimeZone({ variables: { timeZone: browserTimeZone } }).catch(() => {});
+    }
+  }, [savedTimeZone, updateTimeZone]);
 
   async function handleSignOut() {
     await signOut();
@@ -39,6 +52,8 @@ export default function Layout() {
           <NavLink to="/applications" aria-label="Onward home" className="mr-auto">
             <Logo />
           </NavLink>
+
+          <StreakFlame />
 
           <NavLink
             to="/contacts"

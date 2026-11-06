@@ -5,7 +5,7 @@ import { useView } from '../lib/preferences';
 import ApplicationList from '../components/ApplicationList';
 import Board from '../components/Board';
 import QuoteBanner from '../components/QuoteBanner';
-import { BoardIcon, BriefcaseIcon, ColumnsIcon, ListIcon, PlusIcon } from '../components/icons';
+import { BoardIcon, BriefcaseIcon, ColumnsIcon, ListIcon, PlusIcon, SparklesIcon } from '../components/icons';
 import { ButtonLink, EmptyState, ErrorBanner, PageHeader, Spinner } from '../components/ui';
 
 export default function ApplicationsPage() {
@@ -24,6 +24,15 @@ export default function ApplicationsPage() {
       Add application
     </ButtonLink>
   );
+  const headerActions = (
+    <div className="flex flex-wrap gap-2">
+      <ButtonLink to="/progress" variant="secondary">
+        <SparklesIcon />
+        Log a win
+      </ButtonLink>
+      {addButton}
+    </div>
+  );
 
   return (
     <>
@@ -36,7 +45,7 @@ export default function ApplicationsPage() {
             ? `${total} ${total === 1 ? 'application' : 'applications'} tracked, ${interviewing} interviewing`
             : 'Everything you apply to, all in one place.'
         }
-        action={total > 0 ? addButton : undefined}
+        action={total > 0 ? headerActions : undefined}
       />
 
       {error && <ErrorBanner messages={[error.message]} />}

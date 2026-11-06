@@ -6,6 +6,8 @@ class JobApplication < ApplicationRecord
   belongs_to :stage, inverse_of: :job_applications
   has_many :job_application_contacts, dependent: :destroy
   has_many :contacts, through: :job_application_contacts
+  # Activities stay in your history (and streak) even if the application is deleted.
+  has_many :activities, dependent: :nullify
 
   # The status always matches the kind of the column the card is in. It's kept
   # as its own column so filtering and stats don't need to look at stages.
@@ -26,6 +28,8 @@ class JobApplication < ApplicationRecord
   before_save :place_at_top_of_stage, if: -> { (new_record? || will_save_change_to_stage_id?) && !@positioned }
   # When something moves to "applied" without a date, assume it happened today.
   before_save :default_date_applied, if: -> { will_save_change_to_status? && status_applied? }
+  # Applying, interviews, offers, and rejections count toward your streak.
+  after_save -> { Activity.record_status_change!(self) }, if: :saved_change_to_status?
 
   # Moves the card into a column at a given spot (0 is the top) and renumbers
   # the cards around it.

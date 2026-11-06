@@ -52,6 +52,25 @@ const MESSAGES = {
   ],
 } as const;
 
+const WIN_MESSAGES: Record<string, readonly (readonly [string, string])[]> = {
+  NETWORKING_MESSAGE: [
+    ['Message sent', 'Reaching out takes courage. Nice work.'],
+    ['You put yourself out there', 'Most opportunities start with a message like that one.'],
+  ],
+  COFFEE_CHAT: [
+    ['Coffee chat logged', 'Real conversations open real doors.'],
+    ['Great conversation', "Every person you meet makes the next door easier to open."],
+  ],
+  FOLLOW_UP: [
+    ['Follow-up sent', "Following up is how you stay top of mind."],
+    ['Nicely done', 'A follow-up shows you care. People notice.'],
+  ],
+  TAILORED_MATERIALS: [
+    ['Materials tailored', 'A tailored resume stands out. That effort counts.'],
+    ['Looking sharp', 'Putting your best foot forward, one application at a time.'],
+  ],
+};
+
 function pick<T>(items: readonly T[]): T {
   return items[Math.floor(Math.random() * items.length)];
 }
@@ -103,4 +122,27 @@ export function celebrateMove({ from, to, origin }: Move) {
       showToast('celebrate', title, body);
     }
   }
+}
+
+/** After you log a win on the Progress page. */
+export function celebrateWin(kind: string, origin?: { x: number; y: number }) {
+  playSound('applied');
+  burst({ x: origin?.x ?? window.innerWidth / 2, y: origin?.y ?? window.innerHeight / 2, count: 50, spread: 70, power: 11 });
+  const [title, body] = pick(WIN_MESSAGES[kind] ?? [['Logged', 'Every step counts.'] as const]);
+  showToast('celebrate', title, body);
+}
+
+/** When a streak reaches a milestone like 7 or 30 days. */
+export function celebrateStreakMilestone(days: number) {
+  const big = days >= 30;
+  playSound(big ? 'offer' : 'interview');
+  if (big) celebrateFullScreen();
+  else burst({ x: window.innerWidth / 2, y: window.innerHeight / 3, count: 120, spread: 120, power: 15 });
+  const body =
+    days >= 100
+      ? "That's remarkable consistency. Be proud of this."
+      : days >= 30
+        ? 'A whole month of showing up. That is how job hunts are won.'
+        : "You've shown up every day. Keep the fire going.";
+  showToast('big', `${days}-day streak!`, body);
 }
