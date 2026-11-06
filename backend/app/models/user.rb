@@ -6,6 +6,10 @@ class User < ApplicationRecord
   has_many :sessions, dependent: :destroy
   has_many :job_applications, dependent: :destroy
   has_many :contacts, dependent: :destroy
+  # Declared after job_applications so applications are deleted before their columns.
+  has_many :stages, -> { order(:position, :id) }, dependent: :delete_all
+
+  after_create { Stage.create_defaults_for(self) }
 
   normalizes :email_address, with: ->(email) { email.strip.downcase }
 

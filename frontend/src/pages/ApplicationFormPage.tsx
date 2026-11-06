@@ -1,22 +1,24 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import type {
   JobApplicationInput,
   JobApplicationQuery as JobApplicationQueryData,
-  JobApplicationStatus,
   WorkArrangement,
 } from '../gql/graphql';
 import {
   ContactsQuery,
+  CreateContactMutation,
   CreateJobApplicationMutation,
   DeleteJobApplicationMutation,
   JobApplicationQuery,
+  StagesQuery,
   UpdateJobApplicationMutation,
 } from '../graphql/operations';
+import { celebrateMove } from '../lib/celebrate';
 import { fieldError, generalErrors, type UserError } from '../lib/errors';
 import { blankToNull, formatDate } from '../lib/format';
-import { STATUSES, STATUS_LABELS, WORK_ARRANGEMENTS, WORK_ARRANGEMENT_LABELS } from '../lib/status';
+import { WORK_ARRANGEMENTS, WORK_ARRANGEMENT_LABELS } from '../lib/status';
 import LinkPicker from '../components/LinkPicker';
 import { ArrowLeftIcon, ExternalLinkIcon, TrashIcon } from '../components/icons';
 import { Button, Card, ErrorBanner, Field, Input, Select, Spinner, Textarea } from '../components/ui';
@@ -24,7 +26,7 @@ import { Button, Card, ErrorBanner, Field, Input, Select, Spinner, Textarea } fr
 type FormState = {
   company: string;
   role: string;
-  status: JobApplicationStatus;
+  stageId: string;
   dateApplied: string;
   postingUrl: string;
   salaryRange: string;
@@ -39,7 +41,7 @@ type FormState = {
 const FIELDS = [
   'company',
   'role',
-  'status',
+  'stage',
   'dateApplied',
   'postingUrl',
   'salaryRange',
@@ -53,7 +55,7 @@ const FIELDS = [
 const EMPTY_FORM: FormState = {
   company: '',
   role: '',
-  status: 'SAVED',
+  stageId: '',
   dateApplied: '',
   postingUrl: '',
   salaryRange: '',
@@ -71,7 +73,7 @@ function formFrom(application: ExistingApplication): FormState {
   return {
     company: application.company,
     role: application.role,
-    status: application.status,
+    stageId: application.stage.id,
     dateApplied: application.dateApplied ?? '',
     postingUrl: application.postingUrl ?? '',
     salaryRange: application.salaryRange ?? '',
@@ -88,7 +90,7 @@ function inputFrom(form: FormState): JobApplicationInput {
   return {
     company: form.company,
     role: form.role,
-    status: form.status,
+    stageId: form.stageId || null,
     dateApplied: form.dateApplied || null,
     postingUrl: blankToNull(form.postingUrl),
     salaryRange: blankToNull(form.salaryRange),
@@ -119,11 +121,39 @@ export default function ApplicationFormPage() {
 
 function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
   const navigate = useNavigate();
-  const [form, setForm] = useState<FormState>(existing ? formFrom(existing) : EMPTY_FORM);
+  const [searchParams] = useSearchParams();
+  const [form, setForm] = useState<FormState>(
+    existing ? formFrom(existing) : { ...EMPTY_FORM, stageId: searchParams.get('stage') ?? '' },
+  );
   const [errors, setErrors] = useState<UserError[]>([]);
   const { data: contactsData } = useQuery(ContactsQuery);
+  const { data: stagesData } = useQuery(StagesQuery);
+  const stages = [...(stagesData?.stages ?? [])].sort((a, b) => a.position - b.position);
+  const selectedStage = stages.find((stage) => stage.id === form.stageId);
 
-  const refetchQueries = ['JobApplications', 'Contacts'];
+  // New applications start in the first "saved" column unless a column was picked.
+  useEffect(() => {
+    if (form.stageId || stages.length === 0) return;
+    const fallback = stages.find((stage) => stage.kind === 'SAVED') ?? stages[0];
+    setForm((current) => ({ ...current, stageId: fallback.id }));
+  }, [form.stageId, stages]);
+
+  const [createContact] = useMutation(CreateContactMutation, {
+    refetchQueries: ['Contacts'],
+    awaitRefetchQueries: true,
+  });
+
+  async function addContact(name: string, title: string) {
+    const { data } = await createContact({ variables: { input: { name, title: title.trim() || null } } });
+    const result = data?.createContact;
+    if (!result?.contact) {
+      throw new Error(result?.errors.map((error) => error.message).join(' ') || "Couldn't add that contact.");
+    }
+    const newId = result.contact.id;
+    setForm((current) => ({ ...current, contactIds: [...current.contactIds, newId] }));
+  }
+
+  const refetchQueries = ['Board', 'JobApplications', 'Contacts'];
   const [createApplication, { loading: creating }] = useMutation(CreateJobApplicationMutation, { refetchQueries });
   const [updateApplication, { loading: updating }] = useMutation(UpdateJobApplicationMutation, { refetchQueries });
   const [deleteApplication, { loading: deleting }] = useMutation(DeleteJobApplicationMutation, { refetchQueries });
@@ -142,6 +172,12 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
         : (await createApplication({ variables: { input } })).data?.createJobApplication;
 
       if (result && result.errors.length === 0) {
+        if (selectedStage && (!existing || existing.stage.id !== selectedStage.id)) {
+          celebrateMove({
+            from: existing ? { kind: existing.stage.kind, position: existing.stage.position } : null,
+            to: { kind: selectedStage.kind, position: selectedStage.position },
+          });
+        }
         navigate('/applications');
       } else {
         setErrors(result?.errors ?? [{ message: 'Something went wrong. Try again.' }]);
@@ -219,11 +255,11 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
               required
             />
           </Field>
-          <Field label="Status" htmlFor="status" error={fieldError(errors, 'status')}>
-            <Select id="status" value={form.status} onChange={(e) => set('status', e.target.value as JobApplicationStatus)}>
-              {STATUSES.map((status) => (
-                <option key={status} value={status}>
-                  {STATUS_LABELS[status]}
+          <Field label="Column" htmlFor="stage" error={fieldError(errors, 'stage')}>
+            <Select id="stage" value={form.stageId} onChange={(e) => set('stageId', e.target.value)}>
+              {stages.map((stage) => (
+                <option key={stage.id} value={stage.id}>
+                  {stage.name}
                 </option>
               ))}
             </Select>
@@ -231,7 +267,7 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
           <Field
             label="Date applied"
             htmlFor="date-applied"
-            hint={form.status === 'APPLIED' && !form.dateApplied ? 'Leave blank to use today.' : undefined}
+            hint={selectedStage?.kind === 'APPLIED' && !form.dateApplied ? 'Leave blank to use today.' : undefined}
             error={fieldError(errors, 'dateApplied')}
           >
             <Input
@@ -304,15 +340,9 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
             options={contactOptions}
             selected={form.contactIds}
             onChange={(ids) => set('contactIds', ids)}
-            empty={
-              <>
-                No contacts yet.{' '}
-                <Link to="/contacts/new" className="font-bold text-brand-600 hover:underline dark:text-brand-300">
-                  Add someone you know
-                </Link>{' '}
-                and link them here.
-              </>
-            }
+            onCreate={addContact}
+            empty="No contacts yet. Add a recruiter, a referral, or anyone helping with this one."
+
           />
           <Field label="Job description" htmlFor="job-description" hint="Paste it in so you still have it if the posting comes down.">
             <Textarea

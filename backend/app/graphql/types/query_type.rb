@@ -11,6 +11,8 @@ module Types
       argument :id, ID, required: true
     end
 
+    field :stages, [ Types::StageType ], null: false, description: "Your board columns, left to right."
+
     field :contacts, [ Types::ContactType ], null: false, description: "Your contacts, alphabetically."
 
     field :contact, Types::ContactType, null: false do
@@ -28,6 +30,10 @@ module Types
 
     def job_application(id:)
       current_user!.job_applications.find(id)
+    end
+
+    def stages
+      current_user!.stages
     end
 
     def contacts

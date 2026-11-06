@@ -1,27 +1,22 @@
-import { useMemo, useState } from 'react';
-import { useMutation, useQuery } from '@apollo/client';
-import { Link } from 'react-router';
-import type { JobApplicationStatus, JobApplicationsQuery as JobApplicationsQueryData } from '../gql/graphql';
-import { JobApplicationsQuery, UpdateJobApplicationMutation } from '../graphql/operations';
-import { formatDate } from '../lib/format';
-import { STATUSES, STATUS_LABELS, STATUS_STYLES, WORK_ARRANGEMENT_LABELS } from '../lib/status';
-import { BriefcaseIcon, CalendarIcon, MapPinIcon, PlusIcon, UsersIcon } from '../components/icons';
-import { ButtonLink, Card, EmptyState, ErrorBanner, PageHeader, Spinner } from '../components/ui';
-
-type Filter = 'ALL' | JobApplicationStatus;
-type JobApplicationRow = JobApplicationsQueryData['jobApplications'][number];
+import type { ReactNode } from 'react';
+import { useQuery } from '@apollo/client';
+import { BoardQuery } from '../graphql/operations';
+import { useView } from '../lib/preferences';
+import ApplicationList from '../components/ApplicationList';
+import Board from '../components/Board';
+import QuoteBanner from '../components/QuoteBanner';
+import { BoardIcon, BriefcaseIcon, ColumnsIcon, ListIcon, PlusIcon } from '../components/icons';
+import { ButtonLink, EmptyState, ErrorBanner, PageHeader, Spinner } from '../components/ui';
 
 export default function ApplicationsPage() {
-  const { data, loading, error } = useQuery(JobApplicationsQuery);
-  const [filter, setFilter] = useState<Filter>('ALL');
+  const { data, loading, error } = useQuery(BoardQuery);
+  const [view, setView] = useView();
 
-  const applications = useMemo(() => data?.jobApplications ?? [], [data]);
-  const counts = useMemo(() => {
-    const result = Object.fromEntries(STATUSES.map((status) => [status, 0])) as Record<JobApplicationStatus, number>;
-    for (const application of applications) result[application.status] += 1;
-    return result;
-  }, [applications]);
-  const visible = filter === 'ALL' ? applications : applications.filter((a) => a.status === filter);
+  const stages = data?.stages ?? [];
+  const total = stages.reduce((sum, stage) => sum + stage.jobApplications.length, 0);
+  const interviewing = stages
+    .filter((stage) => stage.kind === 'INTERVIEWING')
+    .reduce((sum, stage) => sum + stage.jobApplications.length, 0);
 
   const addButton = (
     <ButtonLink to="/applications/new">
@@ -32,20 +27,22 @@ export default function ApplicationsPage() {
 
   return (
     <>
+      <QuoteBanner />
+
       <PageHeader
-        title="Your applications"
+        title="Your job hunt"
         subtitle={
-          applications.length > 0
-            ? `${applications.length} tracked, ${counts.INTERVIEWING} interviewing`
+          total > 0
+            ? `${total} ${total === 1 ? 'application' : 'applications'} tracked, ${interviewing} interviewing`
             : 'Everything you apply to, all in one place.'
         }
-        action={applications.length > 0 ? addButton : undefined}
+        action={total > 0 ? addButton : undefined}
       />
 
       {error && <ErrorBanner messages={[error.message]} />}
       {loading && !data && <Spinner />}
 
-      {data && applications.length === 0 && (
+      {data && total === 0 && (
         <EmptyState
           icon={<BriefcaseIcon />}
           title="Log your first application"
@@ -54,123 +51,63 @@ export default function ApplicationsPage() {
         />
       )}
 
-      {applications.length > 0 && (
+      {data && total > 0 && (
         <>
-          <div className="-mx-4 mb-5 flex gap-2 overflow-x-auto px-4 pb-1" role="tablist" aria-label="Filter by status">
-            <FilterPill label="All" count={applications.length} active={filter === 'ALL'} onClick={() => setFilter('ALL')} />
-            {STATUSES.map((status) => (
-              <FilterPill
-                key={status}
-                label={STATUS_LABELS[status]}
-                count={counts[status]}
-                active={filter === status}
-                onClick={() => setFilter(status)}
-              />
-            ))}
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div
+              role="group"
+              aria-label="View"
+              className="inline-flex rounded-xl border-2 border-stone-200 bg-white p-1 dark:border-stone-700 dark:bg-stone-900"
+            >
+              <ViewButton active={view === 'board'} onClick={() => setView('board')} icon={<BoardIcon />} label="Board" />
+              <ViewButton active={view === 'list'} onClick={() => setView('list')} icon={<ListIcon />} label="List" />
+            </div>
+            {view === 'board' && (
+              <p className="hidden text-sm text-stone-500 md:block dark:text-stone-400">
+                Drag cards between columns to update them.
+              </p>
+            )}
+            {view === 'board' && (
+              <p className="text-sm text-stone-500 md:hidden dark:text-stone-400">Press and hold a card to move it.</p>
+            )}
+            {view === 'list' && (
+              <ButtonLink to="/columns" variant="ghost" className="text-sm">
+                <ColumnsIcon /> Edit columns
+              </ButtonLink>
+            )}
           </div>
 
-          {visible.length === 0 ? (
-            <p className="py-10 text-center text-stone-500 dark:text-stone-400">
-              Nothing marked {STATUS_LABELS[filter as JobApplicationStatus].toLowerCase()} right now.
-            </p>
-          ) : (
-            <ul className="space-y-3">
-              {visible.map((application) => (
-                <li key={application.id}>
-                  <ApplicationCard application={application} />
-                </li>
-              ))}
-            </ul>
-          )}
+          {view === 'board' ? <Board stages={stages} /> : <ApplicationList stages={stages} />}
         </>
       )}
     </>
   );
 }
 
-function FilterPill({
-  label,
-  count,
+function ViewButton({
   active,
   onClick,
+  icon,
+  label,
 }: {
-  label: string;
-  count: number;
   active: boolean;
   onClick: () => void;
+  icon: ReactNode;
+  label: string;
 }) {
   return (
     <button
       type="button"
-      role="tab"
-      aria-selected={active}
+      aria-pressed={active}
       onClick={onClick}
-      className={`flex shrink-0 items-center gap-1.5 rounded-full border-2 px-3.5 py-1.5 text-sm font-extrabold transition ${
+      className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-extrabold transition ${
         active
-          ? 'border-brand-500 bg-brand-500 text-white'
-          : 'border-stone-200 bg-white text-stone-600 hover:border-brand-300 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300'
+          ? 'bg-brand-500 text-white'
+          : 'text-stone-500 hover:bg-stone-100 hover:text-stone-800 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100'
       }`}
     >
+      {icon}
       {label}
-      <span className={active ? 'text-brand-100' : 'text-stone-400'}>{count}</span>
     </button>
-  );
-}
-
-function ApplicationCard({ application }: { application: JobApplicationRow }) {
-  const [updateApplication, { loading }] = useMutation(UpdateJobApplicationMutation);
-  const applied = formatDate(application.dateApplied);
-  const where = [
-    application.location,
-    application.workArrangement ? WORK_ARRANGEMENT_LABELS[application.workArrangement] : null,
-  ]
-    .filter(Boolean)
-    .join(' · ');
-
-  return (
-    <Card className="flex flex-col gap-3 p-4 transition hover:border-brand-300 sm:flex-row sm:items-center dark:hover:border-brand-700">
-      <Link to={`/applications/${application.id}`} className="min-w-0 flex-1 rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30">
-        <p className="truncate text-lg font-extrabold">{application.company}</p>
-        <p className="truncate text-stone-600 dark:text-stone-300">{application.role}</p>
-        <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-stone-500 dark:text-stone-400">
-          {applied && (
-            <span className="inline-flex items-center gap-1">
-              <CalendarIcon /> Applied {applied}
-            </span>
-          )}
-          {where && (
-            <span className="inline-flex items-center gap-1">
-              <MapPinIcon /> {where}
-            </span>
-          )}
-          {application.contacts.length > 0 && (
-            <span className="inline-flex items-center gap-1">
-              <UsersIcon /> {application.contacts.map((c) => c.name).join(', ')}
-            </span>
-          )}
-        </div>
-      </Link>
-
-      <label className="sr-only" htmlFor={`status-${application.id}`}>
-        Status for {application.company}
-      </label>
-      <select
-        id={`status-${application.id}`}
-        value={application.status}
-        disabled={loading}
-        onChange={(e) =>
-          updateApplication({
-            variables: { id: application.id, input: { status: e.target.value as JobApplicationStatus } },
-          })
-        }
-        className={`w-full cursor-pointer rounded-xl border-0 px-3 py-2 font-extrabold sm:w-40 ${STATUS_STYLES[application.status]}`}
-      >
-        {STATUSES.map((status) => (
-          <option key={status} value={status}>
-            {STATUS_LABELS[status]}
-          </option>
-        ))}
-      </select>
-    </Card>
   );
 }

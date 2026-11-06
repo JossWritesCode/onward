@@ -13,6 +13,7 @@ module Mutations
       job_application = user.job_applications.find(id)
       attributes = input.to_h
       contact_ids = attributes.delete(:contact_ids)
+      resolve_stage!(attributes, user)
 
       saved = JobApplication.transaction do
         job_application.assign_attributes(attributes)

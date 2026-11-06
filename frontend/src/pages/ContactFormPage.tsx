@@ -88,7 +88,7 @@ function ContactForm({ existing }: { existing?: ExistingContact }) {
   const [errors, setErrors] = useState<UserError[]>([]);
   const { data: applicationsData } = useQuery(JobApplicationsQuery);
 
-  const refetchQueries = ['Contacts', 'JobApplications'];
+  const refetchQueries = ['Contacts', 'JobApplications', 'Board'];
   const [createContact, { loading: creating }] = useMutation(CreateContactMutation, { refetchQueries });
   const [updateContact, { loading: updating }] = useMutation(UpdateContactMutation, { refetchQueries });
   const [deleteContact, { loading: deleting }] = useMutation(DeleteContactMutation, { refetchQueries });

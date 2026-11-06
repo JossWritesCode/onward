@@ -26,7 +26,7 @@ export default function ContactsPage() {
   );
 
   return (
-    <>
+    <div className="mx-auto max-w-5xl">
       <PageHeader
         title="Your contacts"
         subtitle={
@@ -92,6 +92,6 @@ export default function ContactsPage() {
           })}
         </ul>
       )}
-    </>
+    </div>
   );
 }

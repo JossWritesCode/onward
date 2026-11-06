@@ -55,8 +55,9 @@ class JobApplicationsTest < ActionDispatch::IntegrationTest
   test "updates only the fields that are sent" do
     sign_in_as(@user)
     application = @user.job_applications.create!(company: "Acme", role: "Developer")
+    applied = @user.stages.find_by!(name: "Applied")
 
-    result = graphql(UPDATE, variables: { id: application.id.to_s, input: { status: "APPLIED" } })
+    result = graphql(UPDATE, variables: { id: application.id.to_s, input: { stageId: applied.id.to_s } })
 
     updated = result.dig("data", "updateJobApplication", "jobApplication")
     assert_equal "APPLIED", updated["status"]

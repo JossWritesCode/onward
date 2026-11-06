@@ -4,7 +4,8 @@ module Types
 
     argument :company, String, required: false
     argument :role, String, required: false
-    argument :status, Types::JobApplicationStatusEnum, required: false
+    argument :stage_id, ID, required: false,
+      description: "The board column to put the application in. Its status follows the column's kind."
     argument :date_applied, GraphQL::Types::ISO8601Date, required: false
     argument :posting_url, String, required: false
     argument :salary_range, String, required: false

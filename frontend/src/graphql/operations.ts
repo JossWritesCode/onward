@@ -48,6 +48,122 @@ export const SignOutMutation = graphql(`
   }
 `);
 
+// The board: every column with its cards, left to right and top to bottom.
+// The list view uses this too.
+export const BoardQuery = graphql(`
+  query Board {
+    stages {
+      id
+      name
+      kind
+      position
+      jobApplications {
+        id
+        company
+        role
+        status
+        dateApplied
+        location
+        workArrangement
+        position
+        updatedAt
+        contacts {
+          id
+          name
+        }
+      }
+    }
+  }
+`);
+
+export const StagesQuery = graphql(`
+  query Stages {
+    stages {
+      id
+      name
+      kind
+      position
+    }
+  }
+`);
+
+export const MoveJobApplicationMutation = graphql(`
+  mutation MoveJobApplication($id: ID!, $stageId: ID!, $position: Int) {
+    moveJobApplication(id: $id, stageId: $stageId, position: $position) {
+      jobApplication {
+        id
+        status
+        position
+        dateApplied
+        stage {
+          id
+        }
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const CreateStageMutation = graphql(`
+  mutation CreateStage($input: StageInput!) {
+    createStage(input: $input) {
+      stage {
+        id
+        name
+        kind
+        position
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const UpdateStageMutation = graphql(`
+  mutation UpdateStage($id: ID!, $input: StageInput!) {
+    updateStage(id: $id, input: $input) {
+      stage {
+        id
+        name
+        kind
+        position
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const DeleteStageMutation = graphql(`
+  mutation DeleteStage($id: ID!) {
+    deleteStage(id: $id) {
+      id
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const ReorderStagesMutation = graphql(`
+  mutation ReorderStages($ids: [ID!]!) {
+    reorderStages(ids: $ids) {
+      stages {
+        id
+        position
+      }
+    }
+  }
+`);
+
 export const JobApplicationsQuery = graphql(`
   query JobApplications {
     jobApplications {
@@ -84,6 +200,11 @@ export const JobApplicationQuery = graphql(`
       notes
       createdAt
       updatedAt
+      stage {
+        id
+        kind
+        position
+      }
       contacts {
         id
         name
@@ -97,6 +218,10 @@ export const CreateJobApplicationMutation = graphql(`
     createJobApplication(input: $input) {
       jobApplication {
         id
+        stage {
+          id
+          kind
+        }
       }
       errors {
         field
@@ -123,6 +248,11 @@ export const UpdateJobApplicationMutation = graphql(`
         resumeVersion
         notes
         updatedAt
+        stage {
+          id
+          kind
+          position
+        }
         contacts {
           id
           name
@@ -187,6 +317,7 @@ export const CreateContactMutation = graphql(`
     createContact(input: $input) {
       contact {
         id
+        name
       }
       errors {
         field

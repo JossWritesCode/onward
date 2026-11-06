@@ -11,6 +11,7 @@ module Mutations
       user = current_user!
       attributes = input.to_h
       contact_ids = attributes.delete(:contact_ids)
+      resolve_stage!(attributes, user)
 
       job_application = user.job_applications.new(attributes)
       job_application.contacts = user.contacts.where(id: contact_ids) unless contact_ids.nil?

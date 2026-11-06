@@ -12,6 +12,15 @@ module Mutations
       context[:current_user] || raise(GraphQL::ExecutionError, "You need to sign in first.")
     end
 
+    # Swaps a stage_id from the input for the user's own stage, so nobody can
+    # put an application in someone else's column.
+    def resolve_stage!(attributes, user)
+      return unless attributes.key?(:stage_id)
+
+      stage_id = attributes.delete(:stage_id)
+      attributes[:stage] = user.stages.find(stage_id) if stage_id.present?
+    end
+
     # Turns ActiveRecord validation errors into UserError objects the frontend
     # can show next to the matching form field.
     def errors_for(record)

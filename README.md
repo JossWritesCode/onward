@@ -1,19 +1,28 @@
 # Onward
 
-A job hunt tracker that makes the search feel rewarding. Track your applications and contacts, and (in upcoming milestones) earn XP, keep streaks, and level up for the work you put in, whether or not it pays off right away.
+A job hunt tracker that makes the search feel rewarding. Track your applications on a drag-and-drop board, get a little celebration every time you move forward, and (in upcoming milestones) earn XP, keep streaks, and level up for the work you put in, whether or not it pays off right away.
 
-![The applications page](docs/screenshot.png)
+![The job board](docs/screenshot.png)
 
 **Guiding principle: reward effort, not outcomes.** Applying, networking, and prepping are wins on their own.
 
 ## What's here so far
 
-Onward is being built in four milestones. This is **milestone 1**:
+Onward is being built in milestones. So far:
 
+**Milestone 1**
 - Accounts: sign up, sign in, sign out
-- Job applications with statuses (saved, applied, interviewing, offer, rejected), dates, links, salary, location, work arrangement, job description, resume version, and notes
+- Job applications with dates, links, salary, location, work arrangement, job description, resume version, and notes
 - Contacts, linked to the applications they're connected to
 - Light and dark mode, and a layout that works on phones
+
+**The board and encouragement**
+- A drag-and-drop board, the main view on computers. Phones get a list view by default, and on the board you press and hold a card to drag it.
+- Customizable columns: add, rename, reorder, and delete them. Each column has a type (saved, applied, interviewing, offer, rejected), so "Phone screen" and "Final round" both count as interviewing.
+- A daily quote at the top of the board. Every quote's wording was checked against its original source.
+- Celebrations that scale: confetti and a chime for applying, more for an interview, a full-screen celebration for an offer, and a kind word when you get a rejection.
+- A sound toggle in the header. Confetti is skipped when your device is set to reduce motion.
+- Add a contact right from an application's form.
 
 Coming next: XP, streaks, and skill levels (milestone 2); daily quests, interview prep, a study timer, custom actions, and nudges (milestone 3); visual polish and sounds (milestone 4).
 
@@ -149,6 +158,20 @@ Open **http://localhost:5173** and create an account.
 
 Keep both terminals running while you use the app.
 
+## Updating to a new version
+
+When you get a new version of the code, update the database and the GraphQL schema before starting the app:
+
+```sh
+cd backend
+bin/setup          # installs any new gems, runs new migrations, rewrites the schema
+bin/rails server
+```
+
+Then, in a second terminal, start the frontend as usual with `npm run dev` in `frontend/`.
+
+Migrations update your existing data. For example, the board's migration gives everyone the default columns and puts each existing application in the column that matches its status.
+
 ## Running the tests
 
 ```sh
@@ -177,7 +200,7 @@ All the queries and mutations the frontend sends live in `frontend/src/graphql/o
 ```
 backend/
   app/graphql/        GraphQL schema: types, queries, and mutations
-  app/models/         Users, sessions, job applications, contacts
+  app/models/         Users, sessions, board columns (stages), job applications, contacts
   db/migrate/         Database tables
   test/               Model and API tests
   schema.graphql      Generated schema the frontend reads
@@ -185,7 +208,7 @@ frontend/
   src/pages/          One file per screen
   src/components/     Shared building blocks (buttons, layout, icons)
   src/graphql/        Every query and mutation the app uses
-  src/lib/            Small helpers (dates, statuses, errors)
+  src/lib/            Helpers: quotes, celebrations, sounds, confetti, settings
 ```
 
 ## Troubleshooting
@@ -199,6 +222,10 @@ frontend/
 **"role does not exist."** Create a PostgreSQL user for yourself: `sudo -u postgres createuser --superuser "$USER"`.
 
 **The app says it couldn't reach the Onward server.** The Rails API isn't running. Start it with `bin/rails server` in `backend/`.
+
+**The frontend says a field doesn't exist, or `npm run dev` fails at "codegen."** The GraphQL schema file is out of date. Run `bin/rails graphql:dump_schema` in `backend/`, then try again.
+
+**There's no sound.** Check the speaker button in the header, and that your device isn't muted. Browsers only play sound after you've clicked or tapped something on the page.
 
 ## License
 

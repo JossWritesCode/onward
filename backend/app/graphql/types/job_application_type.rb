@@ -5,7 +5,10 @@ module Types
     field :id, ID, null: false
     field :company, String, null: false
     field :role, String, null: false
-    field :status, Types::JobApplicationStatusEnum, null: false
+    field :status, Types::JobApplicationStatusEnum, null: false,
+      description: "Always the kind of the column the application is in."
+    field :stage, Types::StageType, null: false, description: "The board column the application is in."
+    field :position, Int, null: false, description: "Where the card sits in its column. Lower is higher up."
     field :date_applied, GraphQL::Types::ISO8601Date, null: true
     field :posting_url, String, null: true
     field :salary_range, String, null: true
@@ -17,6 +20,10 @@ module Types
     field :contacts, [ Types::ContactType ], null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+
+    def stage
+      dataload_association(:stage)
+    end
 
     def contacts
       object.contacts.order(Arel.sql("LOWER(contacts.name)"))
