@@ -33,7 +33,8 @@ export default function App() {
           <Route path="/progress" element={<ProgressPage />} />
           <Route path="/prep" element={<PrepPage />} />
           <Route path="/prep/customize" element={<PrepSettingsPage />} />
-          <Route path="/prep/engineering" element={<EngineeringPage />} />
+          <Route path="/engineering" element={<EngineeringPage />} />
+          <Route path="/prep/engineering" element={<Navigate to="/engineering" replace />} />
           <Route path="/prep/stories/new" element={<StoryFormPage />} />
           <Route path="/prep/stories/:id" element={<StoryFormPage />} />
           <Route path="/contacts" element={<ContactsPage />} />

@@ -285,3 +285,17 @@ export const RefreshIcon = (props: IconProps) => (
     <path d="M20 11a8 8 0 0 0-14.7-4.4L4 8M4 3.5V8h4.5M4 13a8 8 0 0 0 14.7 4.4L20 16M20 20.5V16h-4.5" />
   </Icon>
 );
+
+export const CodeIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="m8 7-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16" />
+  </Icon>
+);
+
+export const DotsIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="5" cy="12" r="1.3" fill="currentColor" />
+    <circle cx="12" cy="12" r="1.3" fill="currentColor" />
+    <circle cx="19" cy="12" r="1.3" fill="currentColor" />
+  </Icon>
+);

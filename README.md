@@ -42,7 +42,7 @@ Onward is being built in milestones. So far:
 - A study timer with 15, 25, and 45 minute presets or a custom length, and your own topics. It keeps running while you use the rest of the app, and sessions of 10 minutes or more count toward your streak.
 
 **Software engineering track** (optional, turned on from Prep → Customize)
-- An Engineering tab on the Prep page with your LeetCode streak, problems solved by difficulty, and a submissions heat map.
+- An Engineering page, linked in the header, with your LeetCode streak, problems solved by difficulty, and a submissions heat map.
 - Days you submit on LeetCode count toward your Onward streak, starting from the day you connect.
 - Your GitHub contribution calendar.
 - Hours studied this week, this month, and all time, by week and by topic, plus "Add time" for studying away from the timer.
@@ -197,7 +197,7 @@ Migrations update your existing data. For example, the board's migration gives e
 
 ## Connecting LeetCode and GitHub
 
-Turn on the software engineering track from **Prep → Customize questions and checklist**, then add:
+Turn on the software engineering track from **Prep → Customize questions and checklist** (once it's on, the Engineering page's **Settings** button goes there too), then add:
 
 - **Your LeetCode username.** Your profile needs to be public. LeetCode has no official API, so Onward reads the same public data its website shows. If LeetCode changes how that works, the LeetCode card shows an error and the rest of the app keeps working.
 - **Your GitHub username and a token.** GitHub only shares the contribution calendar with a token, but the token doesn't need any permissions:
@@ -208,7 +208,7 @@ Turn on the software engineering track from **Prep → Customize questions and c
 
 The token is encrypted in the database with keys that `bin/setup` writes to `backend/.env`. Keep that file private. If you deploy Onward, set `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY`, `ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY`, and `ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT` on your host.
 
-Onward checks LeetCode and GitHub at most every 30 minutes. The Refresh button on the Engineering tab checks right away.
+Onward checks LeetCode and GitHub at most every 30 minutes. The Refresh button on the Engineering page checks right away.
 
 ## Running the tests
 

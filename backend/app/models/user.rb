@@ -37,6 +37,24 @@ class User < ApplicationRecord
   normalizes :leetcode_username, :github_username, with: ->(name) { name.strip.delete_prefix("@").presence }
   normalizes :github_token, with: ->(token) { token.strip.presence }
 
+  # :saved, :none, or :unreadable. A token is unreadable when it was encrypted
+  # with different keys than this server has (for example, if backend/.env
+  # changed). Reading github_token directly would raise in that case.
+  def github_token_status
+    github_token.present? ? :saved : :none
+  rescue ActiveRecord::Encryption::Errors::Decryption
+    :unreadable
+  end
+
+  # Saves (or clears) the GitHub token without reading the old one first, so
+  # replacing a token encrypted with old keys always works.
+  def replace_github_token!(token)
+    token = token.to_s.strip.presence
+    ciphertext = token && self.class.type_for_attribute(:github_token).serialize(token)
+    self.class.where(id:).update_all([ "github_token = ?", ciphertext ])
+    @attributes.write_from_database("github_token", ciphertext)
+  end
+
   # The date right now on this person's clock, which is what streaks count by.
   def today
     Time.current.in_time_zone(time_zone_object).to_date

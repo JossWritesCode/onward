@@ -12,7 +12,7 @@ module Types
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
 
     def github_connected
-      object.github_token.present?
+      object.github_token_status == :saved
     end
   end
 end

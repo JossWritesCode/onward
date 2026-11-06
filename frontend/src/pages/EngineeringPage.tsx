@@ -7,8 +7,7 @@ import { addDays, formatDay, mondayOf } from '../lib/activities';
 import { celebrateStudy } from '../lib/celebrate';
 import { formatMinutes, hoursDecimal, todayIso } from '../lib/format';
 import CalendarHeatMap from '../components/CalendarHeatMap';
-import PrepTabs from '../components/prep/PrepTabs';
-import { ExternalLinkIcon, FlameIcon, PlusIcon, RefreshIcon, TimerIcon } from '../components/icons';
+import { ColumnsIcon, ExternalLinkIcon, FlameIcon, PlusIcon, RefreshIcon, TimerIcon } from '../components/icons';
 import { Button, ButtonLink, Card, ErrorBanner, Field, Input, PageHeader, Select, Spinner } from '../components/ui';
 
 type Engineering = EngineeringQueryData['engineering'];
@@ -29,7 +28,7 @@ export default function EngineeringPage() {
   if (!data.me?.engineeringTrack) {
     return (
       <div className="mx-auto max-w-5xl">
-        <PageHeader title="Engineering prep" />
+        <PageHeader title="Engineering" />
         <Card className="p-6">
           <p className="mb-4 text-stone-600 dark:text-stone-300">
             The software engineering track adds your LeetCode streak, your GitHub contributions, and your study hours
@@ -44,17 +43,21 @@ export default function EngineeringPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <PageHeader
-        title="Interview prep"
+        title="Engineering"
         subtitle="Your coding practice, all in one place."
         action={
-          (leetcode || github) && (
-            <Button variant="ghost" onClick={() => refresh()} disabled={refreshing}>
-              <RefreshIcon className={refreshing ? 'animate-spin' : ''} /> {refreshing ? 'Refreshing…' : 'Refresh'}
-            </Button>
-          )
+          <div className="flex flex-wrap gap-1">
+            {(leetcode || github) && (
+              <Button variant="ghost" onClick={() => refresh()} disabled={refreshing}>
+                <RefreshIcon className={refreshing ? 'animate-spin' : ''} /> {refreshing ? 'Refreshing…' : 'Refresh'}
+              </Button>
+            )}
+            <ButtonLink to="/prep/customize" variant="ghost">
+              <ColumnsIcon /> Settings
+            </ButtonLink>
+          </div>
         }
       />
-      <PrepTabs />
 
       <div className="space-y-5">
         <LeetcodeCard leetcode={leetcode} today={today} />
@@ -217,7 +220,7 @@ function StudyCard({
           <TimerIcon className="text-brand-500" /> Hours studied
         </h2>
         <Link to="/prep" className="text-sm font-bold text-brand-600 hover:underline dark:text-brand-300">
-          Start the study timer
+          Study timer is on Prep
         </Link>
       </div>
 

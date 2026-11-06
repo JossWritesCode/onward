@@ -3,7 +3,6 @@ import { Link } from 'react-router';
 import { PrepQuery } from '../graphql/operations';
 import { formatDay, plural } from '../lib/activities';
 import InterviewRoundCard from '../components/prep/InterviewRoundCard';
-import PrepTabs from '../components/prep/PrepTabs';
 import PracticePanel from '../components/prep/PracticePanel';
 import StudyTimer from '../components/prep/StudyTimer';
 import { BookIcon, CalendarIcon, ColumnsIcon, PlusIcon } from '../components/icons';
@@ -29,7 +28,6 @@ export default function PrepPage() {
           </ButtonLink>
         }
       />
-      <PrepTabs />
 
       <section className="mb-8" aria-labelledby="upcoming-heading">
         <h2 id="upcoming-heading" className="mb-3 flex items-center gap-2 text-xl font-black">

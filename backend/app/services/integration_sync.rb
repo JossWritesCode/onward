@@ -30,6 +30,11 @@ module IntegrationSync
     return snapshot unless force || snapshot.stale?
 
     begin
+      if user.github_token_status == :unreadable
+        raise Integrations::Error,
+          "Onward can't read your saved GitHub token anymore, usually because the encryption keys in backend/.env changed. Paste your token again in Settings."
+      end
+
       data = Integrations::Github.fetch(user.github_username, user.github_token)
       snapshot.update!(data:, error: nil, fetched_at: Time.current)
     rescue Integrations::Error => error

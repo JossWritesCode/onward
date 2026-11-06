@@ -77,4 +77,16 @@ class EngineeringTest < ActionDispatch::IntegrationTest
     assert_equal 9, leetcode["mediumSolved"]
     assert_equal [ { "date" => @user.today.iso8601, "count" => 2 } ], leetcode["days"]
   end
+
+  test "a token encrypted with other keys doesn't break anything and can be replaced" do
+    @user.update!(engineering_track: true, github_username: "JossWritesCode")
+    User.where(id: @user.id).update_all([ "github_token = ?", "encrypted-with-keys-we-no-longer-have" ])
+
+    github = graphql("query { engineering { github { error } } }").dig("data", "engineering", "github")
+    assert_match "can't read your saved GitHub token", github["error"]
+
+    result = graphql(SETTINGS, variables: { token: "github_pat_new" })
+    assert result.dig("data", "updateEngineeringSettings", "user", "githubConnected")
+    assert_equal "github_pat_new", User.find(@user.id).github_token
+  end
 end

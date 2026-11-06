@@ -57,7 +57,7 @@ function SettingsForm({ me }: { me: Me }) {
     await save(
       { engineeringTrack: next },
       next ? 'Engineering track on' : 'Engineering track off',
-      next ? 'Add your accounts below, then find it as a tab on the Prep page.' : 'You can turn it back on anytime.',
+      next ? 'Add your accounts below. It now has its own link in the header.' : 'You can turn it back on anytime.',
     );
   }
 
@@ -65,7 +65,7 @@ function SettingsForm({ me }: { me: Me }) {
     event.preventDefault();
     const variables: Settings = { leetcodeUsername: leetcode, githubUsername: github };
     if (token.trim()) variables.githubToken = token;
-    await save(variables, 'Accounts saved', 'Your stats will show on the Engineering tab of Prep.');
+    await save(variables, 'Accounts saved', 'Your stats will show on the Engineering page.');
   }
 
   return (
@@ -74,11 +74,11 @@ function SettingsForm({ me }: { me: Me }) {
         Software engineering track
       </h2>
       <p className="mb-3 text-sm text-stone-500 dark:text-stone-400">
-        Adds an Engineering tab to Prep with your LeetCode streak, GitHub contributions, and hours studied.
+        Adds an Engineering page, linked in the header, with your LeetCode streak, GitHub contributions, and hours studied.
       </p>
       <Card className="space-y-5 p-5">
         <label className="flex cursor-pointer items-center justify-between gap-4">
-          <span className="font-bold">Show the Engineering tab</span>
+          <span className="font-bold">Show the Engineering page</span>
           <input
             type="checkbox"
             role="switch"

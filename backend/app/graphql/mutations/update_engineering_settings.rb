@@ -12,14 +12,19 @@ module Mutations
 
     def resolve(**settings)
       user = current_user!
+      # The token is saved separately (see User#replace_github_token!), so an
+      # old token that can't be decrypted never blocks saving a new one.
+      token_given = settings.key?(:github_token)
+      token = settings.delete(:github_token)
       user.assign_attributes(settings)
 
       # A new LeetCode account counts toward the streak from today, not its whole history.
       user.leetcode_counts_from = user.today if user.leetcode_username_changed? && user.leetcode_username.present?
 
       if user.save
+        user.replace_github_token!(token) if token_given
         user.integration_snapshots.where(provider: "leetcode").delete_all if user.saved_change_to_leetcode_username?
-        if user.saved_change_to_github_username? || user.saved_change_to_github_token?
+        if user.saved_change_to_github_username? || token_given
           user.integration_snapshots.where(provider: "github").delete_all
         end
         { user:, errors: [] }
