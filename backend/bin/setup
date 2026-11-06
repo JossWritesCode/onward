@@ -16,6 +16,20 @@ FileUtils.chdir APP_ROOT do
     FileUtils.cp ".env.example", ".env"
   end
 
+  env = File.read(".env")
+  unless env.match?(/^ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY=\S/)
+    puts "\n== Generating encryption keys in .env =="
+    require "securerandom"
+    File.open(".env", "a") do |file|
+      file.puts
+      file.puts "# Encrypts secrets like your GitHub token. Keep these private, and don't change"
+      file.puts "# them later, or saved secrets can't be read anymore."
+      file.puts "ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY=#{SecureRandom.alphanumeric(32)}"
+      file.puts "ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY=#{SecureRandom.alphanumeric(32)}"
+      file.puts "ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT=#{SecureRandom.alphanumeric(32)}"
+    end
+  end
+
   puts "\n== Preparing the database =="
   system! "bin/rails db:prepare"
 

@@ -10,7 +10,21 @@ export const ACTIVITY_LABELS: Record<ActivityKind, string> = {
   COFFEE_CHAT: 'Had a coffee chat',
   FOLLOW_UP: 'Followed up',
   TAILORED_MATERIALS: 'Tailored a resume or cover letter',
+  INTERVIEW_PRACTICE: 'Practiced an interview answer',
+  INTERVIEW_PREPPED: 'Finished prepping for an interview',
+  STUDY_SESSION: 'Study session',
+  LEETCODE: 'Practiced on LeetCode',
 };
+
+/** Where an automatically recorded activity came from, for the activity list. */
+export function activitySource(kind: ActivityKind): string {
+  if (BOARD_KINDS.includes(kind)) return 'from your board';
+  if (kind === 'LEETCODE') return 'from LeetCode';
+  return 'from Prep';
+}
+
+/** Recorded when you move a card on the board. */
+export const BOARD_KINDS: readonly ActivityKind[] = ['APPLICATION_SENT', 'INTERVIEW', 'OFFER', 'REJECTION'];
 
 export const CATEGORY_LABELS: Record<ActivityCategory, string> = {
   APPLYING: 'Applying',

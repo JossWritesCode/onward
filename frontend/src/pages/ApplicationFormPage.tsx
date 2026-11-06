@@ -20,6 +20,7 @@ import { fieldError, generalErrors, type UserError } from '../lib/errors';
 import { blankToNull, formatDate } from '../lib/format';
 import { WORK_ARRANGEMENTS, WORK_ARRANGEMENT_LABELS } from '../lib/status';
 import LinkPicker from '../components/LinkPicker';
+import InterviewRoundCard from '../components/prep/InterviewRoundCard';
 import { ArrowLeftIcon, ExternalLinkIcon, TrashIcon } from '../components/icons';
 import { Button, Card, ErrorBanner, Field, Input, Select, Spinner, Textarea } from '../components/ui';
 
@@ -232,6 +233,19 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
           </a>
         )}
       </div>
+
+      {existing && existing.interviewRounds.length > 0 && (
+        <section className="mb-6" aria-labelledby="rounds-heading">
+          <h2 id="rounds-heading" className="mb-3 text-xl font-black">
+            Interview prep
+          </h2>
+          <div className="space-y-3">
+            {[...existing.interviewRounds].reverse().map((round) => (
+              <InterviewRoundCard key={round.id} round={round} company={existing.company} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <form onSubmit={handleSubmit} noValidate className="space-y-5">
         <ErrorBanner messages={generalErrors(errors, FIELDS)} />

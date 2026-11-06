@@ -13,6 +13,7 @@ class Streak
   attr_reader :current, :longest, :freezes, :frozen_dates, :active_today
 
   def self.for(user)
+    IntegrationSync.refresh_for_streak(user)
     new(user.activities.distinct.pluck(:occurred_on), today: user.today)
   end
 

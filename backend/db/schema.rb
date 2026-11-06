@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_06_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_06_000004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -26,10 +26,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_000002) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["contact_id"], name: "index_activities_on_contact_id"
-    t.index ["job_application_id", "kind"], name: "index_activities_once_per_application_and_kind", unique: true, where: "automatic"
+    t.index ["job_application_id", "kind"], name: "index_activities_once_per_application_and_kind", unique: true, where: "(automatic AND ((kind)::text = ANY ((ARRAY['application_sent'::character varying, 'interview'::character varying, 'offer'::character varying, 'rejection'::character varying])::text[])))"
     t.index ["job_application_id"], name: "index_activities_on_job_application_id"
     t.index ["user_id", "occurred_on"], name: "index_activities_on_user_id_and_occurred_on"
+    t.index ["user_id", "occurred_on"], name: "index_activities_one_leetcode_day", unique: true, where: "((kind)::text = 'leetcode'::text)"
     t.index ["user_id"], name: "index_activities_on_user_id"
+  end
+
+  create_table "checklist_items", force: :cascade do |t|
+    t.bigint "interview_round_id", null: false
+    t.string "text", null: false
+    t.boolean "done", default: false, null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["interview_round_id"], name: "index_checklist_items_on_interview_round_id"
+  end
+
+  create_table "checklist_template_items", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "text", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_checklist_template_items_on_user_id"
   end
 
   create_table "contacts", force: :cascade do |t|
@@ -45,6 +65,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_000002) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_contacts_on_user_id"
+  end
+
+  create_table "integration_snapshots", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "provider", null: false
+    t.jsonb "data", default: {}, null: false
+    t.string "error"
+    t.datetime "fetched_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "provider"], name: "index_integration_snapshots_on_user_id_and_provider", unique: true
+    t.index ["user_id"], name: "index_integration_snapshots_on_user_id"
+  end
+
+  create_table "interview_rounds", force: :cascade do |t|
+    t.bigint "job_application_id", null: false
+    t.bigint "stage_id"
+    t.string "name", null: false
+    t.datetime "scheduled_at"
+    t.datetime "prepped_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["job_application_id", "stage_id"], name: "index_interview_rounds_on_job_application_id_and_stage_id", unique: true
+    t.index ["job_application_id"], name: "index_interview_rounds_on_job_application_id"
+    t.index ["stage_id"], name: "index_interview_rounds_on_stage_id"
   end
 
   create_table "job_application_contacts", force: :cascade do |t|
@@ -79,6 +124,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_000002) do
     t.index ["user_id"], name: "index_job_applications_on_user_id"
   end
 
+  create_table "practices", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "question_id"
+    t.bigint "story_id"
+    t.string "rating", null: false
+    t.integer "seconds"
+    t.date "practiced_on", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["question_id"], name: "index_practices_on_question_id"
+    t.index ["story_id"], name: "index_practices_on_story_id"
+    t.index ["user_id"], name: "index_practices_on_user_id"
+  end
+
+  create_table "questions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.text "prompt", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_questions_on_user_id"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "ip_address"
@@ -99,23 +166,62 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_000002) do
     t.index ["user_id"], name: "index_stages_on_user_id"
   end
 
+  create_table "stories", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "title", null: false
+    t.text "situation"
+    t.text "task"
+    t.text "action"
+    t.text "result"
+    t.string "tags", default: [], null: false, array: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_stories_on_user_id"
+  end
+
+  create_table "study_sessions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "topic", null: false
+    t.integer "minutes", null: false
+    t.date "studied_on", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_study_sessions_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email_address", null: false
     t.string "password_digest", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "time_zone", default: "UTC", null: false
+    t.boolean "engineering_track", default: false, null: false
+    t.string "leetcode_username"
+    t.date "leetcode_counts_from"
+    t.string "github_username"
+    t.text "github_token"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
   add_foreign_key "activities", "contacts", on_delete: :nullify
   add_foreign_key "activities", "job_applications", on_delete: :nullify
   add_foreign_key "activities", "users"
+  add_foreign_key "checklist_items", "interview_rounds", on_delete: :cascade
+  add_foreign_key "checklist_template_items", "users"
   add_foreign_key "contacts", "users"
+  add_foreign_key "integration_snapshots", "users"
+  add_foreign_key "interview_rounds", "job_applications", on_delete: :cascade
+  add_foreign_key "interview_rounds", "stages", on_delete: :nullify
   add_foreign_key "job_application_contacts", "contacts"
   add_foreign_key "job_application_contacts", "job_applications"
   add_foreign_key "job_applications", "stages"
   add_foreign_key "job_applications", "users"
+  add_foreign_key "practices", "questions", on_delete: :nullify
+  add_foreign_key "practices", "stories", on_delete: :nullify
+  add_foreign_key "practices", "users"
+  add_foreign_key "questions", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "stages", "users"
+  add_foreign_key "stories", "users"
+  add_foreign_key "study_sessions", "users"
 end

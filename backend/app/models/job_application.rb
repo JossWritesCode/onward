@@ -8,6 +8,7 @@ class JobApplication < ApplicationRecord
   has_many :contacts, through: :job_application_contacts
   # Activities stay in your history (and streak) even if the application is deleted.
   has_many :activities, dependent: :nullify
+  has_many :interview_rounds, -> { order(:created_at) }, dependent: :destroy
 
   # The status always matches the kind of the column the card is in. It's kept
   # as its own column so filtering and stats don't need to look at stages.
@@ -30,6 +31,8 @@ class JobApplication < ApplicationRecord
   before_save :default_date_applied, if: -> { will_save_change_to_status? && status_applied? }
   # Applying, interviews, offers, and rejections count toward your streak.
   after_save -> { Activity.record_status_change!(self) }, if: :saved_change_to_status?
+  # Landing in an interview column starts a prep checklist for that round.
+  after_save -> { InterviewRound.start_for!(self) }, if: :saved_change_to_stage_id?
 
   # Moves the card into a column at a given spot (0 is the top) and renumbers
   # the cards around it.
@@ -48,6 +51,11 @@ class JobApplication < ApplicationRecord
     end
   ensure
     @positioned = false
+  end
+
+  # The soonest interview that hasn't happened yet, for the countdown on the card.
+  def next_interview_at
+    interview_rounds.where(scheduled_at: Time.current..).minimum(:scheduled_at)
   end
 
   private

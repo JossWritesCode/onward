@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import type { BoardQuery } from '../gql/graphql';
 import { MoveJobApplicationMutation } from '../graphql/operations';
 import { celebrateMove, showToast } from '../lib/celebrate';
+import { shortInterviewTime } from '../lib/countdown';
 import { formatDate } from '../lib/format';
 import { playSound } from '../lib/sounds';
 import { KIND_ACCENTS, WORK_ARRANGEMENT_LABELS } from '../lib/status';
@@ -427,6 +428,11 @@ function CardContent({ card }: { card: BoardCard }) {
     <>
       <p className="truncate font-extrabold">{card.company}</p>
       <p className="truncate text-sm text-stone-600 dark:text-stone-300">{card.role}</p>
+      {card.nextInterviewAt && (
+        <p className="mt-2 inline-flex rounded-full bg-gold-100 px-2 py-0.5 text-xs font-extrabold text-gold-700 dark:bg-amber-900/40 dark:text-amber-200">
+          {shortInterviewTime(card.nextInterviewAt)}
+        </p>
+      )}
       {(applied || where || card.contacts.length > 0) && (
         <div className="mt-2 space-y-0.5 text-xs text-stone-500 dark:text-stone-400">
           {applied && (

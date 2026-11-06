@@ -11,5 +11,9 @@ module Types
     value "COFFEE_CHAT", "Had a coffee chat or informational interview.", value: "coffee_chat"
     value "FOLLOW_UP", "Followed up on an application or conversation.", value: "follow_up"
     value "TAILORED_MATERIALS", "Tailored a resume or cover letter.", value: "tailored_materials"
+    value "INTERVIEW_PRACTICE", "Practiced answering an interview question.", value: "interview_practice"
+    value "INTERVIEW_PREPPED", "Finished an interview round's prep checklist.", value: "interview_prepped"
+    value "STUDY_SESSION", "Finished a study session.", value: "study_session"
+    value "LEETCODE", "Submitted LeetCode solutions that day. Synced from LeetCode.", value: "leetcode"
   end
 end

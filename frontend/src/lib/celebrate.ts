@@ -146,3 +146,35 @@ export function celebrateStreakMilestone(days: number) {
         : "You've shown up every day. Keep the fire going.";
   showToast('big', `${days}-day streak!`, body);
 }
+
+/** Finishing an interview round's prep checklist. */
+export function celebratePrepped(company: string) {
+  playSound('interview');
+  burst({ x: window.innerWidth / 2, y: window.innerHeight / 2, count: 100, spread: 110, power: 14 });
+  showToast('celebrate', "You're ready", `Your ${company} prep is done. Walk in knowing you did the work.`);
+}
+
+const PRACTICE_MESSAGES = {
+  NAILED_IT: [
+    ['Nailed it', 'That one will be ready when they ask.'],
+    ['Smooth', "Every rep makes the real thing easier."],
+  ],
+  NEEDS_WORK: [
+    ['Rep done', "Rough answers in practice mean smoother ones in the room."],
+    ['Good practice', 'Finding the bumps now is exactly the point.'],
+  ],
+} as const;
+
+/** One practice rep. Both ratings get encouragement: practicing is the win. */
+export function celebratePractice(rating: 'NAILED_IT' | 'NEEDS_WORK') {
+  playSound(rating === 'NAILED_IT' ? 'applied' : 'pop');
+  const [title, body] = pick(PRACTICE_MESSAGES[rating]);
+  showToast('celebrate', title, body);
+}
+
+/** A finished study session. */
+export function celebrateStudy(minutes: number, topic: string) {
+  playSound('applied');
+  burst({ x: window.innerWidth / 2, y: window.innerHeight / 3, count: 60, spread: 80, power: 12 });
+  showToast('celebrate', 'Session complete', `${minutes} focused minutes on ${topic}. That adds up.`);
+}

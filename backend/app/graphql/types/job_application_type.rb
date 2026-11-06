@@ -18,11 +18,18 @@ module Types
     field :resume_version, String, null: true
     field :notes, String, null: true
     field :contacts, [ Types::ContactType ], null: false
+    field :interview_rounds, [ Types::InterviewRoundType ], null: false, description: "Oldest first."
+    field :next_interview_at, GraphQL::Types::ISO8601DateTime, null: true,
+      description: "The soonest scheduled interview that hasn't happened yet."
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
 
     def stage
       dataload_association(:stage)
+    end
+
+    def interview_rounds
+      object.interview_rounds
     end
 
     def contacts

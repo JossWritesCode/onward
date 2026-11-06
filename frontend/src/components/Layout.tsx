@@ -6,11 +6,12 @@ import { useMuted } from '../lib/preferences';
 import { playSound } from '../lib/sounds';
 import Logo from './Logo';
 import StreakFlame from './StreakFlame';
+import TimerPill from './prep/TimerPill';
 import Toaster from './Toaster';
-import { LogOutIcon, UsersIcon, VolumeIcon, VolumeOffIcon } from './icons';
+import { BookIcon, LogOutIcon, UsersIcon, VolumeIcon, VolumeOffIcon } from './icons';
 
 const headerButton =
-  'inline-flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-sm font-extrabold transition ' +
+  'inline-flex items-center gap-1.5 rounded-xl px-2 py-2 text-sm font-extrabold transition sm:px-2.5 ' +
   'text-stone-500 hover:bg-stone-200/60 hover:text-stone-800 ' +
   'dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100 ' +
   'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30';
@@ -48,12 +49,24 @@ export default function Layout() {
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-30 border-b-2 border-stone-200 bg-stone-50/90 backdrop-blur dark:border-stone-800 dark:bg-stone-950/90">
-        <div className="mx-auto flex max-w-[1400px] items-center gap-2 px-4 py-3">
+        <div className="mx-auto flex max-w-[1400px] items-center gap-1 px-4 py-3 sm:gap-2">
           <NavLink to="/applications" aria-label="Onward home" className="mr-auto">
-            <Logo />
+            <Logo compact />
           </NavLink>
 
+          <TimerPill />
           <StreakFlame />
+
+          <NavLink
+            to="/prep"
+            className={({ isActive }) =>
+              `${headerButton} ${isActive ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-200' : ''}`
+            }
+          >
+            <BookIcon className="text-lg" />
+            <span className="hidden sm:inline">Prep</span>
+            <span className="sr-only sm:hidden">Interview prep</span>
+          </NavLink>
 
           <NavLink
             to="/contacts"

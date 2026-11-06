@@ -40,6 +40,8 @@ export default function WeeklyRecap({
       networking: count((a) => a.category === 'NETWORKING'),
       interviews: count((a) => a.kind === 'INTERVIEW'),
       materials: count((a) => a.kind === 'TAILORED_MATERIALS'),
+      leetcode: count((a) => a.kind === 'LEETCODE'),
+      practice: count((a) => a.kind === 'INTERVIEW_PRACTICE' || a.kind === 'STUDY_SESSION'),
       offers: count((a) => a.kind === 'OFFER'),
       closures: count((a) => a.kind === 'REJECTION'),
       companies,
@@ -51,6 +53,8 @@ export default function WeeklyRecap({
     { value: recap.networking, label: 'networking' },
     { value: recap.interviews, label: recap.interviews === 1 ? 'interview' : 'interviews' },
     { value: recap.materials, label: 'tailored materials' },
+    { value: recap.leetcode, label: recap.leetcode === 1 ? 'LeetCode day' : 'LeetCode days' },
+    { value: recap.practice, label: recap.practice === 1 ? 'practice session' : 'practice sessions' },
   ];
   if (recap.offers > 0) stats.unshift({ value: recap.offers, label: recap.offers === 1 ? 'offer!' : 'offers!' });
   // Only show what you did, so a shared recap celebrates wins instead of listing zeros.
@@ -68,6 +72,8 @@ export default function WeeklyRecap({
     if (recap.applications > 0) lines.push(`• ${plural(recap.applications, 'application')} sent`);
     if (recap.networking > 0) lines.push(`• ${plural(recap.networking, 'networking conversation')}`);
     if (recap.interviews > 0) lines.push(`• ${plural(recap.interviews, 'interview')}`);
+    if (recap.leetcode > 0) lines.push(`• ${plural(recap.leetcode, 'day')} of LeetCode practice`);
+    if (recap.practice > 0) lines.push(`• ${plural(recap.practice, 'practice session')}`);
     if (recap.materials > 0) lines.push(`• ${plural(recap.materials, 'resume or cover letter', 'resumes and cover letters')} tailored`);
     if (recap.closures > 0) lines.push(`• ${plural(recap.closures, 'door')} closed, which is progress too`);
     if (showStreak) lines.push(`• ${streak}-day streak`);

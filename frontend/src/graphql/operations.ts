@@ -9,6 +9,7 @@ export const MeQuery = graphql(`
       id
       emailAddress
       timeZone
+      engineeringTrack
     }
   }
 `);
@@ -68,6 +69,7 @@ export const BoardQuery = graphql(`
         workArrangement
         position
         updatedAt
+        nextInterviewAt
         contacts {
           id
           name
@@ -209,6 +211,17 @@ export const JobApplicationQuery = graphql(`
       contacts {
         id
         name
+      }
+      interviewRounds {
+        id
+        name
+        scheduledAt
+        prepped
+        checklistItems {
+          id
+          text
+          done
+        }
       }
     }
   }
@@ -446,6 +459,398 @@ export const DeleteActivityMutation = graphql(`
       errors {
         field
         message
+      }
+    }
+  }
+`);
+
+// Interview prep
+
+export const PrepQuery = graphql(`
+  query Prep {
+    upcomingInterviewRounds {
+      id
+      name
+      scheduledAt
+      prepped
+      checklistItems {
+        id
+        text
+        done
+      }
+      jobApplication {
+        id
+        company
+        role
+      }
+    }
+    stories {
+      id
+      title
+      situation
+      task
+      action
+      result
+      tags
+      practiceCount
+      lastPracticedOn
+      lastRating
+    }
+    questions {
+      id
+      prompt
+    }
+    studyTopics
+  }
+`);
+
+export const StoryQuery = graphql(`
+  query Story($id: ID!) {
+    story(id: $id) {
+      id
+      title
+      situation
+      task
+      action
+      result
+      tags
+      practiceCount
+      lastPracticedOn
+      lastRating
+    }
+  }
+`);
+
+export const CreateStoryMutation = graphql(`
+  mutation CreateStory($input: StoryInput!) {
+    createStory(input: $input) {
+      story {
+        id
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const UpdateStoryMutation = graphql(`
+  mutation UpdateStory($id: ID!, $input: StoryInput!) {
+    updateStory(id: $id, input: $input) {
+      story {
+        id
+        title
+        situation
+        task
+        action
+        result
+        tags
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const DeleteStoryMutation = graphql(`
+  mutation DeleteStory($id: ID!) {
+    deleteStory(id: $id) {
+      id
+    }
+  }
+`);
+
+export const LogPracticeMutation = graphql(`
+  mutation LogPractice($questionId: ID, $storyId: ID, $rating: PracticeRating!, $seconds: Int) {
+    logPractice(questionId: $questionId, storyId: $storyId, rating: $rating, seconds: $seconds) {
+      story {
+        id
+        practiceCount
+        lastPracticedOn
+        lastRating
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const PrepSettingsQuery = graphql(`
+  query PrepSettings {
+    questions {
+      id
+      prompt
+    }
+    checklistTemplate {
+      id
+      text
+    }
+  }
+`);
+
+export const CreateQuestionMutation = graphql(`
+  mutation CreateQuestion($prompt: String!) {
+    createQuestion(prompt: $prompt) {
+      question {
+        id
+        prompt
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const UpdateQuestionMutation = graphql(`
+  mutation UpdateQuestion($id: ID!, $prompt: String!) {
+    updateQuestion(id: $id, prompt: $prompt) {
+      question {
+        id
+        prompt
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const DeleteQuestionMutation = graphql(`
+  mutation DeleteQuestion($id: ID!) {
+    deleteQuestion(id: $id) {
+      id
+    }
+  }
+`);
+
+export const UpdateChecklistTemplateMutation = graphql(`
+  mutation UpdateChecklistTemplate($items: [String!]!) {
+    updateChecklistTemplate(items: $items) {
+      items {
+        id
+        text
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const UpdateInterviewRoundMutation = graphql(`
+  mutation UpdateInterviewRound($id: ID!, $scheduledAt: ISO8601DateTime) {
+    updateInterviewRound(id: $id, scheduledAt: $scheduledAt) {
+      interviewRound {
+        id
+        scheduledAt
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const SetChecklistItemDoneMutation = graphql(`
+  mutation SetChecklistItemDone($id: ID!, $done: Boolean!) {
+    setChecklistItemDone(id: $id, done: $done) {
+      justPrepped
+      interviewRound {
+        id
+        prepped
+        checklistItems {
+          id
+          text
+          done
+        }
+      }
+    }
+  }
+`);
+
+export const AddChecklistItemMutation = graphql(`
+  mutation AddChecklistItem($interviewRoundId: ID!, $text: String!) {
+    addChecklistItem(interviewRoundId: $interviewRoundId, text: $text) {
+      interviewRound {
+        id
+        prepped
+        checklistItems {
+          id
+          text
+          done
+        }
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const DeleteChecklistItemMutation = graphql(`
+  mutation DeleteChecklistItem($id: ID!) {
+    deleteChecklistItem(id: $id) {
+      interviewRound {
+        id
+        prepped
+        checklistItems {
+          id
+          text
+          done
+        }
+      }
+    }
+  }
+`);
+
+export const LogStudySessionMutation = graphql(`
+  mutation LogStudySession($topic: String!, $minutes: Int!, $studiedOn: ISO8601Date) {
+    logStudySession(topic: $topic, minutes: $minutes, studiedOn: $studiedOn) {
+      counted
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+// Software engineering track
+
+export const EngineeringSettingsQuery = graphql(`
+  query EngineeringSettings {
+    me {
+      id
+      engineeringTrack
+      leetcodeUsername
+      githubUsername
+      githubConnected
+    }
+  }
+`);
+
+export const UpdateEngineeringSettingsMutation = graphql(`
+  mutation UpdateEngineeringSettings(
+    $engineeringTrack: Boolean
+    $leetcodeUsername: String
+    $githubUsername: String
+    $githubToken: String
+  ) {
+    updateEngineeringSettings(
+      engineeringTrack: $engineeringTrack
+      leetcodeUsername: $leetcodeUsername
+      githubUsername: $githubUsername
+      githubToken: $githubToken
+    ) {
+      user {
+        id
+        engineeringTrack
+        leetcodeUsername
+        githubUsername
+        githubConnected
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const EngineeringQuery = graphql(`
+  query Engineering {
+    me {
+      id
+      engineeringTrack
+    }
+    engineering {
+      leetcode {
+        username
+        streak
+        totalActiveDays
+        easySolved
+        mediumSolved
+        hardSolved
+        easyTotal
+        mediumTotal
+        hardTotal
+        days {
+          date
+          count
+        }
+        error
+        fetchedAt
+      }
+      github {
+        username
+        totalContributions
+        days {
+          date
+          count
+        }
+        error
+        fetchedAt
+      }
+      study {
+        minutesThisWeek
+        minutesThisMonth
+        minutesTotal
+        byTopic {
+          topic
+          minutes
+        }
+        weeks {
+          weekStart
+          minutes
+        }
+      }
+    }
+    studyTopics
+  }
+`);
+
+export const RefreshIntegrationsMutation = graphql(`
+  mutation RefreshIntegrations {
+    refreshIntegrations {
+      engineering {
+        leetcode {
+          username
+          streak
+          totalActiveDays
+          easySolved
+          mediumSolved
+          hardSolved
+          easyTotal
+          mediumTotal
+          hardTotal
+          days {
+            date
+            count
+          }
+          error
+          fetchedAt
+        }
+        github {
+          username
+          totalContributions
+          days {
+            date
+            count
+          }
+          error
+          fetchedAt
+        }
       }
     }
   }

@@ -246,3 +246,42 @@ export const CopyIcon = (props: IconProps) => (
     <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
   </Icon>
 );
+
+export const TimerIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="13.5" r="7.5" />
+    <path d="M12 9.5v4l2.5 2M10 2.5h4M19 6l1.5-1.5" />
+  </Icon>
+);
+
+export const BookIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5Z" />
+    <path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5M8 7.5h8" />
+  </Icon>
+);
+
+export const MicIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="9" y="3" width="6" height="11" rx="3" />
+    <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" />
+  </Icon>
+);
+
+export const ShuffleIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5" />
+  </Icon>
+);
+
+export const CheckIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="m5 12.5 4.5 4.5L19 7.5" />
+  </Icon>
+);
+
+export const RefreshIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M20 11a8 8 0 0 0-14.7-4.4L4 8M4 3.5V8h4.5M4 13a8 8 0 0 0 14.7 4.4L20 16M20 20.5V16h-4.5" />
+  </Icon>
+);

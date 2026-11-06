@@ -22,3 +22,17 @@ export function blankToNull(value: string): string | null {
   const trimmed = value.trim();
   return trimmed === '' ? null : trimmed;
 }
+
+/** 45 → "45 min", 135 → "2 h 15 min", 120 → "2 h". */
+export function formatMinutes(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return rest === 0 ? `${hours} h` : `${hours} h ${rest} min`;
+}
+
+/** Hours with one decimal, for big numbers: 135 → "2.3". */
+export function hoursDecimal(minutes: number): string {
+  const hours = minutes / 60;
+  return hours >= 10 ? String(Math.round(hours)) : hours.toFixed(1).replace(/\.0$/, '');
+}

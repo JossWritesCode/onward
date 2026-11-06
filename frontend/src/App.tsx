@@ -9,6 +9,10 @@ import ContactsPage from './pages/ContactsPage';
 import ContactFormPage from './pages/ContactFormPage';
 import ColumnsPage from './pages/ColumnsPage';
 import ProgressPage from './pages/ProgressPage';
+import PrepPage from './pages/PrepPage';
+import PrepSettingsPage from './pages/PrepSettingsPage';
+import StoryFormPage from './pages/StoryFormPage';
+import EngineeringPage from './pages/EngineeringPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
@@ -27,6 +31,11 @@ export default function App() {
           <Route path="/applications/:id" element={<ApplicationFormPage />} />
           <Route path="/columns" element={<ColumnsPage />} />
           <Route path="/progress" element={<ProgressPage />} />
+          <Route path="/prep" element={<PrepPage />} />
+          <Route path="/prep/customize" element={<PrepSettingsPage />} />
+          <Route path="/prep/engineering" element={<EngineeringPage />} />
+          <Route path="/prep/stories/new" element={<StoryFormPage />} />
+          <Route path="/prep/stories/:id" element={<StoryFormPage />} />
           <Route path="/contacts" element={<ContactsPage />} />
           <Route path="/contacts/new" element={<ContactFormPage />} />
           <Route path="/contacts/:id" element={<ContactFormPage />} />

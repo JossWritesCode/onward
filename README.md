@@ -33,7 +33,21 @@ Onward is being built in milestones. So far:
 - A weekly recap you can copy as text or share as an image, with company names left out unless you include them.
 - Celebrations at streak milestones like 7, 30, and 100 days.
 
-Coming next: daily quests, interview prep, a study timer, custom actions, and nudges (milestone 3), then visual polish and deployment (milestone 4).
+**Milestone 3a: interview prep**
+- A Prep page in the header.
+- A story bank: write your best stories once, in STAR form (situation, task, action, result), with tags.
+- Practice mode: a random question from your question bank, a story to answer with, a 2-minute timer, and a "nailed it" or "needs work" rating. New accounts start with 15 general behavioral questions you can edit or delete.
+- A prep checklist for every interview round, created when a card lands in an interview column. Set the interview's date to see a countdown on the card. Finishing a checklist gets a celebration.
+- An editable checklist template for new rounds.
+- A study timer with 15, 25, and 45 minute presets or a custom length, and your own topics. It keeps running while you use the rest of the app, and sessions of 10 minutes or more count toward your streak.
+
+**Software engineering track** (optional, turned on from Prep → Customize)
+- An Engineering tab on the Prep page with your LeetCode streak, problems solved by difficulty, and a submissions heat map.
+- Days you submit on LeetCode count toward your Onward streak, starting from the day you connect.
+- Your GitHub contribution calendar.
+- Hours studied this week, this month, and all time, by week and by topic, plus "Add time" for studying away from the timer.
+
+Coming next: daily quests, custom actions, and nudges (milestone 3b), then visual polish and deployment (milestone 4).
 
 ## Tech stack
 
@@ -181,6 +195,21 @@ Then, in a second terminal, start the frontend as usual with `npm run dev` in `f
 
 Migrations update your existing data. For example, the board's migration gives everyone the default columns and puts each existing application in the column that matches its status.
 
+## Connecting LeetCode and GitHub
+
+Turn on the software engineering track from **Prep → Customize questions and checklist**, then add:
+
+- **Your LeetCode username.** Your profile needs to be public. LeetCode has no official API, so Onward reads the same public data its website shows. If LeetCode changes how that works, the LeetCode card shows an error and the rest of the app keeps working.
+- **Your GitHub username and a token.** GitHub only shares the contribution calendar with a token, but the token doesn't need any permissions:
+  1. Go to [GitHub's new token page](https://github.com/settings/personal-access-tokens/new).
+  2. Name it "Onward" and pick an expiration date.
+  3. Leave repository access on "Public repositories" and don't add any permissions.
+  4. Generate the token and paste it into Onward.
+
+The token is encrypted in the database with keys that `bin/setup` writes to `backend/.env`. Keep that file private. If you deploy Onward, set `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY`, `ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY`, and `ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT` on your host.
+
+Onward checks LeetCode and GitHub at most every 30 minutes. The Refresh button on the Engineering tab checks right away.
+
 ## Running the tests
 
 ```sh
@@ -209,7 +238,7 @@ All the queries and mutations the frontend sends live in `frontend/src/graphql/o
 ```
 backend/
   app/graphql/        GraphQL schema: types, queries, and mutations
-  app/models/         Users, board columns (stages), applications, contacts, activities, streaks
+  app/models/         Users, board columns, applications, contacts, activities, streaks, interview prep
   db/migrate/         Database tables
   test/               Model and API tests
   schema.graphql      Generated schema the frontend reads
@@ -233,6 +262,8 @@ frontend/
 **The app says it couldn't reach the Onward server.** The Rails API isn't running. Start it with `bin/rails server` in `backend/`.
 
 **The frontend says a field doesn't exist, or `npm run dev` fails at "codegen."** The GraphQL schema file is out of date. Run `bin/rails graphql:dump_schema` in `backend/`, then try again.
+
+**Saving a GitHub token says Onward can't encrypt it yet.** The encryption keys are missing. Run `bin/setup` in `backend/` (it adds them to `.env`), restart `bin/rails server`, and try again.
 
 **There's no sound.** Check the speaker button in the header, and that your device isn't muted. Browsers only play sound after you've clicked or tapped something on the page.
 

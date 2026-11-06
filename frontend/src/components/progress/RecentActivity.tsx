@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import type { ProgressQuery } from '../../gql/graphql';
 import { DeleteActivityMutation } from '../../graphql/operations';
-import { ACTIVITY_LABELS, CATEGORY_LABELS, formatDay } from '../../lib/activities';
+import { ACTIVITY_LABELS, activitySource, CATEGORY_LABELS, formatDay } from '../../lib/activities';
 import { TrashIcon } from '../icons';
 import { Card } from '../ui';
 
@@ -43,7 +43,7 @@ export default function RecentActivity({ activities, today }: { activities: read
                 {activity.note && <p className="text-sm text-stone-600 dark:text-stone-300">{activity.note}</p>}
                 <p className="text-xs text-stone-400">
                   {CATEGORY_LABELS[activity.category]}
-                  {activity.automatic && ' · from your board'}
+                  {activity.automatic && ` · ${activitySource(activity.kind)}`}
                 </p>
               </div>
               {!activity.automatic && (

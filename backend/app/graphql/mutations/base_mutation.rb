@@ -21,6 +21,11 @@ module Mutations
       attributes[:stage] = user.stages.find(stage_id) if stage_id.present?
     end
 
+    # An interview round, but only if it belongs to one of your applications.
+    def find_interview_round!(id)
+      InterviewRound.joins(:job_application).where(job_applications: { user_id: current_user!.id }).find(id)
+    end
+
     # Turns ActiveRecord validation errors into UserError objects the frontend
     # can show next to the matching form field.
     def errors_for(record)

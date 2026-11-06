@@ -9,7 +9,11 @@ class Activity < ApplicationRecord
     "networking_message" => "networking",
     "coffee_chat" => "networking",
     "follow_up" => "networking",
-    "tailored_materials" => "materials"
+    "tailored_materials" => "materials",
+    "interview_practice" => "interview_prep",
+    "interview_prepped" => "interview_prep",
+    "study_session" => "interview_prep",
+    "leetcode" => "interview_prep"
   }.freeze
 
   CATEGORIES = %w[applying networking interview_prep materials].freeze
@@ -19,6 +23,9 @@ class Activity < ApplicationRecord
 
   # Talking to someone counts as contacting them, which later powers follow-up nudges.
   CONTACTING_KINDS = %w[networking_message coffee_chat follow_up].freeze
+
+  # Recorded from the board, once per application for each stage type.
+  BOARD_KINDS = %w[application_sent interview offer rejection].freeze
 
   # What moving a card into each kind of column counts as.
   KIND_FOR_STATUS = {
