@@ -147,7 +147,7 @@ function GoalChip({ goal }: { goal: GoalProgress }) {
       <span
         className={`flex size-6 shrink-0 items-center justify-center rounded-full text-sm ${
           goal.done
-            ? 'bg-emerald-500 text-white'
+            ? 'animate-pop-in bg-emerald-500 text-white'
             : 'border-2 border-stone-300 text-transparent group-hover:border-brand-400 dark:border-stone-600'
         }`}
       >

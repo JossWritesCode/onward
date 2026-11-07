@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Render runs this on every deploy (see render.yaml). It builds the React app
+# into backend/public, installs gems, and updates the database.
+set -o errexit
+
+cd "$(dirname "$0")/../../frontend"
+echo "== Building the frontend =="
+npm ci || npm install
+npm run build
+
+cd ../backend
+echo "== Installing gems =="
+bundle install
+
+echo "== Updating the database =="
+bin/rails db:migrate

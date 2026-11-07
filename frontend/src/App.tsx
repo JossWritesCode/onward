@@ -3,6 +3,9 @@ import { RedirectIfSignedIn, RequireAuth } from './components/AuthGates';
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import AccountPage from './pages/AccountPage';
 import ApplicationsPage from './pages/ApplicationsPage';
 import ApplicationFormPage from './pages/ApplicationFormPage';
 import ContactsPage from './pages/ContactsPage';
@@ -21,7 +24,10 @@ export default function App() {
       <Route element={<RedirectIfSignedIn />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       </Route>
+      {/* Works signed in or out, since the link arrives by email. */}
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       <Route element={<RequireAuth />}>
         <Route element={<Layout />}>
@@ -40,6 +46,7 @@ export default function App() {
           <Route path="/contacts" element={<ContactsPage />} />
           <Route path="/contacts/new" element={<ContactFormPage />} />
           <Route path="/contacts/:id" element={<ContactFormPage />} />
+          <Route path="/account" element={<AccountPage />} />
         </Route>
       </Route>
 

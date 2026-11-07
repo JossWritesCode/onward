@@ -1,6 +1,8 @@
 module Types
   class QueryType < Types::BaseObject
     field :me, Types::UserType, null: true, description: "The signed-in person, or null when signed out."
+    field :server_settings, Types::ServerSettingsType, null: false, description: "How this server is set up. Works while signed out."
+    field :invites, [ Types::InviteType ], null: false, description: "Invite codes you've made, newest first. Admins only."
 
     field :job_applications, [ Types::JobApplicationType ], null: false,
       description: "Your job applications, most recently updated first." do
@@ -41,6 +43,17 @@ module Types
 
     def me
       context[:current_user]
+    end
+
+    def server_settings
+      {}
+    end
+
+    def invites
+      user = current_user!
+      return [] unless user.admin?
+
+      user.invites.includes(:used_by).order(created_at: :desc)
     end
 
     def job_applications(status: nil)

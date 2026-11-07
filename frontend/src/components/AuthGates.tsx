@@ -31,7 +31,7 @@ function ServerProblem({ message }: { message: string }) {
     <div className="mx-auto max-w-md px-4 py-16">
       <ErrorBanner
         messages={[
-          "Couldn't reach the Onward server. Make sure the Rails API is running (bin/rails server) and try again.",
+          "Couldn't reach the Onward server. Wait a moment and reload. If you're running Onward on your own computer, make sure bin/rails server is running.",
           message,
         ]}
       />

@@ -21,10 +21,17 @@ class User < ApplicationRecord
   has_many :custom_actions, dependent: :delete_all
   has_many :perfect_days, dependent: :delete_all
   has_many :nudge_dismissals, dependent: :delete_all
+  has_many :invites, foreign_key: :created_by_id, inverse_of: :created_by, dependent: :delete_all
 
   # A personal access token with no permissions, used only to read your public
   # GitHub contribution calendar. Encrypted in the database.
   encrypts :github_token
+
+  # Password reset links work for an hour, and stop working once the password
+  # changes (the salt changes with it), so each link works only once.
+  generates_token_for :password_reset_link, expires_in: 1.hour do
+    password_salt&.last(10)
+  end
 
   after_create :set_up_defaults
 

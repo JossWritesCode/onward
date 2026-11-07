@@ -10,6 +10,7 @@ export const MeQuery = graphql(`
       emailAddress
       timeZone
       engineeringTrack
+      admin
     }
   }
 `);
@@ -29,8 +30,13 @@ export const SignInMutation = graphql(`
 `);
 
 export const SignUpMutation = graphql(`
-  mutation SignUp($emailAddress: String!, $password: String!, $passwordConfirmation: String!) {
-    signUp(emailAddress: $emailAddress, password: $password, passwordConfirmation: $passwordConfirmation) {
+  mutation SignUp($emailAddress: String!, $password: String!, $passwordConfirmation: String!, $inviteCode: String) {
+    signUp(
+      emailAddress: $emailAddress
+      password: $password
+      passwordConfirmation: $passwordConfirmation
+      inviteCode: $inviteCode
+    ) {
       user {
         id
       }
@@ -1061,6 +1067,91 @@ export const DismissNudgeMutation = graphql(`
   mutation DismissNudge($key: String!, $snooze: Boolean) {
     dismissNudge(key: $key, snooze: $snooze) {
       key
+    }
+  }
+`);
+
+// Accounts: invites, password reset, export, and deleting an account
+
+export const ServerSettingsQuery = graphql(`
+  query ServerSettings {
+    serverSettings {
+      signups
+      passwordResetAvailable
+    }
+  }
+`);
+
+export const RequestPasswordResetMutation = graphql(`
+  mutation RequestPasswordReset($emailAddress: String!) {
+    requestPasswordReset(emailAddress: $emailAddress) {
+      sent
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const ResetPasswordMutation = graphql(`
+  mutation ResetPassword($token: String!, $password: String!, $passwordConfirmation: String!) {
+    resetPassword(token: $token, password: $password, passwordConfirmation: $passwordConfirmation) {
+      user {
+        id
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const InvitesQuery = graphql(`
+  query Invites {
+    invites {
+      id
+      code
+      note
+      usedAt
+      usedByEmail
+      createdAt
+    }
+  }
+`);
+
+export const CreateInviteMutation = graphql(`
+  mutation CreateInvite($note: String) {
+    createInvite(note: $note) {
+      invite {
+        id
+        code
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const DeleteInviteMutation = graphql(`
+  mutation DeleteInvite($id: ID!) {
+    deleteInvite(id: $id) {
+      id
+    }
+  }
+`);
+
+export const DeleteAccountMutation = graphql(`
+  mutation DeleteAccount($password: String!) {
+    deleteAccount(password: $password) {
+      deleted
+      errors {
+        field
+        message
+      }
     }
   }
 `);

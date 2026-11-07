@@ -19,6 +19,15 @@ module ActiveSupport
       object.define_singleton_method(method_name, original)
     end
 
+    # Sets environment variables for one block, then puts them back.
+    def with_env(values)
+      previous = values.keys.to_h { |key| [ key, ENV[key] ] }
+      values.each { |key, value| ENV[key] = value }
+      yield
+    ensure
+      previous.each { |key, value| ENV[key] = value }
+    end
+
     def create_user(email_address: "person#{SecureRandom.hex(4)}@example.com", password: "password123")
       User.create!(email_address:, password:)
     end

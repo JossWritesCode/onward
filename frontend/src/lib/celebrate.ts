@@ -75,7 +75,8 @@ const WIN_MESSAGES: Record<string, readonly (readonly [string, string])[]> = {
   ],
 };
 
-function pick<T>(items: readonly T[]): T {
+/** A random [title, body] message from a list. */
+function pick(items: readonly (readonly [string, string])[]): readonly [string, string] {
   return items[Math.floor(Math.random() * items.length)];
 }
 

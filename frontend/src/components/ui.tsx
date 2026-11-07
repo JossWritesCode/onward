@@ -63,7 +63,7 @@ export function Textarea({ className = '', ...props }: TextareaHTMLAttributes<HT
 }
 
 export function Select({ className = '', ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select className={`${fieldBase} pr-8 ${className}`} {...props} />;
+  return <select className={`${fieldBase} pr-10 ${className}`} {...props} />;
 }
 
 export function Field({
@@ -78,7 +78,7 @@ export function Field({
   label: string;
   htmlFor: string;
   error?: string;
-  hint?: string;
+  hint?: ReactNode;
   required?: boolean;
   children: ReactNode;
   className?: string;

@@ -145,7 +145,7 @@ function ApplicationRow({ row, stages }: { row: Row; stages: readonly BoardStage
         value={row.stage.id}
         disabled={loading}
         onChange={(e) => handleChange(e.target.value, e.target)}
-        className={`w-full cursor-pointer rounded-xl border-0 px-3 py-2 font-extrabold sm:w-44 ${STATUS_STYLES[row.stage.kind]}`}
+        className={`w-full cursor-pointer rounded-xl border-0 py-2 pr-9 pl-3 font-extrabold sm:w-44 ${STATUS_STYLES[row.stage.kind]}`}
       >
         {stages.map((stage) => (
           <option key={stage.id} value={stage.id}>

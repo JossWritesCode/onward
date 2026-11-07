@@ -4,6 +4,7 @@ require "rails"
 require "active_model/railtie"
 require "active_record/railtie"
 require "action_controller/railtie"
+require "action_mailer/railtie"
 require "rails/test_unit/railtie"
 
 Bundler.require(*Rails.groups)
@@ -14,7 +15,8 @@ module Onward
 
     config.autoload_lib(ignore: %w[assets tasks])
 
-    # Rails only serves the GraphQL API; the React app in ../frontend is the interface.
+    # Rails serves the GraphQL API. In production it also serves the built React
+    # app from public/ (see SpaController); in development Vite serves it.
     config.api_only = true
 
     # API-only apps skip cookies by default. Onward keeps people signed in with a

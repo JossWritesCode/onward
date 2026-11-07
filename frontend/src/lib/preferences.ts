@@ -42,6 +42,7 @@ function createSetting(key: string) {
 const mutedSetting = createSetting('onward:muted');
 const viewSetting = createSetting('onward:view');
 const quoteHiddenSetting = createSetting('onward:quote-hidden-on');
+const quotePickSetting = createSetting('onward:quote-pick');
 
 export function isMuted() {
   return mutedSetting.get() === 'true';
@@ -66,6 +67,17 @@ export function useView(): [View, (view: View) => void] {
 export function useQuoteHidden(today: string): [boolean, (hidden: boolean) => void] {
   const hiddenOn = useSyncExternalStore(quoteHiddenSetting.subscribe, quoteHiddenSetting.get);
   return [hiddenOn === today, (hidden) => quoteHiddenSetting.set(hidden ? today : null)];
+}
+
+/**
+ * A quote you shuffled to, as an index into QUOTES. It lasts the rest of the
+ * day; tomorrow brings a fresh daily quote. Null means today's usual quote.
+ */
+export function useQuotePick(today: string): [number | null, (index: number) => void] {
+  const stored = useSyncExternalStore(quotePickSetting.subscribe, quotePickSetting.get);
+  const [day, index] = (stored ?? '').split(':');
+  const pick = day === today && index !== undefined && /^\d+$/.test(index) ? Number(index) : null;
+  return [pick, (next) => quotePickSetting.set(`${today}:${next}`)];
 }
 
 export function prefersReducedMotion() {

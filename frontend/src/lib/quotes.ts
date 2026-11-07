@@ -9,6 +9,8 @@ export type Quote = {
 // 1877), Richard M. Gummere (Seneca's letters, 1917–1925), Aubrey Stewart
 // (Seneca's dialogues, 1889), and James Legge (Tao Te Ching, 1891).
 //
+// Spelling is modernized where it changes no words, like "to-day" → "today".
+//
 // Before adding one, check the wording against the original. Many popular
 // quotes are paraphrased or misattributed.
 export const QUOTES: readonly Quote[] = [
@@ -43,7 +45,7 @@ export const QUOTES: readonly Quote[] = [
     source: 'Little Women',
   },
   {
-    text: "Hold every hour in your grasp. Lay hold of to-day's task, and you will not need to depend so much upon to-morrow's.",
+    text: "Hold every hour in your grasp. Lay hold of today's task, and you will not need to depend so much upon tomorrow's.",
     author: 'Seneca',
     source: 'Moral Letters to Lucilius, Letter 1',
   },
@@ -119,9 +121,19 @@ export const QUOTES: readonly Quote[] = [
   },
 ];
 
-/** The same quote all day, a new one each day. */
-export function quoteForToday(date = new Date()): Quote {
+/** Which quote is today's: the same one all day, a new one each day. */
+export function quoteIndexForToday(date = new Date()): number {
   const startOfYear = new Date(date.getFullYear(), 0, 0);
   const dayOfYear = Math.floor((date.getTime() - startOfYear.getTime()) / 86_400_000);
-  return QUOTES[(dayOfYear + date.getFullYear()) % QUOTES.length];
+  return (dayOfYear + date.getFullYear()) % QUOTES.length;
+}
+
+export function quoteForToday(date = new Date()): Quote {
+  return QUOTES[quoteIndexForToday(date)];
+}
+
+/** A random quote other than the one showing. */
+export function anotherQuoteIndex(current: number): number {
+  const offset = 1 + Math.floor(Math.random() * (QUOTES.length - 1));
+  return (current + offset) % QUOTES.length;
 }

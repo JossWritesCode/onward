@@ -9,6 +9,7 @@ module Types
     field :leetcode_username, String, null: true
     field :github_username, String, null: true
     field :github_connected, Boolean, null: false, description: "Whether a GitHub token is saved. The token itself is never sent back."
+    field :admin, Boolean, null: false, description: "Admins can make invite codes."
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
 
     def github_connected

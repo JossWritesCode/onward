@@ -24,6 +24,28 @@
   --color-gold-700: #a86c00;
 
   --animate-toast-in: toast-in 320ms cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+  --animate-quote-in: quote-in 300ms ease-out both;
+  --animate-pop-in: pop-in 260ms cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+
+  @keyframes quote-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes pop-in {
+    from {
+      transform: scale(0.4);
+    }
+    to {
+      transform: none;
+    }
+  }
 
   @keyframes toast-in {
     from {
@@ -44,6 +66,46 @@
 
   body {
     @apply bg-stone-50 font-sans text-stone-800 antialiased dark:bg-stone-950 dark:text-stone-100;
+  }
+
+  /* Tailwind 4 leaves buttons with the default arrow cursor. Anything clickable gets the hand. */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  select:not(:disabled),
+  summary,
+  label:has(input[type='checkbox'], input[type='radio']),
+  input[type='checkbox']:not(:disabled),
+  input[type='radio']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  :disabled {
+    cursor: not-allowed;
+  }
+
+  /*
+   * Dropdowns: replace the browser's own arrow (which sits against the edge
+   * in Safari and Chrome on Mac) with Onward's chevron, so every browser
+   * matches and the text lines up with text fields.
+   */
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2378716c' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.1rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a8a29e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    }
+  }
+
+  /* Dropdown menus themselves follow light and dark mode. */
+  option,
+  optgroup {
+    @apply bg-white text-stone-800 dark:bg-stone-900 dark:text-stone-100;
   }
 }
 

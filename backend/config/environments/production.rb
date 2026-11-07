@@ -5,6 +5,9 @@ Rails.application.configure do
   config.eager_load = true
   config.consider_all_requests_local = false
 
+  # Serve the built React app (bin/render-build puts it in public/).
+  config.public_file_server.enabled = true
+
   # Hosting providers like Render and Fly.io terminate SSL in front of the app.
   config.assume_ssl = true
   config.force_ssl = true

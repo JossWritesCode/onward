@@ -3,6 +3,11 @@ module Types
     field :sign_up, mutation: Mutations::SignUp
     field :sign_in, mutation: Mutations::SignIn
     field :sign_out, mutation: Mutations::SignOut
+    field :request_password_reset, mutation: Mutations::RequestPasswordReset
+    field :reset_password, mutation: Mutations::ResetPassword
+    field :delete_account, mutation: Mutations::DeleteAccount
+    field :create_invite, mutation: Mutations::CreateInvite
+    field :delete_invite, mutation: Mutations::DeleteInvite
 
     field :create_job_application, mutation: Mutations::CreateJobApplication
     field :update_job_application, mutation: Mutations::UpdateJobApplication

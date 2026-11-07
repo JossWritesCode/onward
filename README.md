@@ -54,7 +54,12 @@ Onward is being built in milestones. So far:
 - Custom actions, like "Went to a meetup," logged from "Log a win" and usable as goals. Deleting one keeps it in your history.
 - Nudges for interviews in the next 2 days with an unfinished checklist, applications with no change in 2 weeks, and people you haven't talked to in 3 weeks. Act on one right from the strip ("I followed up"), snooze it for a week, or dismiss it.
 
-Coming next: visual polish and deployment (milestone 4).
+**Milestone 4: polish, accounts, and going online**
+- Onward's own dropdown arrows, the pointing-hand cursor on everything clickable, a shuffle button for the daily quote, and a smooth animation when you hide it.
+- An Account page (click your email in the header): download all your data as JSON, delete your account, and read what Onward stores.
+- Invite codes, so friends can join a hosted Onward without opening sign-ups to everyone.
+- "Forgot your password?" with an emailed reset link.
+- Ready to host on [Render](https://render.com): Rails serves the API and the React app together. See [Putting Onward online](#putting-onward-online).
 
 ## Tech stack
 
@@ -219,6 +224,81 @@ Onward checks LeetCode and GitHub at most every 30 minutes. The Refresh button o
 
 **Which day things count for.** LeetCode's own calendar runs on UTC, so an evening submission in North America shows up there as the next day. Onward reads the exact times of your recent submissions instead, so LeetCode days and LeetCode goals follow your clock. GitHub decides which day a contribution belongs to, and only counts contributions on github.com. Private repositories count only if your GitHub profile has "Include private contributions" turned on.
 
+## Accounts, invites, and email
+
+**Who can sign up** is set by the `SIGNUPS` environment variable:
+
+- `open` (the default on your own computer): anyone can create an account.
+- `invite` (the default when hosted): new accounts need an invite code. The owner (`OWNER_EMAIL`), or the very first account if no owner is set, can always sign up, and is the admin.
+
+Admins make invite links on the Account page. Each link works once.
+
+**Password reset emails.** On your own computer, Onward doesn't send real email. It prints each email, including the reset link, in the terminal running `bin/rails server`. To send real email, set the SMTP settings described in [Sending email with Gmail](#sending-email-with-gmail).
+
+## Putting Onward online
+
+Onward is set up for [Render](https://render.com) with a free web server and a $6/month database. The file `render.yaml` describes both, so most of this is clicking through Render's screens.
+
+**What to expect from the free server:** it goes to sleep after 15 minutes without visitors. The next visit shows a loading page for about a minute while it wakes up, then it's normal speed. Your data is in the paid database, so sleeping never loses anything. If the wait gets annoying, switch the web service to a paid plan in Render ($7/month).
+
+### 1. Check that it builds
+
+On your computer:
+
+```sh
+cd frontend
+npm run build      # type-checks and builds the app into backend/public
+```
+
+Fix anything it reports before going further, because Render runs the same build.
+
+### 2. Let Render's Linux servers install your gems
+
+Your `Gemfile.lock` was made on a Mac. Add Linux to it, then commit and push:
+
+```sh
+cd backend
+bundle lock --add-platform x86_64-linux
+cd ..
+git add -A
+git commit -m "feat: get ready for Render"
+git push
+```
+
+### 3. Create the app on Render
+
+1. Sign up at [render.com](https://render.com) with your GitHub account. When it asks which repositories it can see, include `onward`.
+2. In the Render dashboard, click **New → Blueprint**, and pick the `onward` repository.
+3. Render reads `render.yaml` and lists a web service called `onward` and a database called `onward-db`. It asks for a few values:
+   - `OWNER_EMAIL`: the email you'll sign up with. That account becomes the admin.
+   - `SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `MAIL_FROM`: leave these empty for now. You can add email later.
+4. Click **Apply**. Render asks for a card for the $6/month database.
+5. The first build takes about 5 minutes. When the web service says **Live**, open its address (it looks like `https://onward-xxxx.onrender.com`) and sign up with your `OWNER_EMAIL`.
+
+Render made the secret keys for you, including the ones that encrypt GitHub tokens. Don't change those later, or saved tokens can't be read anymore.
+
+### 4. Invite friends
+
+Open **Account** (your email in the header, or **⋯ → Your account** on a phone), click **Make an invite link**, and send the copied link.
+
+### Updating the hosted app
+
+Push to GitHub. Render rebuilds and redeploys automatically, including any new database migrations.
+
+### Sending email with Gmail
+
+For "Forgot your password?" to work on the hosted app, Onward needs a way to send email. The simplest is your own Gmail account:
+
+1. Turn on [2-Step Verification](https://myaccount.google.com/security) for your Google account, if it isn't already.
+2. Create an [app password](https://myaccount.google.com/apppasswords) named "Onward." Google shows a 16-letter password once. Copy it.
+3. In Render, open the `onward` web service → **Environment**, and set:
+   - `SMTP_ADDRESS` = `smtp.gmail.com`
+   - `SMTP_USERNAME` = your Gmail address
+   - `SMTP_PASSWORD` = the app password, without spaces
+4. Save. Render restarts the app, and "Forgot your password?" appears on the sign-in page.
+
+Reset emails will come from your Gmail address. Any other email service that offers SMTP (like Brevo, which has a free plan) works the same way with its own address, username, and password, plus `MAIL_FROM` set to the address it lets you send from.
+
 ## Running the tests
 
 ```sh
@@ -245,7 +325,9 @@ All the queries and mutations the frontend sends live in `frontend/src/graphql/o
 ## Project layout
 
 ```
+render.yaml           How Render hosts Onward (see "Putting Onward online")
 backend/
+  bin/render-build    What Render runs on each deploy
   app/graphql/        GraphQL schema: types, queries, and mutations
   app/models/         Users, board columns, applications, contacts, activities, streaks, interview prep
   db/migrate/         Database tables
@@ -272,7 +354,15 @@ frontend/
 
 **The frontend says a field doesn't exist, or `npm run dev` fails at "codegen."** The GraphQL schema file is out of date. Run `bin/rails graphql:dump_schema` in `backend/`, then try again.
 
+**Opening http://localhost:3000 shows "This is the Onward API."** That's expected on your own computer. Use http://localhost:5173, which the frontend serves.
+
 **Saving a GitHub token says Onward can't encrypt it yet.** The encryption keys are missing. Run `bin/setup` in `backend/` (it adds them to `.env`), restart `bin/rails server`, and try again.
+
+**The hosted app shows a loading page for about a minute.** The free server was asleep. It wakes up on the first visit after 15 minutes without visitors.
+
+**The Render build fails at `bundle install` with a platform error.** Run `bundle lock --add-platform x86_64-linux` in `backend/`, then commit and push (step 2 of [Putting Onward online](#putting-onward-online)).
+
+**"Forgot your password?" doesn't appear on the hosted app.** It shows once email is set up. See [Sending email with Gmail](#sending-email-with-gmail).
 
 **There's no sound.** Check the speaker button in the header, and that your device isn't muted. Browsers only play sound after you've clicked or tapped something on the page.
 

@@ -8,7 +8,7 @@ import Logo from './Logo';
 import StreakFlame from './StreakFlame';
 import TimerPill from './prep/TimerPill';
 import Toaster from './Toaster';
-import { BookIcon, CodeIcon, DotsIcon, LogOutIcon, UsersIcon, VolumeIcon, VolumeOffIcon } from './icons';
+import { BookIcon, CodeIcon, DotsIcon, LogOutIcon, UserIcon, UsersIcon, VolumeIcon, VolumeOffIcon } from './icons';
 
 const headerButton =
   'inline-flex items-center gap-1.5 rounded-xl px-2 py-2 text-sm font-extrabold transition sm:px-2.5 ' +
@@ -105,7 +105,17 @@ export default function Layout() {
               {muted ? <VolumeOffIcon className="text-lg" /> : <VolumeIcon className="text-lg" />}
             </button>
 
-            <span className="hidden px-1 text-sm text-stone-500 lg:inline dark:text-stone-400">{data?.me?.emailAddress}</span>
+            <NavLink
+              to="/account"
+              title="Your account"
+              className={({ isActive }) =>
+                `${headerButton} ${isActive ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-200' : ''}`
+              }
+            >
+              <UserIcon className="text-lg" />
+              <span className="hidden font-semibold lg:inline">{data?.me?.emailAddress}</span>
+              <span className="sr-only lg:hidden">Your account</span>
+            </NavLink>
 
             <button type="button" onClick={handleSignOut} disabled={signingOut} className={headerButton}>
               <LogOutIcon className="text-lg" />
@@ -181,6 +191,9 @@ function MoreMenu({
             {muted ? <VolumeIcon /> : <VolumeOffIcon />}
             {muted ? 'Turn sounds on' : 'Turn sounds off'}
           </button>
+          <NavLink to="/account" className={item} onClick={() => setOpen(false)}>
+            <UserIcon /> Your account
+          </NavLink>
           <button
             type="button"
             className={item}
