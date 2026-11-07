@@ -27,6 +27,37 @@ class IntegrationSyncTest < ActiveSupport::TestCase
     assert_equal 2, Streak.new(activities.map(&:occurred_on), today:).current
   end
 
+  test "recent submissions put LeetCode days on your own clock" do
+    @user.update!(time_zone: "America/Toronto")
+
+    travel_to Time.utc(2026, 11, 7, 2, 30) do # 9:30pm on the 6th in Toronto
+      today = @user.today
+      @user.update!(leetcode_counts_from: today - 5)
+      # LeetCode's calendar files the evening submission under the 7th (UTC).
+      days = { (today - 3).iso8601 => 2, (today + 1).iso8601 => 1 }
+      recent = [ { "slug" => "two-sum", "timestamp" => 10.minutes.ago.to_i, "accepted" => true } ]
+
+      with_stub(Integrations::Leetcode, :fetch, leetcode_data(days).merge("recent" => recent)) do
+        IntegrationSync.leetcode(@user, force: true)
+      end
+
+      assert_equal [ today - 3, today ], @user.activities.where(kind: "leetcode").order(:occurred_on).pluck(:occurred_on)
+    end
+  end
+
+  test "merges recent and accepted LeetCode submissions" do
+    data = {
+      "recentSubmissionList" => [
+        { "titleSlug" => "two-sum", "timestamp" => "200", "statusDisplay" => "Wrong Answer" },
+        { "titleSlug" => "two-sum", "timestamp" => "300", "statusDisplay" => "Accepted" }
+      ],
+      "recentAcSubmissionList" => [ { "titleSlug" => "two-sum", "timestamp" => "300" }, { "titleSlug" => "anagram", "timestamp" => "100" } ]
+    }
+    recent = Integrations::Leetcode.recent_submissions(data)
+    assert_equal [ [ "two-sum", 300, true ], [ "two-sum", 200, false ], [ "anagram", 100, true ] ],
+      recent.map { |row| row.values_at("slug", "timestamp", "accepted") }
+  end
+
   test "keeps the last good data when LeetCode can't be reached" do
     with_stub(Integrations::Leetcode, :fetch, leetcode_data({})) { IntegrationSync.leetcode(@user, force: true) }
     failing = ->(_) { raise Integrations::Error, "Couldn't reach LeetCode." }

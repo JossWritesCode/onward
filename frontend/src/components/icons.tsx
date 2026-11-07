@@ -299,3 +299,36 @@ export const DotsIcon = (props: IconProps) => (
     <circle cx="19" cy="12" r="1.3" fill="currentColor" />
   </Icon>
 );
+
+export const StarIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8Z" fill="currentColor" />
+  </Icon>
+);
+
+export const TargetIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="12" r="8.5" />
+    <circle cx="12" cy="12" r="4.5" />
+    <circle cx="12" cy="12" r="1" fill="currentColor" />
+  </Icon>
+);
+
+export const BellIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15ZM10 21h4" />
+  </Icon>
+);
+
+export const PencilIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4 20h4L19 9l-4-4L4 16Zm9-13 4 4" />
+  </Icon>
+);
+
+export const ClockIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 7.5V12l3 2" />
+  </Icon>
+);

@@ -401,6 +401,10 @@ export const StreakQuery = graphql(`
         activeToday
         freezes
       }
+      perfectDay {
+        today
+        streak
+      }
     }
   }
 `);
@@ -416,6 +420,12 @@ export const ProgressQuery = graphql(`
         activeToday
         frozenDates
       }
+      perfectDay {
+        today
+        streak
+        hasGoals
+      }
+      perfectDays(since: $since)
       activities(since: $since) {
         id
         kind
@@ -433,14 +443,24 @@ export const ProgressQuery = graphql(`
           id
           name
         }
+        customAction {
+          id
+          name
+        }
       }
     }
   }
 `);
 
 export const LogActivityMutation = graphql(`
-  mutation LogActivity($kind: ActivityKind!, $jobApplicationId: ID, $contactId: ID, $note: String) {
-    logActivity(kind: $kind, jobApplicationId: $jobApplicationId, contactId: $contactId, note: $note) {
+  mutation LogActivity($kind: ActivityKind!, $jobApplicationId: ID, $contactId: ID, $customActionId: ID, $note: String) {
+    logActivity(
+      kind: $kind
+      jobApplicationId: $jobApplicationId
+      contactId: $contactId
+      customActionId: $customActionId
+      note: $note
+    ) {
       activity {
         id
       }
@@ -852,6 +872,195 @@ export const RefreshIntegrationsMutation = graphql(`
           fetchedAt
         }
       }
+    }
+  }
+`);
+
+// Daily goals, custom actions, and nudges
+
+export const TodayQuery = graphql(`
+  query Today {
+    today {
+      date
+      hasGoals
+      restDay
+      perfect
+      perfectStreak
+      goals {
+        count
+        done
+        goal {
+          id
+          kind
+          target
+          weekdaysOnly
+          customAction {
+            id
+            name
+          }
+        }
+      }
+      nudges {
+        key
+        kind
+        since
+        jobApplication {
+          id
+          company
+          role
+        }
+        contact {
+          id
+          name
+          lastContactedOn
+        }
+        interviewRound {
+          id
+          name
+          scheduledAt
+          checklistItems {
+            id
+            done
+          }
+          jobApplication {
+            id
+            company
+          }
+        }
+      }
+    }
+  }
+`);
+
+export const DailyGoalsQuery = graphql(`
+  query DailyGoals {
+    me {
+      id
+      engineeringTrack
+    }
+    dailyGoals {
+      id
+      kind
+      target
+      minTarget
+      maxTarget
+      weekdaysOnly
+      available
+      customAction {
+        id
+        name
+      }
+    }
+    customActions {
+      id
+      name
+      category
+    }
+  }
+`);
+
+export const CustomActionsQuery = graphql(`
+  query CustomActions {
+    customActions {
+      id
+      name
+      category
+    }
+  }
+`);
+
+export const CreateDailyGoalMutation = graphql(`
+  mutation CreateDailyGoal($kind: DailyGoalKind!, $target: Int!, $weekdaysOnly: Boolean, $customActionId: ID) {
+    createDailyGoal(kind: $kind, target: $target, weekdaysOnly: $weekdaysOnly, customActionId: $customActionId) {
+      dailyGoal {
+        id
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const UpdateDailyGoalMutation = graphql(`
+  mutation UpdateDailyGoal($id: ID!, $target: Int, $weekdaysOnly: Boolean) {
+    updateDailyGoal(id: $id, target: $target, weekdaysOnly: $weekdaysOnly) {
+      dailyGoal {
+        id
+        target
+        weekdaysOnly
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const DeleteDailyGoalMutation = graphql(`
+  mutation DeleteDailyGoal($id: ID!) {
+    deleteDailyGoal(id: $id) {
+      id
+    }
+  }
+`);
+
+export const ReorderDailyGoalsMutation = graphql(`
+  mutation ReorderDailyGoals($ids: [ID!]!) {
+    reorderDailyGoals(ids: $ids) {
+      dailyGoals {
+        id
+      }
+    }
+  }
+`);
+
+export const CreateCustomActionMutation = graphql(`
+  mutation CreateCustomAction($name: String!, $category: ActivityCategory!) {
+    createCustomAction(name: $name, category: $category) {
+      customAction {
+        id
+        name
+        category
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const UpdateCustomActionMutation = graphql(`
+  mutation UpdateCustomAction($id: ID!, $name: String, $category: ActivityCategory) {
+    updateCustomAction(id: $id, name: $name, category: $category) {
+      customAction {
+        id
+        name
+        category
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const DeleteCustomActionMutation = graphql(`
+  mutation DeleteCustomAction($id: ID!) {
+    deleteCustomAction(id: $id) {
+      id
+    }
+  }
+`);
+
+export const DismissNudgeMutation = graphql(`
+  mutation DismissNudge($key: String!, $snooze: Boolean) {
+    dismissNudge(key: $key, snooze: $snooze) {
+      key
     }
   }
 `);

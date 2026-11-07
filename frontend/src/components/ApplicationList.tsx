@@ -88,7 +88,7 @@ function FilterPill({
 }
 
 function ApplicationRow({ row, stages }: { row: Row; stages: readonly BoardStage[] }) {
-  const [moveApplication, { loading }] = useMutation(MoveJobApplicationMutation, { refetchQueries: ['Board', 'Streak', 'Progress'] });
+  const [moveApplication, { loading }] = useMutation(MoveJobApplicationMutation, { refetchQueries: ['Board', 'Streak', 'Progress', 'Today'] });
   const applied = formatDate(row.dateApplied);
   const where = [row.location, row.workArrangement ? WORK_ARRANGEMENT_LABELS[row.workArrangement] : null]
     .filter(Boolean)

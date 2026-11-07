@@ -16,7 +16,7 @@ module IntegrationSync
     begin
       data = Integrations::Leetcode.fetch(user.leetcode_username)
       snapshot.update!(data:, error: nil, fetched_at: Time.current)
-      record_leetcode_days(user, data["days"])
+      record_leetcode_days(user, data)
     rescue Integrations::Error => error
       snapshot.update!(error: error.message, fetched_at: Time.current)
     end
@@ -51,21 +51,49 @@ module IntegrationSync
   end
 
   # Each day with LeetCode submissions, from the day you connected, counts as
-  # one activity. LeetCode's days run on UTC.
-  def record_leetcode_days(user, days)
+  # one activity, on your own clock.
+  #
+  # LeetCode's calendar groups submissions by UTC day, so an evening
+  # submission in Toronto lands on tomorrow there. Recent submissions come
+  # with exact times, so those days are worked out in your time zone. Older
+  # days, before the recent list reaches, fall back to LeetCode's calendar.
+  def record_leetcode_days(user, data)
     counts_from = user.leetcode_counts_from || user.today
+    counts = leetcode_day_counts(user, data)
     existing = user.activities.where(kind: "leetcode").pluck(:occurred_on).to_set
 
-    days.each do |iso_date, count|
-      date = Date.iso8601(iso_date)
-      next if count.to_i <= 0 || date < counts_from || date > user.today || existing.include?(date)
+    counts.each do |date, count|
+      next if count <= 0 || date < counts_from || date > user.today || existing.include?(date)
 
       user.activities.create!(
         kind: "leetcode",
         automatic: true,
         occurred_on: date,
-        note: "#{count} #{count.to_i == 1 ? 'submission' : 'submissions'}"
+        note: "#{count} #{count == 1 ? 'submission' : 'submissions'}"
       )
     end
+  end
+
+  # { Date => submissions } on your clock.
+  def leetcode_day_counts(user, data)
+    recent = Array(data["recent"])
+    local = recent.map { |row| user.local_date(Time.at(row["timestamp"].to_i)) }.tally
+    covered_from = local.keys.min
+
+    calendar = Hash(data["days"]).filter_map do |iso_date, count|
+      date = Date.iso8601(iso_date)
+      [ date, count.to_i ] if covered_from.nil? || date < covered_from
+    end.to_h
+
+    calendar.merge(local)
+  end
+
+  # Different problems you solved (accepted) on a day, on your clock.
+  def solved_on(user, snapshot, date)
+    Array(snapshot.data["recent"])
+      .select { |row| row["accepted"] && user.local_date(Time.at(row["timestamp"].to_i)) == date }
+      .map { |row| row["slug"] }
+      .uniq
+      .size
   end
 end

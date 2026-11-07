@@ -43,11 +43,18 @@ Onward is being built in milestones. So far:
 
 **Software engineering track** (optional, turned on from Prep → Customize)
 - An Engineering page, linked in the header, with your LeetCode streak, problems solved by difficulty, and a submissions heat map.
-- Days you submit on LeetCode count toward your Onward streak, starting from the day you connect.
+- Days you submit on LeetCode count toward your Onward streak, starting from the day you connect, on your own clock.
 - Your GitHub contribution calendar.
 - Hours studied this week, this month, and all time, by week and by topic, plus "Add time" for studying away from the timer.
 
-Coming next: daily quests, custom actions, and nudges (milestone 3b), then visual polish and deployment (milestone 4).
+**Milestone 3b: daily goals and nudges**
+- Daily goals you pick yourself, like "Apply to 1 job," "Study for 25 min," "Solve 1 LeetCode problem," or "Make 1 GitHub contribution." Each one has a number and can be every day or weekdays only. They check themselves off as you go. New accounts start with "Apply to 1 job."
+- A Today strip above the board with your goals and up to 3 nudges. It shrinks to one line once every goal is done.
+- Perfect days: finishing every goal gets a celebration, a gold square on the heat map, and a perfect-day streak next to your regular streak. Days with no goals (like weekends, for weekday goals) don't break it. Your regular streak still counts any action at all.
+- Custom actions, like "Went to a meetup," logged from "Log a win" and usable as goals. Deleting one keeps it in your history.
+- Nudges for interviews in the next 2 days with an unfinished checklist, applications with no change in 2 weeks, and people you haven't talked to in 3 weeks. Act on one right from the strip ("I followed up"), snooze it for a week, or dismiss it.
+
+Coming next: visual polish and deployment (milestone 4).
 
 ## Tech stack
 
@@ -208,7 +215,9 @@ Turn on the software engineering track from **Prep → Customize questions and c
 
 The token is encrypted in the database with keys that `bin/setup` writes to `backend/.env`. Keep that file private. If you deploy Onward, set `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY`, `ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY`, and `ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT` on your host.
 
-Onward checks LeetCode and GitHub at most every 30 minutes. The Refresh button on the Engineering page checks right away.
+Onward checks LeetCode and GitHub at most every 30 minutes. The Refresh button on the Engineering page, or **Check now** in the Today strip, checks right away.
+
+**Which day things count for.** LeetCode's own calendar runs on UTC, so an evening submission in North America shows up there as the next day. Onward reads the exact times of your recent submissions instead, so LeetCode days and LeetCode goals follow your clock. GitHub decides which day a contribution belongs to, and only counts contributions on github.com. Private repositories count only if your GitHub profile has "Include private contributions" turned on.
 
 ## Running the tests
 

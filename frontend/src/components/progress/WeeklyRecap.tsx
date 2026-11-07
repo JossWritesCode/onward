@@ -13,10 +13,12 @@ export default function WeeklyRecap({
   activities,
   today,
   streak,
+  perfectDays,
 }: {
   activities: readonly Activity[];
   today: string;
   streak: number;
+  perfectDays: readonly string[];
 }) {
   const [weeksBack, setWeeksBack] = useState(0);
   const [includeCompanies, setIncludeCompanies] = useState(false);
@@ -44,9 +46,10 @@ export default function WeeklyRecap({
       practice: count((a) => a.kind === 'INTERVIEW_PRACTICE' || a.kind === 'STUDY_SESSION'),
       offers: count((a) => a.kind === 'OFFER'),
       closures: count((a) => a.kind === 'REJECTION'),
+      perfect: perfectDays.filter((day) => day >= start && day <= end).length,
       companies,
     };
-  }, [activities, start, end]);
+  }, [activities, perfectDays, start, end]);
 
   const stats: RecapStat[] = [
     { value: recap.applications, label: recap.applications === 1 ? 'application' : 'applications' },
@@ -56,6 +59,7 @@ export default function WeeklyRecap({
     { value: recap.leetcode, label: recap.leetcode === 1 ? 'LeetCode day' : 'LeetCode days' },
     { value: recap.practice, label: recap.practice === 1 ? 'practice session' : 'practice sessions' },
   ];
+  if (recap.perfect > 0) stats.splice(1, 0, { value: recap.perfect, label: recap.perfect === 1 ? 'perfect day' : 'perfect days' });
   if (recap.offers > 0) stats.unshift({ value: recap.offers, label: recap.offers === 1 ? 'offer!' : 'offers!' });
   // Only show what you did, so a shared recap celebrates wins instead of listing zeros.
   const nonZero = stats.filter((stat) => stat.value > 0);
@@ -76,6 +80,7 @@ export default function WeeklyRecap({
     if (recap.practice > 0) lines.push(`• ${plural(recap.practice, 'practice session')}`);
     if (recap.materials > 0) lines.push(`• ${plural(recap.materials, 'resume or cover letter', 'resumes and cover letters')} tailored`);
     if (recap.closures > 0) lines.push(`• ${plural(recap.closures, 'door')} closed, which is progress too`);
+    if (recap.perfect > 0) lines.push(`• ${plural(recap.perfect, 'perfect day')}, with every daily goal done`);
     if (showStreak) lines.push(`• ${streak}-day streak`);
     if (companies.length > 0) lines.push(`Applied to: ${companies.join(', ')}`);
     lines.push('', 'Onward!');

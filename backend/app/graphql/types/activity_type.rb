@@ -11,6 +11,7 @@ module Types
       description: "True when it came from moving a card on the board, false when you logged it."
     field :job_application, Types::JobApplicationType, null: true
     field :contact, Types::ContactType, null: true
+    field :custom_action, Types::CustomActionType, null: true, description: "Set when kind is CUSTOM."
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
   end
 end

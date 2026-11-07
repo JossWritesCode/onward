@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { ProgressQuery } from '../../gql/graphql';
-import { ACTIVITY_LABELS, addDays, formatDay, mondayOf, parseIso, plural } from '../../lib/activities';
-import { SnowflakeIcon } from '../icons';
+import { activityLabel, addDays, formatDay, mondayOf, parseIso, plural } from '../../lib/activities';
+import { SnowflakeIcon, StarIcon } from '../icons';
 
 type Activity = ProgressQuery['progress']['activities'][number];
 
@@ -33,10 +33,13 @@ export default function HeatMap({
   activities,
   today,
   frozenDates,
+  perfectDates,
 }: {
   activities: readonly Activity[];
   today: string;
   frozenDates: readonly string[];
+  /** Days every goal was done. They show in gold. */
+  perfectDates: readonly string[];
 }) {
   const weeks = useWeeks();
   const [selected, setSelected] = useState(today);
@@ -58,6 +61,7 @@ export default function HeatMap({
     return map;
   }, [activities]);
   const frozen = useMemo(() => new Set(frozenDates), [frozenDates]);
+  const perfect = useMemo(() => new Set(perfectDates), [perfectDates]);
 
   const start = addDays(mondayOf(today), -(weeks - 1) * 7);
   const columns = Array.from({ length: weeks }, (_, week) =>
@@ -95,9 +99,11 @@ export default function HeatMap({
                 if (date > today) return <span key={date} className="size-[var(--cell)]" />;
                 const count = byDay.get(date)?.length ?? 0;
                 const isFrozen = count === 0 && frozen.has(date);
+                const isPerfect = perfect.has(date);
+                const day = formatDay(date, { weekday: 'long', month: 'long', day: 'numeric' });
                 const description = isFrozen
-                  ? `${formatDay(date, { weekday: 'long', month: 'long', day: 'numeric' })}: covered by a streak freeze`
-                  : `${formatDay(date, { weekday: 'long', month: 'long', day: 'numeric' })}: ${plural(count, 'thing')}`;
+                  ? `${day}: covered by a streak freeze`
+                  : `${day}: ${plural(count, 'thing')}${isPerfect ? ', a perfect day' : ''}`;
                 return (
                   <button
                     key={date}
@@ -108,7 +114,7 @@ export default function HeatMap({
                     onClick={() => setSelected(date)}
                     onMouseEnter={() => setSelected(date)}
                     className={`size-[var(--cell)] rounded-[3px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
-                      isFrozen ? 'bg-sky-300 dark:bg-sky-700' : intensity(count)
+                      isPerfect ? 'bg-gold-400' : isFrozen ? 'bg-sky-300 dark:bg-sky-700' : intensity(count)
                     } ${selected === date ? 'ring-2 ring-stone-800 ring-offset-1 dark:ring-stone-100 dark:ring-offset-stone-900' : ''} ${
                       date === today ? 'outline-2 outline-offset-1 outline-gold-400' : ''
                     }`}
@@ -130,14 +136,21 @@ export default function HeatMap({
             <span key={count} className={`size-3 rounded-[3px] ${intensity(count)}`} />
           ))}
           More
+          <span className="ml-2 size-3 rounded-[3px] bg-gold-400" />
+          Perfect day
           <span className="ml-2 size-3 rounded-[3px] bg-sky-300 dark:bg-sky-700" />
           Freeze
         </span>
       </div>
 
       <div className="mt-4 rounded-xl bg-stone-100 px-4 py-3 dark:bg-stone-800/60" aria-live="polite">
-        <p className="font-extrabold">
+        <p className="flex items-center gap-2 font-extrabold">
           {selected === today ? 'Today' : formatDay(selected, { weekday: 'long', month: 'long', day: 'numeric' })}
+          {perfect.has(selected) && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-gold-100 px-2 py-0.5 text-xs text-gold-700 dark:bg-amber-950/60 dark:text-amber-200">
+              <StarIcon /> Perfect day
+            </span>
+          )}
         </p>
         {selectedActivities.length === 0 ? (
           <p className="text-sm text-stone-500 dark:text-stone-400">
@@ -155,7 +168,7 @@ export default function HeatMap({
           <ul className="mt-1 space-y-0.5 text-sm text-stone-600 dark:text-stone-300">
             {selectedActivities.map((activity) => (
               <li key={activity.id}>
-                {ACTIVITY_LABELS[activity.kind]}
+                {activityLabel(activity)}
                 {activity.jobApplication && ` · ${activity.jobApplication.company}`}
                 {activity.contact && ` · ${activity.contact.name}`}
               </li>

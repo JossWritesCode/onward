@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_06_000004) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_07_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -25,7 +25,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_000004) do
     t.boolean "automatic", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "custom_action_id"
     t.index ["contact_id"], name: "index_activities_on_contact_id"
+    t.index ["custom_action_id"], name: "index_activities_on_custom_action_id"
     t.index ["job_application_id", "kind"], name: "index_activities_once_per_application_and_kind", unique: true, where: "(automatic AND ((kind)::text = ANY ((ARRAY['application_sent'::character varying, 'interview'::character varying, 'offer'::character varying, 'rejection'::character varying])::text[])))"
     t.index ["job_application_id"], name: "index_activities_on_job_application_id"
     t.index ["user_id", "occurred_on"], name: "index_activities_on_user_id_and_occurred_on"
@@ -65,6 +67,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_000004) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_contacts_on_user_id"
+  end
+
+  create_table "custom_actions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "name", null: false
+    t.string "category", null: false
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_custom_actions_on_user_id"
+  end
+
+  create_table "daily_goals", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "kind", null: false
+    t.integer "target", default: 1, null: false
+    t.boolean "weekdays_only", default: false, null: false
+    t.bigint "custom_action_id"
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["custom_action_id"], name: "index_daily_goals_on_custom_action_id"
+    t.index ["custom_action_id"], name: "index_daily_goals_one_per_custom_action", unique: true, where: "(custom_action_id IS NOT NULL)"
+    t.index ["user_id", "kind"], name: "index_daily_goals_on_user_id_and_kind", unique: true, where: "((kind)::text <> 'custom'::text)"
+    t.index ["user_id"], name: "index_daily_goals_on_user_id"
   end
 
   create_table "integration_snapshots", force: :cascade do |t|
@@ -122,6 +149,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_000004) do
     t.index ["stage_id"], name: "index_job_applications_on_stage_id"
     t.index ["user_id", "status"], name: "index_job_applications_on_user_id_and_status"
     t.index ["user_id"], name: "index_job_applications_on_user_id"
+  end
+
+  create_table "nudge_dismissals", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "key", null: false
+    t.date "hidden_until"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "key"], name: "index_nudge_dismissals_on_user_id_and_key", unique: true
+  end
+
+  create_table "perfect_days", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.date "achieved_on", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "achieved_on"], name: "index_perfect_days_on_user_id_and_achieved_on", unique: true
   end
 
   create_table "practices", force: :cascade do |t|
@@ -204,11 +248,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_000004) do
   end
 
   add_foreign_key "activities", "contacts", on_delete: :nullify
+  add_foreign_key "activities", "custom_actions"
   add_foreign_key "activities", "job_applications", on_delete: :nullify
   add_foreign_key "activities", "users"
   add_foreign_key "checklist_items", "interview_rounds", on_delete: :cascade
   add_foreign_key "checklist_template_items", "users"
   add_foreign_key "contacts", "users"
+  add_foreign_key "custom_actions", "users"
+  add_foreign_key "daily_goals", "custom_actions"
+  add_foreign_key "daily_goals", "users"
   add_foreign_key "integration_snapshots", "users"
   add_foreign_key "interview_rounds", "job_applications", on_delete: :cascade
   add_foreign_key "interview_rounds", "stages", on_delete: :nullify
@@ -216,6 +264,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_000004) do
   add_foreign_key "job_application_contacts", "job_applications"
   add_foreign_key "job_applications", "stages"
   add_foreign_key "job_applications", "users"
+  add_foreign_key "nudge_dismissals", "users"
+  add_foreign_key "perfect_days", "users"
   add_foreign_key "practices", "questions", on_delete: :nullify
   add_foreign_key "practices", "stories", on_delete: :nullify
   add_foreign_key "practices", "users"

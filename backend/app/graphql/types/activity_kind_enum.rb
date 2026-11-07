@@ -15,5 +15,6 @@ module Types
     value "INTERVIEW_PREPPED", "Finished an interview round's prep checklist.", value: "interview_prepped"
     value "STUDY_SESSION", "Finished a study session.", value: "study_session"
     value "LEETCODE", "Submitted LeetCode solutions that day. Synced from LeetCode.", value: "leetcode"
+    value "CUSTOM", "Did one of your own custom actions. See customAction.", value: "custom"
   end
 end

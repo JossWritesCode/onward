@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import type { ProgressQuery } from '../../gql/graphql';
 import { DeleteActivityMutation } from '../../graphql/operations';
-import { ACTIVITY_LABELS, activitySource, CATEGORY_LABELS, formatDay } from '../../lib/activities';
+import { activityLabel, activitySource, CATEGORY_LABELS, formatDay } from '../../lib/activities';
 import { TrashIcon } from '../icons';
 import { Card } from '../ui';
 
@@ -13,7 +13,7 @@ const SHOWN = 12;
 /** Your latest activity, with a way to undo something logged by mistake. */
 export default function RecentActivity({ activities, today }: { activities: readonly Activity[]; today: string }) {
   const [showAll, setShowAll] = useState(false);
-  const [deleteActivity] = useMutation(DeleteActivityMutation, { refetchQueries: ['Progress', 'Streak'] });
+  const [deleteActivity] = useMutation(DeleteActivityMutation, { refetchQueries: ['Progress', 'Streak', 'Today'] });
   const shown = showAll ? activities.slice(0, 100) : activities.slice(0, SHOWN);
 
   return (
@@ -32,7 +32,7 @@ export default function RecentActivity({ activities, today }: { activities: read
               </span>
               <div className="min-w-0 flex-1">
                 <p className="font-bold">
-                  {ACTIVITY_LABELS[activity.kind]}
+                  {activityLabel(activity)}
                   {activity.jobApplication && (
                     <span className="font-normal text-stone-500 dark:text-stone-400"> · {activity.jobApplication.company}</span>
                   )}
@@ -49,7 +49,7 @@ export default function RecentActivity({ activities, today }: { activities: read
               {!activity.automatic && (
                 <button
                   type="button"
-                  aria-label={`Delete "${ACTIVITY_LABELS[activity.kind]}" from ${formatDay(activity.occurredOn)}`}
+                  aria-label={`Delete "${activityLabel(activity)}" from ${formatDay(activity.occurredOn)}`}
                   onClick={() => {
                     if (window.confirm('Delete this from your history?')) void deleteActivity({ variables: { id: activity.id } });
                   }}

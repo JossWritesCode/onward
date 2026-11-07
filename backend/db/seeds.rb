@@ -61,4 +61,11 @@ if user.job_applications.none?
   )
 end
 
+if user.custom_actions.none?
+  meetup = user.custom_actions.create!(name: "Went to a meetup", category: "networking")
+  user.daily_goals.create!(kind: "networking", target: 1)
+  user.daily_goals.create!(kind: "study", target: 25, weekdays_only: true)
+  user.activities.create!(kind: "custom", custom_action: meetup, occurred_on: 2.days.ago.to_date)
+end
+
 puts "Demo account ready: demo@onward.test / password123"

@@ -18,6 +18,15 @@ module Types
     field :delete_activity, mutation: Mutations::DeleteActivity
     field :update_time_zone, mutation: Mutations::UpdateTimeZone
 
+    field :create_daily_goal, mutation: Mutations::CreateDailyGoal
+    field :update_daily_goal, mutation: Mutations::UpdateDailyGoal
+    field :delete_daily_goal, mutation: Mutations::DeleteDailyGoal
+    field :reorder_daily_goals, mutation: Mutations::ReorderDailyGoals
+    field :create_custom_action, mutation: Mutations::CreateCustomAction
+    field :update_custom_action, mutation: Mutations::UpdateCustomAction
+    field :delete_custom_action, mutation: Mutations::DeleteCustomAction
+    field :dismiss_nudge, mutation: Mutations::DismissNudge
+
     field :create_story, mutation: Mutations::CreateStory
     field :update_story, mutation: Mutations::UpdateStory
     field :delete_story, mutation: Mutations::DeleteStory

@@ -16,6 +16,11 @@ class User < ApplicationRecord
   has_many :study_sessions, dependent: :delete_all
   has_many :interview_rounds, through: :job_applications
   has_many :integration_snapshots, dependent: :delete_all
+  # Goals before custom actions, since goals can point at them.
+  has_many :daily_goals, -> { order(:position, :id) }, dependent: :delete_all
+  has_many :custom_actions, dependent: :delete_all
+  has_many :perfect_days, dependent: :delete_all
+  has_many :nudge_dismissals, dependent: :delete_all
 
   # A personal access token with no permissions, used only to read your public
   # GitHub contribution calendar. Encrypted in the database.
@@ -60,12 +65,18 @@ class User < ApplicationRecord
     Time.current.in_time_zone(time_zone_object).to_date
   end
 
+  # The date a moment in time fell on, on this person's clock.
+  def local_date(time)
+    time.in_time_zone(time_zone_object).to_date
+  end
+
   private
 
   def set_up_defaults
     Stage.create_defaults_for(self)
     Question::STARTERS.each { |prompt| questions.create!(prompt:) }
     ChecklistTemplateItem::STARTERS.each_with_index { |text, position| checklist_template_items.create!(text:, position:) }
+    daily_goals.create!(kind: "applications", target: 1)
   end
 
   def time_zone_object

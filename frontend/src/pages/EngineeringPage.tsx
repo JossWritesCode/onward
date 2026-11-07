@@ -155,8 +155,8 @@ function LeetcodeCard({ leetcode, today }: { leetcode: Engineering['leetcode']; 
           </div>
           <CalendarHeatMap days={leetcode.days} today={today} scale="amber" unit="submission" />
           <p className="mt-3 text-xs text-stone-500 dark:text-stone-400">
-            Any day with a submission counts toward your Onward streak. LeetCode's days run on UTC, so late-night
-            submissions may land on the next day.
+            Any day with a submission counts toward your Onward streak, on your own clock. This calendar is
+            LeetCode's, which runs on UTC, so a late-night submission can show up here on the next day.
           </p>
         </>
       )}

@@ -69,6 +69,10 @@ const WIN_MESSAGES: Record<string, readonly (readonly [string, string])[]> = {
     ['Materials tailored', 'A tailored resume stands out. That effort counts.'],
     ['Looking sharp', 'Putting your best foot forward, one application at a time.'],
   ],
+  CUSTOM: [
+    ['Logged', 'Every step counts, including the ones only you know about.'],
+    ['Nice work', 'You showed up for your job hunt today.'],
+  ],
 };
 
 function pick<T>(items: readonly T[]): T {
@@ -177,4 +181,18 @@ export function celebrateStudy(minutes: number, topic: string) {
   playSound('applied');
   burst({ x: window.innerWidth / 2, y: window.innerHeight / 3, count: 60, spread: 80, power: 12 });
   showToast('celebrate', 'Session complete', `${minutes} focused minutes on ${topic}. That adds up.`);
+}
+
+const PERFECT_MESSAGES = [
+  ['Perfect day!', 'Every goal done. That is exactly how it adds up.'],
+  ['You did it all', 'Every goal checked off. Take a moment to enjoy that.'],
+  ['Perfect day', 'You set the bar and cleared it. See you tomorrow.'],
+] as const;
+
+/** Finishing every one of today's goals. */
+export function celebratePerfectDay(streak: number) {
+  playSound('interview');
+  burst({ x: window.innerWidth / 2, y: window.innerHeight / 3, count: 140, spread: 130, power: 16 });
+  const [title, body] = pick(PERFECT_MESSAGES);
+  showToast('big', title, streak > 1 ? `${body} That's ${streak} perfect days in a row.` : body);
 }

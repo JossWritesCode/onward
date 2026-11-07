@@ -3,14 +3,16 @@ import { useQuery } from '@apollo/client';
 import { NavLink } from 'react-router';
 import { StreakQuery } from '../graphql/operations';
 import { STREAK_MILESTONES } from '../lib/activities';
-import { celebrateStreakMilestone } from '../lib/celebrate';
+import { celebratePerfectDay, celebrateStreakMilestone } from '../lib/celebrate';
 import { FlameIcon } from './icons';
 
 /** Your streak in the header on every page. Gold once you've done something today. */
 export default function StreakFlame() {
   const { data } = useQuery(StreakQuery);
   const streak = data?.progress.streak;
+  const perfectDay = data?.progress.perfectDay;
   const previous = useRef<number | null>(null);
+  const wasPerfect = useRef<boolean | null>(null);
   const [bump, setBump] = useState(false);
 
   // Celebrate when the streak grows into a milestone, and give the flame a little hop.
@@ -25,6 +27,14 @@ export default function StreakFlame() {
     if (STREAK_MILESTONES.includes(streak.current)) celebrateStreakMilestone(streak.current);
     return () => clearTimeout(timer);
   }, [streak]);
+
+  // Celebrate finishing the last of today's goals, wherever in the app it happens.
+  useEffect(() => {
+    if (!perfectDay) return;
+    const before = wasPerfect.current;
+    wasPerfect.current = perfectDay.today;
+    if (before === false && perfectDay.today) celebratePerfectDay(perfectDay.streak);
+  }, [perfectDay]);
 
   const current = streak?.current ?? 0;
   const lit = streak?.activeToday ?? false;

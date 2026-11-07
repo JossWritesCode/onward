@@ -5,6 +5,7 @@ import { useView } from '../lib/preferences';
 import ApplicationList from '../components/ApplicationList';
 import Board from '../components/Board';
 import QuoteBanner from '../components/QuoteBanner';
+import TodayStrip from '../components/today/TodayStrip';
 import { BoardIcon, BriefcaseIcon, ColumnsIcon, ListIcon, PlusIcon, SparklesIcon } from '../components/icons';
 import { ButtonLink, EmptyState, ErrorBanner, PageHeader, Spinner } from '../components/ui';
 
@@ -47,6 +48,8 @@ export default function ApplicationsPage() {
         }
         action={total > 0 ? headerActions : undefined}
       />
+
+      <TodayStrip />
 
       {error && <ErrorBanner messages={[error.message]} />}
       {loading && !data && <Spinner />}

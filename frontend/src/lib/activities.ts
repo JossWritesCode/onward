@@ -14,7 +14,14 @@ export const ACTIVITY_LABELS: Record<ActivityKind, string> = {
   INTERVIEW_PREPPED: 'Finished prepping for an interview',
   STUDY_SESSION: 'Study session',
   LEETCODE: 'Practiced on LeetCode',
+  CUSTOM: 'Custom action',
 };
+
+/** An activity's label, using the action's own name for custom actions. */
+export function activityLabel(activity: { kind: ActivityKind; customAction?: { name: string } | null }): string {
+  if (activity.kind === 'CUSTOM' && activity.customAction) return activity.customAction.name;
+  return ACTIVITY_LABELS[activity.kind];
+}
 
 /** Where an automatically recorded activity came from, for the activity list. */
 export function activitySource(kind: ActivityKind): string {

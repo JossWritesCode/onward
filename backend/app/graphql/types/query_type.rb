@@ -13,6 +13,10 @@ module Types
 
     field :progress, Types::ProgressType, null: false, description: "Your streak and activity history."
 
+    field :today, Types::TodayType, null: false, description: "Today's goals and nudges."
+    field :daily_goals, [ Types::DailyGoalType ], null: false, description: "Your daily goals, in your order."
+    field :custom_actions, [ Types::CustomActionType ], null: false, description: "Your custom actions, alphabetically."
+
     field :stages, [ Types::StageType ], null: false, description: "Your board columns, left to right."
 
     field :engineering, Types::EngineeringType, null: false,
@@ -50,6 +54,20 @@ module Types
 
     def progress
       current_user!
+    end
+
+    def today
+      goals = DailyGoals.for(current_user!)
+      goals.record!
+      goals
+    end
+
+    def daily_goals
+      current_user!.daily_goals
+    end
+
+    def custom_actions
+      current_user!.custom_actions.active.order(Arel.sql("LOWER(name)"))
     end
 
     def stages

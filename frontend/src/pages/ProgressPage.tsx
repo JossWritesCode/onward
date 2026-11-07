@@ -2,11 +2,12 @@ import { useQuery } from '@apollo/client';
 import { ProgressQuery } from '../graphql/operations';
 import { addDays, plural } from '../lib/activities';
 import { todayIso } from '../lib/format';
+import DailyGoalsCard from '../components/progress/DailyGoalsCard';
 import HeatMap from '../components/progress/HeatMap';
 import LogWin from '../components/progress/LogWin';
 import RecentActivity from '../components/progress/RecentActivity';
 import WeeklyRecap from '../components/progress/WeeklyRecap';
-import { FlameIcon, SnowflakeIcon } from '../components/icons';
+import { FlameIcon, SnowflakeIcon, StarIcon } from '../components/icons';
 import { Card, ErrorBanner, PageHeader, Spinner } from '../components/ui';
 
 export default function ProgressPage() {
@@ -17,7 +18,7 @@ export default function ProgressPage() {
   if (loading && !data) return <Spinner />;
   if (!data) return null;
 
-  const { today, streak, activities } = data.progress;
+  const { today, streak, activities, perfectDay, perfectDays } = data.progress;
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -31,15 +32,18 @@ export default function ProgressPage() {
               longest={streak.longest}
               freezes={streak.freezes}
               activeToday={streak.activeToday}
+              perfectStreak={perfectDay.streak}
+              perfectToday={perfectDay.today}
             />
+            <DailyGoalsCard />
             <LogWin />
           </div>
-          <WeeklyRecap activities={activities} today={today} streak={streak.current} />
+          <WeeklyRecap activities={activities} today={today} streak={streak.current} perfectDays={perfectDays} />
         </div>
 
         <Card className="p-5">
           <h2 className="mb-3 text-xl font-black">Your activity</h2>
-          <HeatMap activities={activities} today={today} frozenDates={streak.frozenDates} />
+          <HeatMap activities={activities} today={today} frozenDates={streak.frozenDates} perfectDates={perfectDays} />
         </Card>
 
         <RecentActivity activities={activities} today={today} />
@@ -53,11 +57,15 @@ function StreakCard({
   longest,
   freezes,
   activeToday,
+  perfectStreak,
+  perfectToday,
 }: {
   current: number;
   longest: number;
   freezes: number;
   activeToday: boolean;
+  perfectStreak: number;
+  perfectToday: boolean;
 }) {
   const message = activeToday
     ? "You showed up today. See you tomorrow."
@@ -82,6 +90,13 @@ function StreakCard({
         <p className="text-3xl font-black tabular-nums">{plural(current, 'day')}</p>
         <p className="text-stone-600 dark:text-stone-300">{message}</p>
         <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">Longest streak: {plural(longest, 'day')}</p>
+        {(perfectStreak > 0 || perfectToday) && (
+          <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-gold-100 px-3 py-1 text-sm font-extrabold text-gold-700 dark:bg-amber-950/50 dark:text-amber-200">
+            <StarIcon className="text-gold-500" />
+            {perfectStreak === 1 ? '1 perfect day' : `${perfectStreak} perfect days in a row`}
+            {perfectToday && ', including today'}
+          </p>
+        )}
       </div>
       <div
         className="flex w-full items-center gap-2 sm:block sm:w-auto sm:text-center"
