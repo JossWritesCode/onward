@@ -12,16 +12,18 @@ import {
   CreateJobApplicationMutation,
   DeleteJobApplicationMutation,
   JobApplicationQuery,
+  PostingUrlsQuery,
   StagesQuery,
   UpdateJobApplicationMutation,
 } from '../graphql/operations';
+import { importedJobFromHash, postingKey, type ImportedJob } from '../lib/bookmarklet';
 import { celebrateMove } from '../lib/celebrate';
 import { fieldError, generalErrors, type UserError } from '../lib/errors';
 import { blankToNull, formatDate } from '../lib/format';
 import { WORK_ARRANGEMENTS, WORK_ARRANGEMENT_LABELS } from '../lib/status';
 import LinkPicker from '../components/LinkPicker';
 import InterviewRoundCard from '../components/prep/InterviewRoundCard';
-import { ArrowLeftIcon, ExternalLinkIcon, TrashIcon } from '../components/icons';
+import { ArrowLeftIcon, BookmarkIcon, ExternalLinkIcon, TrashIcon } from '../components/icons';
 import { Button, Card, ErrorBanner, Field, Input, Select, Spinner, Textarea } from '../components/ui';
 
 type FormState = {
@@ -120,12 +122,43 @@ export default function ApplicationFormPage() {
   return <ApplicationForm key={id} existing={data.jobApplication} />;
 }
 
+/** Form fields from a job the "Save to Onward" bookmark read. */
+function formFromImport(job: ImportedJob): FormState {
+  return {
+    ...EMPTY_FORM,
+    company: job.company?.slice(0, 200) ?? '',
+    role: job.role?.slice(0, 200) ?? '',
+    postingUrl: job.postingUrl ?? '',
+    salaryRange: job.salaryRange ?? '',
+    location: job.location ?? '',
+    workArrangement: job.workArrangement && WORK_ARRANGEMENTS.includes(job.workArrangement) ? job.workArrangement : '',
+    jobDescription: job.jobDescription ?? '',
+  };
+}
+
 function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  // The "Save to Onward" bookmark passes the job in the address after #import=.
+  const [imported] = useState(() => (existing ? null : importedJobFromHash(window.location.hash)));
   const [form, setForm] = useState<FormState>(
-    existing ? formFrom(existing) : { ...EMPTY_FORM, stageId: searchParams.get('stage') ?? '' },
+    existing
+      ? formFrom(existing)
+      : imported
+        ? formFromImport(imported)
+        : { ...EMPTY_FORM, stageId: searchParams.get('stage') ?? '' },
   );
+
+  // Tidy the address so a reload doesn't fill the form in again.
+  useEffect(() => {
+    if (imported) window.history.replaceState(window.history.state, '', window.location.pathname + window.location.search);
+  }, [imported]);
+
+  const { data: postingsData } = useQuery(PostingUrlsQuery, { skip: !imported });
+  const importedKey = postingKey(imported?.postingUrl);
+  const duplicate = importedKey
+    ? postingsData?.jobApplications.find((application) => postingKey(application.postingUrl) === importedKey)
+    : undefined;
   const [errors, setErrors] = useState<UserError[]>([]);
   const { data: contactsData } = useQuery(ContactsQuery);
   const { data: stagesData } = useQuery(StagesQuery);
@@ -220,6 +253,14 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
             {existing
               ? `${existing.role} · last updated ${formatDate(existing.updatedAt.slice(0, 10))}`
               : 'Saved for later or already sent, it all counts.'}
+            {!existing && !imported && (
+              <>
+                {' '}
+                <Link to="/account" className="font-bold text-brand-600 hover:underline dark:text-brand-300">
+                  Save jobs from LinkedIn in one click
+                </Link>
+              </>
+            )}
           </p>
         </div>
         {existing?.postingUrl && (
@@ -249,6 +290,19 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
 
       <form onSubmit={handleSubmit} noValidate className="space-y-5">
         <ErrorBanner messages={generalErrors(errors, FIELDS)} />
+
+        {imported && (
+          <ImportBanner
+            source={imported.source}
+            missing={[!form.company && 'company', !form.role && 'job title'].filter((field): field is string => Boolean(field))}
+            duplicate={duplicate}
+            applied={selectedStage?.kind === 'APPLIED'}
+            onAppliedChange={(applied) => {
+              const target = stages.find((stage) => stage.kind === (applied ? 'APPLIED' : 'SAVED'));
+              if (target) set('stageId', target.id);
+            }}
+          />
+        )}
 
         <Card className="grid gap-4 p-5 sm:grid-cols-2">
           <Field label="Company" htmlFor="company" required error={fieldError(errors, 'company')}>
@@ -391,6 +445,58 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
           )}
         </div>
       </form>
+    </div>
+  );
+}
+
+function ImportBanner({
+  source,
+  missing,
+  duplicate,
+  applied,
+  onAppliedChange,
+}: {
+  source?: string;
+  missing: string[];
+  duplicate?: { id: string; company: string; role: string };
+  applied: boolean;
+  onAppliedChange: (applied: boolean) => void;
+}) {
+  if (duplicate) {
+    return (
+      <div className="rounded-2xl border-2 border-gold-300 bg-gold-100/60 px-4 py-3 dark:border-amber-800 dark:bg-amber-950/30">
+        <p className="font-extrabold">You've already saved this job.</p>
+        <p className="text-sm text-stone-600 dark:text-stone-300">
+          {duplicate.role} at {duplicate.company} is on your board.{' '}
+          <Link to={`/applications/${duplicate.id}`} className="font-extrabold text-brand-600 hover:underline dark:text-brand-300">
+            Open it
+          </Link>{' '}
+          or save this one anyway.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border-2 border-brand-200 bg-brand-50 px-4 py-3 dark:border-brand-900 dark:bg-brand-950/50">
+      <BookmarkIcon className="shrink-0 text-xl text-brand-500" />
+      <div className="min-w-0 flex-1 basis-60">
+        <p className="font-extrabold">Filled in from {source ?? 'the job page'}</p>
+        <p className="text-sm text-stone-600 dark:text-stone-300">
+          {missing.length > 0
+            ? `Couldn't find the ${missing.join(' or ')}, so add ${missing.length === 1 ? 'it' : 'them'} below. Then check the rest and save.`
+            : 'Check the details, then save.'}
+        </p>
+      </div>
+      <label className="flex items-center gap-2 text-sm font-bold">
+        <input
+          type="checkbox"
+          checked={applied}
+          onChange={(e) => onAppliedChange(e.target.checked)}
+          className="size-4 accent-brand-500"
+        />
+        I already applied
+      </label>
     </div>
   );
 }

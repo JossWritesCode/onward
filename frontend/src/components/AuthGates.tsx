@@ -10,7 +10,10 @@ export function RequireAuth() {
 
   if (loading && !data) return <Spinner />;
   if (error) return <ServerProblem message={error.message} />;
-  if (!data?.me) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  // Keep the whole address, including a job from the "Save to Onward" bookmark.
+  if (!data?.me) {
+    return <Navigate to="/login" replace state={{ from: location.pathname + location.search + location.hash }} />;
+  }
 
   return <Outlet />;
 }

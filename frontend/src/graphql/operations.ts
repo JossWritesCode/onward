@@ -1155,3 +1155,15 @@ export const DeleteAccountMutation = graphql(`
     }
   }
 `);
+
+// The "Save to Onward" bookmark checks these to spot a job you've already saved.
+export const PostingUrlsQuery = graphql(`
+  query PostingUrls {
+    jobApplications {
+      id
+      company
+      role
+      postingUrl
+    }
+  }
+`);

@@ -6,6 +6,7 @@ import { showToast } from '../lib/celebrate';
 import { formatDay } from '../lib/activities';
 import { CopyIcon, FileTextIcon, PlusIcon, TrashIcon, UsersIcon } from '../components/icons';
 import { Button, Card, ErrorBanner, Field, Input, PageHeader } from '../components/ui';
+import SaveToOnwardCard from '../components/SaveToOnwardCard';
 
 export default function AccountPage() {
   const { data } = useQuery(MeQuery, { fetchPolicy: 'cache-first' });
@@ -15,6 +16,7 @@ export default function AccountPage() {
     <div className="mx-auto max-w-2xl">
       <PageHeader title="Your account" subtitle={me?.emailAddress} />
       <div className="space-y-5">
+        <SaveToOnwardCard />
         {me?.admin && <Invites />}
         <YourData />
         <DeleteAccount />

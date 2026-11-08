@@ -59,4 +59,5 @@ databases:
   - name: onward-db
     databaseName: onward
     plan: 0.1c-256mb
+    # Storage can grow later but never shrink, so start small ($0.30/GB/month).
     diskSizeGB: 1

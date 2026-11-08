@@ -59,6 +59,7 @@ Onward is being built in milestones. So far:
 - An Account page (click your email in the header): download all your data as JSON, delete your account, and read what Onward stores.
 - Invite codes, so friends can join a hosted Onward without opening sign-ups to everyone.
 - "Forgot your password?" with an emailed reset link.
+- A "Save to Onward" bookmark (on the Account page): click it on a LinkedIn, Indeed, or company job posting and Onward opens with the company, title, location, salary, work arrangement, link, and description filled in. It warns you if you've already saved that job.
 - Ready to host on [Render](https://render.com): Rails serves the API and the React app together. See [Putting Onward online](#putting-onward-online).
 
 ## Tech stack
@@ -234,6 +235,14 @@ Onward checks LeetCode and GitHub at most every 30 minutes. The Refresh button o
 Admins make invite links on the Account page. Each link works once.
 
 **Password reset emails.** On your own computer, Onward doesn't send real email. It prints each email, including the reset link, in the terminal running `bin/rails server`. To send real email, set the SMTP settings described in [Sending email with Gmail](#sending-email-with-gmail).
+
+## Saving jobs with the bookmark
+
+On the Account page, drag **Save to Onward** to your browser's bookmarks bar. On a job posting, click it: a new Onward tab opens with the job filled in, and nothing is saved until you click **Add application**.
+
+It reads the page in your own browser, so it works on LinkedIn and Indeed while you're signed in to them, and nothing about the page is sent anywhere except into your new Onward tab. On LinkedIn and Indeed it reads what's on screen. Elsewhere it uses the job details many sites include for Google (common on company career pages), and falls back to the page title.
+
+If LinkedIn or Indeed change how their pages are built, some fields may come up empty until the bookmark is updated. The code lives in `frontend/src/lib/bookmarklet.ts`; after an update, drag the button to your bookmarks bar again to replace the old one.
 
 ## Putting Onward online
 

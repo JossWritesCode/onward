@@ -339,3 +339,9 @@ export const UserIcon = (props: IconProps) => (
     <path d="M4.5 20.5a7.5 7.5 0 0 1 15 0" />
   </Icon>
 );
+
+export const BookmarkIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M6.5 3.5h11v17L12 16.5l-5.5 4Z" />
+  </Icon>
+);
