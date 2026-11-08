@@ -59,3 +59,4 @@ databases:
   - name: onward-db
     databaseName: onward
     plan: 0.1c-256mb
+    diskSizeGB: 1
