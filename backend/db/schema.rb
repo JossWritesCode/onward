@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_08_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_09_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -159,7 +159,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_08_000001) do
     t.datetime "updated_at", null: false
     t.bigint "stage_id", null: false
     t.integer "position", default: 0, null: false
+    t.date "follow_up_on"
+    t.integer "follow_ups_sent", default: 0, null: false
     t.index ["stage_id"], name: "index_job_applications_on_stage_id"
+    t.index ["user_id", "follow_up_on"], name: "index_job_applications_on_user_id_and_follow_up_on"
     t.index ["user_id", "status"], name: "index_job_applications_on_user_id_and_status"
     t.index ["user_id"], name: "index_job_applications_on_user_id"
   end

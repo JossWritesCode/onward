@@ -9,6 +9,10 @@ class InterviewRound < ApplicationRecord
 
   delegate :user, to: :job_application
 
+  # Setting the date of the round a card is in moves its thank-you note to the
+  # day after the interview, until the thank-you is sent.
+  after_update :reschedule_thank_you, if: :saved_change_to_scheduled_at?
+
   # Called when an application lands in an interview column. Each column gets
   # its own round, created once, with a fresh copy of your checklist template.
   def self.start_for!(job_application)
@@ -35,5 +39,15 @@ class InterviewRound < ApplicationRecord
 
     update!(prepped_at: Time.current)
     user.activities.create!(kind: "interview_prepped", automatic: true, job_application:)
+  end
+
+  private
+
+  def reschedule_thank_you
+    application = job_application
+    return unless scheduled_at&.future?
+    return unless application.status_interviewing? && application.stage_id == stage_id && application.follow_ups_sent.zero?
+
+    application.update_columns(follow_up_on: user.local_date(scheduled_at) + 1, updated_at: Time.current)
   end
 end

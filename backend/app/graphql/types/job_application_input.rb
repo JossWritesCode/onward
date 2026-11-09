@@ -7,6 +7,8 @@ module Types
     argument :stage_id, ID, required: false,
       description: "The board column to put the application in. Its status follows the column's kind."
     argument :date_applied, GraphQL::Types::ISO8601Date, required: false
+    argument :follow_up_on, GraphQL::Types::ISO8601Date, required: false,
+      description: "When to follow up next, or null to clear it. A date set by hand stays until the card moves or a follow-up is logged."
     argument :posting_url, String, required: false
     argument :salary_range, String, required: false
     argument :location, String, required: false

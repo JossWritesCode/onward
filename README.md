@@ -52,7 +52,7 @@ Onward is being built in milestones. So far:
 - A Today strip above the board with your goals and up to 3 nudges. It shrinks to one line once every goal is done.
 - Perfect days: finishing every goal gets a celebration, a gold square on the heat map, and a perfect-day streak next to your regular streak. Days with no goals (like weekends, for weekday goals) don't break it. Your regular streak still counts any action at all.
 - Custom actions, like "Went to a meetup," logged from "Log a win" and usable as goals. Deleting one keeps it in your history.
-- Nudges for interviews in the next 2 days with an unfinished checklist, applications with no change in 2 weeks, and people you haven't talked to in 3 weeks. Act on one right from the strip ("I followed up"), snooze it for a week, or dismiss it.
+- Nudges for interviews in the next 2 days with an unfinished checklist, follow-ups that are due (see **Follow-up dates** below), applications with no change in 2 weeks (unless they have a follow-up date), and people you haven't talked to in 3 weeks. Act on one right from the strip ("I followed up"), snooze it, or dismiss it. Interview prep comes first, then follow-ups (oldest first), then a mix of quiet applications and people, up to 3 at a time.
 
 **Milestone 4: polish, accounts, and going online**
 - Onward's own dropdown arrows, the pointing-hand cursor on everything clickable, a shuffle button for the daily quote, and a smooth animation when you hide it.
@@ -61,6 +61,17 @@ Onward is being built in milestones. So far:
 - "Forgot your password?" with an emailed reset link.
 - A "Save to Onward" bookmark (on the Account page): click it on a LinkedIn, Indeed, or company job posting and Onward opens with the company, title, location, salary, work arrangement, link, and description filled in. It warns you if you've already saved that job.
 - Ready to host on [Render](https://render.com): Rails serves the API and the React app together. See [Putting Onward online](#putting-onward-online).
+
+**Follow-up dates**
+- Cards in applied and interview columns get a date to follow up, shown as a "Follow up Nov 16" tag on the board and in the phone list. It's grey while it's coming up and violet on the day and while it's overdue.
+- Onward picks the dates for you, counting from the day you log each follow-up, on your own clock:
+  - Applied: follow up a week after the card lands there, once more a week later, then a week after that it asks "Time to let this one go?"
+  - Interviewing: a thank-you note tomorrow (or the day after the interview, once that round has a date), a check-in a week later and another a week after that, then "Send a last gracious note?", then "Time to let this one go?"
+  - Moving to a later interview column starts the interview steps over. Moving to offer, rejected, or back to saved clears the date.
+- Change or clear the date on the application's form. A date you set yourself stays until the card moves or you log a follow-up.
+- When a date comes up, the Today strip asks you to follow up, send a thank-you, check in, or send a last note. "I followed up" logs it (and so does logging a follow-up from "Log a win" with the application picked), and the next date is set for you. "Remind me in 3 days" moves the date, and dismissing clears it.
+- "Let it go" moves a card that never wrote back to your first rejected column, with a kinder message than a rejection. It counts as closure, like any other move to rejected. "Keep it open" clears the date instead.
+- Applications from before this feature start without a date. They get one the next time they move or you log a follow-up.
 
 ## Tech stack
 
@@ -206,7 +217,7 @@ bin/rails server
 
 Then, in a second terminal, start the frontend as usual with `npm run dev` in `frontend/`.
 
-Migrations update your existing data. For example, the board's migration gives everyone the default columns and puts each existing application in the column that matches its status.
+Migrations update your existing data. For example, the board's migration gives everyone the default columns and puts each existing application in the column that matches its status. Some leave old data as it was: applications from before follow-up dates start without one.
 
 ## Connecting LeetCode and GitHub
 

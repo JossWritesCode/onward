@@ -21,6 +21,14 @@ module Types
     field :interview_rounds, [ Types::InterviewRoundType ], null: false, description: "Oldest first."
     field :next_interview_at, GraphQL::Types::ISO8601DateTime, null: true,
       description: "The soonest scheduled interview that hasn't happened yet."
+    field :follow_up_on, GraphQL::Types::ISO8601Date, null: true,
+      description: "When to follow up next. Set when the card moves or a follow-up is logged, or by hand."
+    field :follow_ups_sent, Int, null: false,
+      description: "Follow-ups logged since the card landed in its current kind of column or interview round."
+    field :follow_up_step, Types::FollowUpStepEnum, null: true,
+      description: "What the next follow-up should be. Null for cards that don't get follow-ups."
+    field :follow_up_due, Boolean, null: false,
+      description: "Whether followUpOn is today or past, on your clock."
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
 
@@ -30,6 +38,10 @@ module Types
 
     def interview_rounds
       object.interview_rounds
+    end
+
+    def follow_up_due
+      object.follow_up_due?((context[:current_user] || object.user).today)
     end
 
     def contacts

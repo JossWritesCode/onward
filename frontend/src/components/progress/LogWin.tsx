@@ -39,7 +39,7 @@ export default function LogWin() {
   const { data: contactsData } = useQuery(ContactsQuery);
   const { data: customData } = useQuery(CustomActionsQuery);
   const [logActivity, { loading }] = useMutation(LogActivityMutation, {
-    refetchQueries: ['Progress', 'Streak', 'Contacts', 'Today'],
+    refetchQueries: ['Progress', 'Streak', 'Contacts', 'Today', 'Board'],
   });
 
   const options: Option[] = [

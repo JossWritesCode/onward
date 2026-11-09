@@ -76,6 +76,8 @@ export const BoardQuery = graphql(`
         position
         updatedAt
         nextInterviewAt
+        followUpOn
+        followUpDue
         contacts {
           id
           name
@@ -104,6 +106,8 @@ export const MoveJobApplicationMutation = graphql(`
         status
         position
         dateApplied
+        followUpOn
+        followUpDue
         stage {
           id
         }
@@ -200,6 +204,8 @@ export const JobApplicationQuery = graphql(`
       role
       status
       dateApplied
+      followUpOn
+      followUpStep
       postingUrl
       salaryRange
       location
@@ -260,6 +266,9 @@ export const UpdateJobApplicationMutation = graphql(`
         role
         status
         dateApplied
+        followUpOn
+        followUpDue
+        followUpStep
         postingUrl
         salaryRange
         location
@@ -290,6 +299,28 @@ export const DeleteJobApplicationMutation = graphql(`
   mutation DeleteJobApplication($id: ID!) {
     deleteJobApplication(id: $id) {
       id
+    }
+  }
+`);
+
+// Moves a card that's gone quiet to the first rejected column.
+export const LetGoOfJobApplicationMutation = graphql(`
+  mutation LetGoOfJobApplication($id: ID!) {
+    letGoOfJobApplication(id: $id) {
+      jobApplication {
+        id
+        status
+        followUpOn
+        followUpDue
+        followUpStep
+        stage {
+          id
+        }
+      }
+      errors {
+        field
+        message
+      }
     }
   }
 `);
@@ -914,6 +945,8 @@ export const TodayQuery = graphql(`
           id
           company
           role
+          followUpOn
+          followUpStep
         }
         contact {
           id

@@ -13,6 +13,7 @@ module Types
     field :update_job_application, mutation: Mutations::UpdateJobApplication
     field :delete_job_application, mutation: Mutations::DeleteJobApplication
     field :move_job_application, mutation: Mutations::MoveJobApplication
+    field :let_go_of_job_application, mutation: Mutations::LetGoOfJobApplication
 
     field :create_stage, mutation: Mutations::CreateStage
     field :update_stage, mutation: Mutations::UpdateStage

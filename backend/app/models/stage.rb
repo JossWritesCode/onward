@@ -44,7 +44,10 @@ class Stage < ApplicationRecord
 
   # Changing a column's kind (say, "Interviewing" to "Offer") updates its cards.
   def sync_application_statuses
-    job_applications.update_all(status: kind, updated_at: Time.current)
+    changes = { status: kind, updated_at: Time.current }
+    # Cards that no longer get follow-ups lose their dates.
+    changes.merge!(follow_up_on: nil, follow_ups_sent: 0) unless JobApplication::FOLLOW_UP_STATUSES.include?(kind)
+    job_applications.update_all(changes)
   end
 
   def within_stage_limit

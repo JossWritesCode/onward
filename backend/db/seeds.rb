@@ -24,7 +24,9 @@ if user.job_applications.none?
     last_contacted_on: 5.days.ago.to_date
   )
 
-  user.job_applications.create!(
+  today = user.today
+
+  brightline = user.job_applications.create!(
     company: "Brightline",
     role: "Frontend Developer",
     status: "applied",
@@ -35,7 +37,7 @@ if user.job_applications.none?
     resume_version: "Frontend v3",
     contacts: [ priya ]
   )
-  user.job_applications.create!(
+  northwind = user.job_applications.create!(
     company: "Northwind Labs",
     role: "Full Stack Engineer",
     status: "interviewing",
@@ -44,6 +46,13 @@ if user.job_applications.none?
     posting_url: "https://example.com/jobs/full-stack",
     notes: "Technical interview next Thursday.",
     contacts: [ sam ]
+  )
+  copperleaf = user.job_applications.create!(
+    company: "Copperleaf",
+    role: "UI Engineer",
+    status: "applied",
+    date_applied: 4.weeks.ago.to_date,
+    work_arrangement: "remote"
   )
   user.job_applications.create!(
     company: "Maple & Co",
@@ -59,6 +68,12 @@ if user.job_applications.none?
     date_applied: 6.weeks.ago.to_date,
     work_arrangement: "remote"
   )
+
+  # Follow-up dates in a few states, so the board and the Today strip have
+  # something to show: one due now, one coming up, and one to maybe let go.
+  brightline.update_columns(follow_up_on: today - 3, follow_ups_sent: 0)
+  northwind.update_columns(follow_up_on: today + 4, follow_ups_sent: 1)
+  copperleaf.update_columns(follow_up_on: today, follow_ups_sent: 2)
 end
 
 if user.custom_actions.none?

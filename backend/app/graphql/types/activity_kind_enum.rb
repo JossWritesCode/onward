@@ -6,7 +6,7 @@ module Types
     value "APPLICATION_SENT", "Sent an application. Recorded from the board.", value: "application_sent"
     value "INTERVIEW", "Landed an interview. Recorded from the board.", value: "interview"
     value "OFFER", "Got an offer. Recorded from the board.", value: "offer"
-    value "REJECTION", "Heard back with a no. Recorded from the board.", value: "rejection"
+    value "REJECTION", "Closure on an application: heard back with a no, or let it go. Recorded from the board.", value: "rejection"
     value "NETWORKING_MESSAGE", "Sent a networking message.", value: "networking_message"
     value "COFFEE_CHAT", "Had a coffee chat or informational interview.", value: "coffee_chat"
     value "FOLLOW_UP", "Followed up on an application or conversation.", value: "follow_up"

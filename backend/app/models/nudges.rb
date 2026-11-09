@@ -2,8 +2,13 @@
 # time from your board, contacts, and interview prep. Up to 3 at a time.
 #
 # - interview_prep: an interview in the next 2 days whose checklist isn't done
-# - quiet_application: an application with no change in 2 weeks
+# - follow_up: an application whose follow-up date is today or past
+# - quiet_application: an application with no change in 2 weeks (and no
+#   follow-up date, since those get follow_up nudges instead)
 # - quiet_contact: someone you haven't talked to in 3 weeks
+#
+# They come in that order, with oldest follow-ups first and quiet
+# applications and people mixed together.
 #
 # Each nudge has a key that includes the date it's about, so dismissing one
 # hides it until things change. If you follow up and it goes quiet again
@@ -30,12 +35,13 @@ class Nudges
     visible = ->(nudges) { nudges.reject { |nudge| hidden.include?(nudge.key) } }
 
     prep = visible.call(interview_prep)
+    due = visible.call(follow_ups)
     applications = visible.call(quiet_applications)
     contacts = visible.call(quiet_contacts)
 
-    # Interviews come first, then a mix of applications and people.
+    # Interviews come first, then follow-ups, then a mix of applications and people.
     mixed = applications.zip(contacts).flatten.compact + contacts.drop(applications.size)
-    (prep + mixed).first(LIMIT)
+    (prep + due + mixed).first(LIMIT)
   end
 
   private
@@ -53,8 +59,18 @@ class Nudges
       end
   end
 
+  def follow_ups
+    @user.job_applications
+      .where(status: JobApplication::FOLLOW_UP_STATUSES, follow_up_on: ..@today)
+      .order(:follow_up_on, :id)
+      .map do |application|
+        Nudge.new(key: "follow_up:#{application.id}:#{application.follow_up_on.iso8601}", kind: "follow_up",
+          since: application.follow_up_on, job_application: application)
+      end
+  end
+
   def quiet_applications
-    applications = @user.job_applications.where(status: %w[applied interviewing]).to_a
+    applications = @user.job_applications.where(status: JobApplication::FOLLOW_UP_STATUSES, follow_up_on: nil).to_a
     last_activity = @user.activities.where(job_application_id: applications.map(&:id)).group(:job_application_id).maximum(:occurred_on)
 
     applications.filter_map do |application|

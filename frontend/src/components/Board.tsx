@@ -8,6 +8,7 @@ import { shortInterviewTime } from '../lib/countdown';
 import { formatDate } from '../lib/format';
 import { playSound } from '../lib/sounds';
 import { KIND_ACCENTS, WORK_ARRANGEMENT_LABELS } from '../lib/status';
+import FollowUpTag from './FollowUpTag';
 import { CalendarIcon, ColumnsIcon, MapPinIcon, PlusIcon, UsersIcon } from './icons';
 
 type BoardStage = BoardQuery['stages'][number];
@@ -260,11 +261,17 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
     const toColumn = current.find((column) => column.stage.id === overStageId);
     if (!fromColumn || !toColumn) return;
 
-    // Update the board right away; the server catches up in the background.
+    // Update the board right away; the server catches up in the background,
+    // including any new follow-up date.
+    const kind = toColumn.stage.kind;
+    const keepsFollowUp = kind === 'APPLIED' || kind === 'INTERVIEWING';
+    const moved = keepsFollowUp
+      ? { ...card, status: kind }
+      : { ...card, status: kind, followUpOn: null, followUpDue: false };
     setColumns(
       current.map((column) => {
         const cards = column.cards.filter((c) => c.id !== card.id);
-        if (column.stage.id === overStageId) cards.splice(overIndex, 0, { ...card, status: toColumn.stage.kind });
+        if (column.stage.id === overStageId) cards.splice(overIndex, 0, moved);
         return { ...column, cards };
       }),
     );
@@ -428,10 +435,15 @@ function CardContent({ card }: { card: BoardCard }) {
     <>
       <p className="truncate font-extrabold">{card.company}</p>
       <p className="truncate text-sm text-stone-600 dark:text-stone-300">{card.role}</p>
-      {card.nextInterviewAt && (
-        <p className="mt-2 inline-flex rounded-full bg-gold-100 px-2 py-0.5 text-xs font-extrabold text-gold-700 dark:bg-amber-900/40 dark:text-amber-200">
-          {shortInterviewTime(card.nextInterviewAt)}
-        </p>
+      {(card.nextInterviewAt || card.followUpOn) && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {card.nextInterviewAt && (
+            <span className="inline-flex rounded-full bg-gold-100 px-2 py-0.5 text-xs font-extrabold text-gold-700 dark:bg-amber-900/40 dark:text-amber-200">
+              {shortInterviewTime(card.nextInterviewAt)}
+            </span>
+          )}
+          <FollowUpTag on={card.followUpOn} due={card.followUpDue} />
+        </div>
       )}
       {(applied || where || card.contacts.length > 0) && (
         <div className="mt-2 space-y-0.5 text-xs text-stone-500 dark:text-stone-400">

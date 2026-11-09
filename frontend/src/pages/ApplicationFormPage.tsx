@@ -31,6 +31,7 @@ type FormState = {
   role: string;
   stageId: string;
   dateApplied: string;
+  followUpOn: string;
   postingUrl: string;
   salaryRange: string;
   location: string;
@@ -46,6 +47,7 @@ const FIELDS = [
   'role',
   'stage',
   'dateApplied',
+  'followUpOn',
   'postingUrl',
   'salaryRange',
   'location',
@@ -60,6 +62,7 @@ const EMPTY_FORM: FormState = {
   role: '',
   stageId: '',
   dateApplied: '',
+  followUpOn: '',
   postingUrl: '',
   salaryRange: '',
   location: '',
@@ -78,6 +81,7 @@ function formFrom(application: ExistingApplication): FormState {
     role: application.role,
     stageId: application.stage.id,
     dateApplied: application.dateApplied ?? '',
+    followUpOn: application.followUpOn ?? '',
     postingUrl: application.postingUrl ?? '',
     salaryRange: application.salaryRange ?? '',
     location: application.location ?? '',
@@ -95,6 +99,8 @@ function inputFrom(form: FormState): JobApplicationInput {
     role: form.role,
     stageId: form.stageId || null,
     dateApplied: form.dateApplied || null,
+    // The server clears it for columns without follow-ups.
+    followUpOn: form.followUpOn || null,
     postingUrl: blankToNull(form.postingUrl),
     salaryRange: blankToNull(form.salaryRange),
     location: blankToNull(form.location),
@@ -164,6 +170,8 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
   const { data: stagesData } = useQuery(StagesQuery);
   const stages = [...(stagesData?.stages ?? [])].sort((a, b) => a.position - b.position);
   const selectedStage = stages.find((stage) => stage.id === form.stageId);
+  // Only cards in applied and interview columns get follow-up dates.
+  const followUpTracked = selectedStage?.kind === 'APPLIED' || selectedStage?.kind === 'INTERVIEWING';
 
   // New applications start in the first "saved" column unless a column was picked.
   useEffect(() => {
@@ -187,7 +195,7 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
     setForm((current) => ({ ...current, contactIds: [...current.contactIds, newId] }));
   }
 
-  const refetchQueries = ['Board', 'JobApplications', 'Contacts', 'Streak', 'Progress'];
+  const refetchQueries = ['Board', 'JobApplications', 'Contacts', 'Streak', 'Progress', 'Today'];
   const [createApplication, { loading: creating }] = useMutation(CreateJobApplicationMutation, { refetchQueries });
   const [updateApplication, { loading: updating }] = useMutation(UpdateJobApplicationMutation, { refetchQueries });
   const [deleteApplication, { loading: deleting }] = useMutation(DeleteJobApplicationMutation, { refetchQueries });
@@ -345,6 +353,33 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
               onChange={(e) => set('dateApplied', e.target.value)}
             />
           </Field>
+          <Field
+            label="Follow up on"
+            htmlFor="follow-up-on"
+            hint={followUpHint(form, existing, followUpTracked)}
+            error={fieldError(errors, 'followUpOn')}
+          >
+            <div className="flex items-center gap-2">
+              <Input
+                id="follow-up-on"
+                type="date"
+                value={followUpTracked ? form.followUpOn : ''}
+                disabled={!followUpTracked}
+                className="disabled:cursor-not-allowed disabled:opacity-60"
+                onChange={(e) => set('followUpOn', e.target.value)}
+              />
+              {followUpTracked && form.followUpOn && (
+                <Button
+                  variant="ghost"
+                  className="shrink-0"
+                  aria-label="Clear the follow-up date"
+                  onClick={() => set('followUpOn', '')}
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
+          </Field>
         </Card>
 
         <Card className="grid gap-4 p-5 sm:grid-cols-2">
@@ -447,6 +482,26 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
       </form>
     </div>
   );
+}
+
+const STEP_HINTS: Record<string, string> = {
+  FOLLOW_UP: 'Next up: a short follow-up.',
+  THANK_YOU: 'Next up: a thank-you note.',
+  CHECK_IN: 'Next up: a friendly check-in.',
+  LAST_NOTE: 'Next up: a last gracious note.',
+  LET_GO: 'Next up: deciding whether to let this one go.',
+};
+
+/** What the follow-up date means for this card, shown under the field. */
+function followUpHint(form: FormState, existing: ExistingApplication | undefined, tracked: boolean) {
+  if (!tracked) return 'For cards in applied and interview columns.';
+  const changingColumn = existing?.stage.id !== form.stageId;
+  if (changingColumn) {
+    // A date typed in now wins. Otherwise the move picks one.
+    return form.followUpOn === (existing?.followUpOn ?? '') ? 'Picked for you when you save.' : undefined;
+  }
+  if (!form.followUpOn) return 'No reminder. Moving the card or logging a follow-up sets a new date.';
+  return existing?.followUpStep ? STEP_HINTS[existing.followUpStep] : undefined;
 }
 
 function ImportBanner({

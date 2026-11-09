@@ -53,6 +53,9 @@ class Activity < ApplicationRecord
 
   before_validation :fill_in_defaults
   after_create :mark_contact_as_contacted, if: -> { contact && CONTACTING_KINDS.include?(kind) }
+  # A follow-up on an application schedules the next one, wherever it's
+  # logged from: a nudge, "Log a win", or anywhere else.
+  after_create :schedule_next_follow_up, if: -> { kind_follow_up? && job_application }
   # Finishing your last goal for the day makes it a perfect day.
   after_create_commit :check_daily_goals
 
@@ -77,6 +80,10 @@ class Activity < ApplicationRecord
     return if contact.last_contacted_on && contact.last_contacted_on >= occurred_on
 
     contact.update_column(:last_contacted_on, occurred_on)
+  end
+
+  def schedule_next_follow_up
+    job_application.schedule_next_follow_up!(occurred_on)
   end
 
   def check_daily_goals

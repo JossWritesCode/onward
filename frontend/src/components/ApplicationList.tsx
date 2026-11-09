@@ -6,6 +6,7 @@ import { MoveJobApplicationMutation } from '../graphql/operations';
 import { celebrateMove, showToast } from '../lib/celebrate';
 import { formatDate } from '../lib/format';
 import { STATUS_STYLES, WORK_ARRANGEMENT_LABELS } from '../lib/status';
+import FollowUpTag from './FollowUpTag';
 import { CalendarIcon, MapPinIcon, UsersIcon } from './icons';
 import { Card } from './ui';
 
@@ -118,6 +119,7 @@ function ApplicationRow({ row, stages }: { row: Row; stages: readonly BoardStage
       >
         <p className="truncate text-lg font-extrabold">{row.company}</p>
         <p className="truncate text-stone-600 dark:text-stone-300">{row.role}</p>
+        <FollowUpTag on={row.followUpOn} due={row.followUpDue} className="mt-1.5" />
         <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-stone-500 dark:text-stone-400">
           {applied && (
             <span className="inline-flex items-center gap-1">

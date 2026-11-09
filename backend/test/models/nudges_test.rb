@@ -8,7 +8,8 @@ class NudgesTest < ActiveSupport::TestCase
 
   def quiet_application(company, days_ago)
     application = @user.job_applications.create!(company:, role: "Dev", status: "applied", date_applied: @today - days_ago)
-    application.update_columns(updated_at: days_ago.days.ago)
+    # Like an application from before follow-up dates: no date was backfilled.
+    application.update_columns(updated_at: days_ago.days.ago, follow_up_on: nil)
     @user.activities.where(job_application: application).update_all(occurred_on: @today - days_ago)
     application
   end
@@ -74,5 +75,65 @@ class NudgesTest < ActiveSupport::TestCase
     travel_to 22.days.from_now do
       assert_equal [ "Priya" ], Nudges.for(@user).map { |n| n.contact.name }
     end
+  end
+
+  def follow_up_due(company, days_ago, status: "applied")
+    application = @user.job_applications.create!(company:, role: "Dev", status:)
+    application.update_columns(follow_up_on: @today - days_ago)
+    application
+  end
+
+  test "an application whose follow-up date has come gets a nudge" do
+    application = @user.job_applications.create!(company: "Acme", role: "Dev", status: "applied")
+    assert_empty Nudges.for(@user)
+
+    travel_to 7.days.from_now do
+      nudges = Nudges.for(@user)
+      assert_equal [ [ "follow_up", "Acme" ] ], nudges.map { |n| [ n.kind, n.job_application.company ] }
+      assert_equal application.follow_up_on, nudges.first.since
+    end
+
+    travel_to 9.days.from_now do
+      assert_equal [ "follow_up" ], Nudges.for(@user).map(&:kind), "still there while overdue"
+    end
+  end
+
+  test "following up moves the nudge a week out" do
+    application = follow_up_due("Acme", 0)
+    @user.activities.create!(kind: "follow_up", job_application: application)
+
+    assert_empty Nudges.for(@user)
+    assert_equal @today + 7, application.reload.follow_up_on
+  end
+
+  test "applications with a follow-up date skip the quiet-application nudge" do
+    application = quiet_application("Acme", 20)
+    assert_equal [ "quiet_application" ], Nudges.for(@user).map(&:kind)
+
+    application.update_columns(follow_up_on: @today + 3)
+    assert_empty Nudges.for(@user)
+  end
+
+  test "no follow-up nudges for cards that have moved on" do
+    application = follow_up_due("Acme", 2)
+    application.update_columns(status: "offer")
+
+    assert_empty Nudges.for(@user)
+  end
+
+  test "interview prep first, then follow-ups oldest first, then the quiet mix, 3 at most" do
+    quiet_application("Quiet Co", 20)
+    @user.contacts.create!(name: "Priya", last_contacted_on: @today - 30)
+    follow_up_due("Recent", 1)
+    follow_up_due("Oldest", 5, status: "interviewing")
+    interviewing = @user.job_applications.create!(company: "Northwind", role: "Dev", status: "interviewing")
+    interviewing.interview_rounds.first.update!(scheduled_at: 1.day.from_now)
+
+    nudges = Nudges.for(@user)
+    assert_equal %w[interview_prep follow_up follow_up], nudges.map(&:kind)
+    assert_equal %w[Oldest Recent], nudges.drop(1).map { |n| n.job_application.company }
+
+    @user.job_applications.find_by!(company: "Recent").update_columns(follow_up_on: nil)
+    assert_equal %w[interview_prep follow_up quiet_application], Nudges.for(@user).map(&:kind)
   end
 end

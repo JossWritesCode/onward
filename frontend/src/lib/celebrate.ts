@@ -129,6 +129,20 @@ export function celebrateMove({ from, to, origin }: Move) {
   }
 }
 
+const LET_GO_MESSAGES = [
+  ['Let go, with grace', "You gave this one your best. That effort still counts."],
+  ['Making room', "No reply isn't a verdict on you. Your energy is free for what's next."],
+  ['That takes courage', 'Closing a door you held open is progress too.'],
+  ['On to the next one', 'You followed up and did everything right. New doors are waiting.'],
+] as const;
+
+/** Letting go of an application that never wrote back. Kinder than the usual rejection messages. */
+export function celebrateLetGo() {
+  playSound('gentle');
+  const [title, body] = pick(LET_GO_MESSAGES);
+  showToast('gentle', title, body);
+}
+
 /** After you log a win on the Progress page. */
 export function celebrateWin(kind: string, origin?: { x: number; y: number }) {
   playSound('applied');

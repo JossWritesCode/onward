@@ -5,7 +5,7 @@ export const ACTIVITY_LABELS: Record<ActivityKind, string> = {
   APPLICATION_SENT: 'Sent an application',
   INTERVIEW: 'Landed an interview',
   OFFER: 'Got an offer',
-  REJECTION: 'Heard back (closure)',
+  REJECTION: 'Closure',
   NETWORKING_MESSAGE: 'Sent a networking message',
   COFFEE_CHAT: 'Had a coffee chat',
   FOLLOW_UP: 'Followed up',
