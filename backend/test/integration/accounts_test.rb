@@ -92,6 +92,7 @@ class AccountsTest < ActionDispatch::IntegrationTest
     sign_in_as(user)
     user.job_applications.create!(company: "Acme", role: "Dev", status: "applied")
     user.stories.create!(title: "Shipped it", situation: "S", task: "T", action: "A", result: "R")
+    Resume.import(user, '{ "name": "Dana Whitfield", "title": "Developer" }')
     user.update!(github_token: "github_pat_secret")
 
     get "/account/export"
@@ -100,6 +101,8 @@ class AccountsTest < ActionDispatch::IntegrationTest
     data = JSON.parse(response.body)
     assert_equal "Acme", data.dig("job_applications", 0, "company")
     assert_equal 1, data["stories"].size
+    assert_equal "Dana Whitfield", data.dig("resumes", 0, "content", "name")
+    assert_not data.dig("resumes", 0).key?("user_id")
     assert_not_includes response.body, "github_pat_secret"
     assert_not_includes response.body, "password_digest"
   end
@@ -125,6 +128,7 @@ class AccountsTest < ActionDispatch::IntegrationTest
     user.nudge_dismissals.create!(key: "contact:1:2026-01-01")
     user.update!(admin: true)
     user.invites.create!
+    Resume.import(user, '{ "name": "Dana Whitfield", "title": "Developer" }')
     assert application.interview_rounds.any?
 
     wrong = graphql('mutation { deleteAccount(password: "nope") { deleted errors { field } } }').dig("data", "deleteAccount")
@@ -132,7 +136,7 @@ class AccountsTest < ActionDispatch::IntegrationTest
 
     assert graphql('mutation { deleteAccount(password: "password123") { deleted } }').dig("data", "deleteAccount", "deleted")
     assert_not User.exists?(user.id)
-    assert_equal 0, Activity.count + JobApplication.count + Contact.count + Stage.count + Invite.count + CustomAction.count
+    assert_equal 0, Activity.count + JobApplication.count + Contact.count + Stage.count + Invite.count + CustomAction.count + Resume.count
     assert_nil graphql("query { me { id } }").dig("data", "me")
   end
 

@@ -83,4 +83,60 @@ if user.custom_actions.none?
   user.activities.create!(kind: "custom", custom_action: meetup, occurred_on: 2.days.ago.to_date)
 end
 
+if user.resumes.none?
+  # A made-up person, so the Resumes page has something to open.
+  user.resumes.create!(
+    title: "Frontend v3",
+    content: {
+      "name" => "Dana Whitfield",
+      "title" => "Frontend Developer",
+      "location" => "Halifax, NS, Canada",
+      "phone" => "+1 902 555 0142",
+      "email" => "dana.whitfield@example.com",
+      "links" => [ "linkedin.com/in/danawhitfield", "github.com/danawhitfield" ],
+      "summary" => "Frontend developer with five years of experience building accessible, fast web apps in React and " \
+        "TypeScript. Comfortable owning features from first sketch to production, and happiest when making complicated " \
+        "screens feel simple.",
+      "skills" => [
+        { "label" => "Languages & Web Technologies", "items" => %w[JavaScript TypeScript HTML CSS Ruby SQL] },
+        { "label" => "Frontend Development", "items" => [ "React", "Redux", "Tailwind CSS", "Accessibility (WCAG)", "Responsive Design" ] },
+        { "label" => "Testing & Delivery", "items" => [ "Git", "CI/CD", "Jest", "Playwright", "Code Review" ] }
+      ],
+      "experience" => [
+        {
+          "title" => "Frontend Developer", "company" => "Tidewater Apps", "location" => "Remote",
+          "start" => "2022-08", "end" => "Present",
+          "bullets" => [
+            "Rebuilt the booking flow in React and TypeScript, cutting drop-off at checkout by 18%.",
+            "Led an accessibility pass that brought the main app to WCAG 2.1 AA.",
+            "Mentor two junior developers through weekly pairing and code review."
+          ]
+        },
+        {
+          "title" => "Junior Web Developer", "company" => "Harbourfront Studio", "location" => "Halifax, NS, Canada",
+          "start" => "2019-06", "end" => "2022-07",
+          "bullets" => [
+            "Built and shipped marketing sites and small web apps for more than 20 local clients.",
+            "Introduced automated tests and a CI pipeline, which caught regressions before clients did."
+          ]
+        }
+      ],
+      "education" => [
+        { "school" => "Dalhousie University", "degree" => "Bachelor of Computer Science", "date" => "2019-05", "honors" => "First Class Honours" }
+      ],
+      "sections" => [
+        {
+          "heading" => "Projects",
+          "items" => [
+            {
+              "title" => "Trailhead", "subtitle" => "A hiking log for the Maritimes", "date" => "2023",
+              "bullets" => [ "Built with Rails and React, with offline maps for trails without a signal." ]
+            }
+          ]
+        }
+      ]
+    }
+  )
+end
+
 puts "Demo account ready: demo@onward.test / password123"

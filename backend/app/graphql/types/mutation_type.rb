@@ -49,6 +49,11 @@ module Types
     field :update_engineering_settings, mutation: Mutations::UpdateEngineeringSettings
     field :refresh_integrations, mutation: Mutations::RefreshIntegrations
 
+    field :import_resume, mutation: Mutations::ImportResume
+    field :update_resume, mutation: Mutations::UpdateResume
+    field :duplicate_resume, mutation: Mutations::DuplicateResume
+    field :delete_resume, mutation: Mutations::DeleteResume
+
     field :create_contact, mutation: Mutations::CreateContact
     field :update_contact, mutation: Mutations::UpdateContact
     field :delete_contact, mutation: Mutations::DeleteContact

@@ -6,7 +6,9 @@ import type { StageKind } from './status';
 // tells the toaster what to say. Effort is celebrated; rejections get kindness.
 
 export type ToastTone = 'celebrate' | 'big' | 'gentle';
-export type Toast = { id: number; tone: ToastTone; title: string; body: string };
+/** A button on a toast, like "Log a win". The toast closes when it's pressed. */
+export type ToastAction = { label: string; onClick: () => void };
+export type Toast = { id: number; tone: ToastTone; title: string; body: string; action?: ToastAction };
 
 type Listener = (toast: Toast) => void;
 const listeners = new Set<Listener>();
@@ -19,8 +21,8 @@ export function onToast(listener: Listener) {
   };
 }
 
-export function showToast(tone: ToastTone, title: string, body: string) {
-  const toast = { id: nextId++, tone, title, body };
+export function showToast(tone: ToastTone, title: string, body: string, action?: ToastAction) {
+  const toast = { id: nextId++, tone, title, body, action };
   listeners.forEach((listener) => listener(toast));
 }
 

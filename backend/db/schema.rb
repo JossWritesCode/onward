@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_09_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_10_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -206,6 +206,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_09_000001) do
     t.index ["user_id"], name: "index_questions_on_user_id"
   end
 
+  create_table "resumes", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "title", null: false
+    t.string "template", default: "classic", null: false
+    t.string "page_size", default: "letter", null: false
+    t.jsonb "content", default: {}, null: false
+    t.text "source_text"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_resumes_on_user_id"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "ip_address"
@@ -289,6 +301,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_09_000001) do
   add_foreign_key "practices", "stories", on_delete: :nullify
   add_foreign_key "practices", "users"
   add_foreign_key "questions", "users"
+  add_foreign_key "resumes", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "stages", "users"
   add_foreign_key "stories", "users"

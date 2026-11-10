@@ -18,6 +18,8 @@ const config: CodegenConfig = {
         scalars: {
           ISO8601Date: 'string',
           ISO8601DateTime: 'string',
+          // A resume's content. src/lib/resume/types.ts gives it a real shape.
+          JSON: 'unknown',
         },
       },
     },

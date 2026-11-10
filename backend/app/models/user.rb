@@ -10,6 +10,7 @@ class User < ApplicationRecord
   # Declared after job_applications so applications are deleted before their columns.
   has_many :stages, -> { order(:position, :id) }, dependent: :delete_all
   has_many :stories, dependent: :delete_all
+  has_many :resumes, dependent: :delete_all
   has_many :questions, dependent: :delete_all
   has_many :practices, dependent: :delete_all
   has_many :checklist_template_items, -> { order(:position, :id) }, dependent: :delete_all

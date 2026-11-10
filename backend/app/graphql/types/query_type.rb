@@ -35,6 +35,11 @@ module Types
       description: "Rounds for applications still in an interview column, soonest first. Unscheduled rounds come last."
     field :study_topics, [ String ], null: false, description: "Topics you've studied, most recent first."
 
+    field :resumes, [ Types::ResumeType ], null: false, description: "Your resumes, most recently edited first."
+    field :resume, Types::ResumeType, null: false do
+      argument :id, ID, required: true
+    end
+
     field :contacts, [ Types::ContactType ], null: false, description: "Your contacts, alphabetically."
 
     field :contact, Types::ContactType, null: false do
@@ -89,6 +94,14 @@ module Types
 
     def engineering
       current_user!
+    end
+
+    def resumes
+      current_user!.resumes.recent_first
+    end
+
+    def resume(id:)
+      current_user!.resumes.find(id)
     end
 
     def stories

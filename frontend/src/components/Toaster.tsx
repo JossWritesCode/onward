@@ -22,7 +22,8 @@ export default function Toaster() {
     () =>
       onToast((toast) => {
         setToasts((current) => [...current.slice(-2), toast]);
-        const duration = toast.tone === 'big' ? 7000 : 4500;
+        // A toast with a button stays longer, so there's time to press it.
+        const duration = toast.action ? 12000 : toast.tone === 'big' ? 7000 : 4500;
         setTimeout(() => setToasts((current) => current.filter((t) => t.id !== toast.id)), duration);
       }),
     [],
@@ -47,6 +48,18 @@ export default function Toaster() {
           <div className="min-w-0 flex-1">
             <p className="font-black">{toast.title}</p>
             <p className="text-stone-600 dark:text-stone-300">{toast.body}</p>
+            {toast.action && (
+              <button
+                type="button"
+                onClick={() => {
+                  toast.action?.onClick();
+                  setToasts((current) => current.filter((t) => t.id !== toast.id));
+                }}
+                className="mt-2 rounded-xl border-2 border-b-4 border-brand-700 bg-brand-500 px-3 py-1.5 text-sm font-extrabold text-white transition hover:bg-brand-600 active:translate-y-0.5 active:border-b-2"
+              >
+                {toast.action.label}
+              </button>
+            )}
           </div>
           <button
             type="button"

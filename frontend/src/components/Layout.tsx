@@ -8,7 +8,7 @@ import Logo from './Logo';
 import StreakFlame from './StreakFlame';
 import TimerPill from './prep/TimerPill';
 import Toaster from './Toaster';
-import { BookIcon, CodeIcon, DotsIcon, LogOutIcon, UserIcon, UsersIcon, VolumeIcon, VolumeOffIcon } from './icons';
+import { BookIcon, CodeIcon, DotsIcon, FileTextIcon, LogOutIcon, UserIcon, UsersIcon, VolumeIcon, VolumeOffIcon } from './icons';
 
 const headerButton =
   'inline-flex items-center gap-1.5 rounded-xl px-2 py-2 text-sm font-extrabold transition sm:px-2.5 ' +
@@ -66,6 +66,17 @@ export default function Layout() {
             <BookIcon className="text-lg" />
             <span className="hidden sm:inline">Prep</span>
             <span className="sr-only sm:hidden">Interview prep</span>
+          </NavLink>
+
+          <NavLink
+            to="/resumes"
+            className={({ isActive }) =>
+              `${headerButton} ${isActive ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-200' : ''}`
+            }
+          >
+            <FileTextIcon className="text-lg" />
+            <span className="hidden sm:inline">Resumes</span>
+            <span className="sr-only sm:hidden">Resumes</span>
           </NavLink>
 
           {data?.me?.engineeringTrack && (

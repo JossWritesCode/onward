@@ -1,0 +1,10 @@
+module Types
+  class ResumeInput < Types::BaseInputObject
+    description "Fields for updating a resume. Leave a field out to keep its current value."
+
+    argument :title, String, required: false
+    argument :template, Types::ResumeTemplateEnum, required: false
+    argument :page_size, Types::ResumePageSizeEnum, required: false
+    argument :content, GraphQL::Types::JSON, required: false, description: "The whole content, in the same shape it's read in."
+  end
+end

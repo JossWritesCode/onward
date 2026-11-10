@@ -24,6 +24,7 @@ class AccountExport
       daily_goals: rows(user.daily_goals),
       perfect_days: user.perfect_days.order(:achieved_on).pluck(:achieved_on),
       custom_actions: rows(user.custom_actions),
+      resumes: rows(user.resumes.order(:id)),
       stories: rows(user.stories),
       questions: rows(user.questions),
       practices: rows(user.practices),

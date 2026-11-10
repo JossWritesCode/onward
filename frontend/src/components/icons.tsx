@@ -345,3 +345,10 @@ export const BookmarkIcon = (props: IconProps) => (
     <path d="M6.5 3.5h11v17L12 16.5l-5.5 4Z" />
   </Icon>
 );
+
+export const DownloadIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 4v11m0 0-4-4m4 4 4-4" />
+    <path d="M5 19h14" />
+  </Icon>
+);

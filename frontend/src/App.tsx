@@ -16,6 +16,9 @@ import PrepPage from './pages/PrepPage';
 import PrepSettingsPage from './pages/PrepSettingsPage';
 import StoryFormPage from './pages/StoryFormPage';
 import EngineeringPage from './pages/EngineeringPage';
+import ResumesPage from './pages/ResumesPage';
+import ResumeNewPage from './pages/ResumeNewPage';
+import ResumeEditorPage from './pages/ResumeEditorPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
@@ -43,6 +46,9 @@ export default function App() {
           <Route path="/prep/engineering" element={<Navigate to="/engineering" replace />} />
           <Route path="/prep/stories/new" element={<StoryFormPage />} />
           <Route path="/prep/stories/:id" element={<StoryFormPage />} />
+          <Route path="/resumes" element={<ResumesPage />} />
+          <Route path="/resumes/new" element={<ResumeNewPage />} />
+          <Route path="/resumes/:id" element={<ResumeEditorPage />} />
           <Route path="/contacts" element={<ContactsPage />} />
           <Route path="/contacts/new" element={<ContactFormPage />} />
           <Route path="/contacts/:id" element={<ContactFormPage />} />

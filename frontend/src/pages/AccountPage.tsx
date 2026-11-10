@@ -121,7 +121,7 @@ function YourData() {
       </h2>
       <div className="mt-2 space-y-2 text-sm text-stone-600 dark:text-stone-300">
         <p>
-          Onward stores what you put in: your applications, contacts, activity, goals, prep, and study time, plus your
+          Onward stores what you put in: your applications, contacts, resumes, activity, goals, prep, and study time, plus your
           email and a scrambled (hashed) version of your password. A GitHub token, if you add one, is encrypted.
         </p>
         <p>

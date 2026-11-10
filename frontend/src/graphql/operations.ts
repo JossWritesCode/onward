@@ -1200,3 +1200,87 @@ export const PostingUrlsQuery = graphql(`
     }
   }
 `);
+
+export const ResumesQuery = graphql(`
+  query Resumes {
+    resumes {
+      id
+      title
+      template
+      pageSize
+      content
+      updatedAt
+    }
+  }
+`);
+
+export const ResumeQuery = graphql(`
+  query Resume($id: ID!) {
+    resume(id: $id) {
+      id
+      title
+      template
+      pageSize
+      content
+      updatedAt
+    }
+  }
+`);
+
+export const ImportResumeMutation = graphql(`
+  mutation ImportResume($text: String!) {
+    importResume(text: $text) {
+      resume {
+        id
+        title
+        template
+        pageSize
+        content
+        updatedAt
+      }
+      filledFields
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const UpdateResumeMutation = graphql(`
+  mutation UpdateResume($id: ID!, $input: ResumeInput!) {
+    updateResume(id: $id, input: $input) {
+      resume {
+        id
+        title
+        template
+        pageSize
+        content
+        updatedAt
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+export const DuplicateResumeMutation = graphql(`
+  mutation DuplicateResume($id: ID!) {
+    duplicateResume(id: $id) {
+      resume {
+        id
+        title
+      }
+    }
+  }
+`);
+
+export const DeleteResumeMutation = graphql(`
+  mutation DeleteResume($id: ID!) {
+    deleteResume(id: $id) {
+      id
+    }
+  }
+`);
