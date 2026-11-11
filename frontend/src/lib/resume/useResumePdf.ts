@@ -1,11 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ResumePageSize, ResumeTemplate } from '../../gql/graphql';
+import type { OpenedPdf } from '../../resume-pdf/pages';
+import type { StyleValues } from './style';
 import type { ResumeContent } from './types';
 
 export type ResumePdfState = {
-  /** A link to the latest PDF, for the preview, "open in a new tab", and download. */
+  /** A link to the latest PDF, for download. */
   url: string | null;
+  /** The latest PDF, opened for drawing its pages. */
+  opened: OpenedPdf | null;
   pages: number;
+  /** How far down the last page the content reaches, 0 to 1. */
+  lastPageFill: number;
   /** True while a newer version is being made. */
   working: boolean;
   error: string | null;
@@ -18,9 +24,9 @@ const DELAY = 450;
  * stops. The PDF code is downloaded the first time this runs, so only the
  * resume editor pays for it.
  */
-export function useResumePdf(content: ResumeContent, template: ResumeTemplate, pageSize: ResumePageSize): ResumePdfState {
-  const [state, setState] = useState<ResumePdfState>({ url: null, pages: 1, working: true, error: null });
-  const urls = useRef<string[]>([]);
+export function useResumePdf(content: ResumeContent, template: ResumeTemplate, pageSize: ResumePageSize, style: StyleValues): ResumePdfState {
+  const [state, setState] = useState<ResumePdfState>({ url: null, opened: null, pages: 1, lastPageFill: 0, working: true, error: null });
+  const previous = useRef<{ url: string; opened: OpenedPdf }[]>([]);
   const first = useRef(true);
 
   useEffect(() => {
@@ -30,15 +36,24 @@ export function useResumePdf(content: ResumeContent, template: ResumeTemplate, p
     const timer = setTimeout(
       async () => {
         try {
-          const { renderResumePdf } = await import('../../resume-pdf');
-          const { blob, pages } = await renderResumePdf({ content, template, pageSize });
-          if (cancelled) return;
+          const [{ renderResumePdf }, { openPdf }] = await Promise.all([import('../../resume-pdf'), import('../../resume-pdf/pages')]);
+          const { blob, pages } = await renderResumePdf({ content, template, pageSize, style });
+          const opened = await openPdf(await blob.arrayBuffer());
+          const lastPageFill = pages > 1 ? await opened.lastPageFill() : 0;
+          if (cancelled) {
+            opened.close();
+            return;
+          }
 
           const url = URL.createObjectURL(blob);
-          urls.current.push(url);
-          // Keep the previous one alive briefly: the preview may still be showing it.
-          while (urls.current.length > 2) URL.revokeObjectURL(urls.current.shift()!);
-          setState({ url, pages, working: false, error: null });
+          previous.current.push({ url, opened });
+          // Keep the one before alive briefly: the preview may still be showing it.
+          while (previous.current.length > 2) {
+            const old = previous.current.shift()!;
+            URL.revokeObjectURL(old.url);
+            old.opened.close();
+          }
+          setState({ url, opened, pages, lastPageFill, working: false, error: null });
         } catch (caught) {
           if (cancelled) return;
           console.error(caught);
@@ -53,12 +68,15 @@ export function useResumePdf(content: ResumeContent, template: ResumeTemplate, p
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [content, template, pageSize]);
+  }, [content, template, pageSize, style]);
 
   useEffect(
     () => () => {
-      urls.current.forEach((url) => URL.revokeObjectURL(url));
-      urls.current = [];
+      previous.current.forEach((old) => {
+        URL.revokeObjectURL(old.url);
+        old.opened.close();
+      });
+      previous.current = [];
     },
     [],
   );

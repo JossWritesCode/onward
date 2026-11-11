@@ -1,16 +1,18 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import { Link, useParams } from 'react-router';
 import type { ResumePageSize, ResumeQuery as ResumeQueryData, ResumeTemplate } from '../gql/graphql';
 import { JobApplicationsQuery, ResumeQuery, UpdateResumeMutation } from '../graphql/operations';
 import { generalErrors, fieldError, type UserError } from '../lib/errors';
-import { plural } from '../lib/activities';
-import { PAGE_SIZES, TEMPLATES, pdfFileName, toResumeContent, type ResumeContent } from '../lib/resume/types';
+import { overflowMessage } from '../lib/resume/overflow';
+import { toStyleValues, type StyleValues } from '../lib/resume/style';
+import { PAGE_SIZES, pdfFileName, toResumeContent, type ResumeContent } from '../lib/resume/types';
 import { useResumePdf } from '../lib/resume/useResumePdf';
 import { useMediaQuery } from '../lib/useMediaQuery';
-import PdfFrame from '../components/resume/PdfFrame';
+import DesignPanel from '../components/resume/DesignPanel';
+import PdfPages from '../components/resume/PdfPages';
 import ResumeForm from '../components/resume/ResumeForm';
-import { ArrowLeftIcon, CheckIcon, DownloadIcon, ExternalLinkIcon } from '../components/icons';
+import { ArrowLeftIcon, CheckIcon, ChevronDownIcon, DownloadIcon } from '../components/icons';
 import { Button, Card, ErrorBanner, Field, Input, Select, Spinner, buttonClasses } from '../components/ui';
 
 type Existing = ResumeQueryData['resume'];
@@ -18,6 +20,7 @@ type Draft = {
   title: string;
   template: ResumeTemplate;
   pageSize: ResumePageSize;
+  style: StyleValues;
   content: ResumeContent;
   /** The application this is tailored for, or '' for a base resume. */
   jobApplicationId: string;
@@ -27,11 +30,12 @@ const toDraft = (resume: Existing): Draft => ({
   title: resume.title,
   template: resume.template,
   pageSize: resume.pageSize,
+  style: toStyleValues(resume.style),
   content: toResumeContent(resume.content),
   jobApplicationId: resume.jobApplication?.id ?? '',
 });
 
-/** The editor at /resumes/:id: the form on the left, the PDF on the right. */
+/** The editor at /resumes/:id: the form on the left, the design panel and preview on the right. */
 export default function ResumeEditorPage() {
   const { id = '' } = useParams();
   // Loaded once: after that, the form is the source of truth until you save.
@@ -42,6 +46,9 @@ export default function ResumeEditorPage() {
   return <ResumeEditor key={id} resume={data.resume} />;
 }
 
+const tab =
+  'flex-1 rounded-xl px-3 py-1.5 text-center font-extrabold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30';
+
 function ResumeEditor({ resume }: { resume: Existing }) {
   const [saved, setSaved] = useState<Draft>(() => toDraft(resume));
   const [draft, setDraft] = useState<Draft>(saved);
@@ -51,7 +58,11 @@ function ResumeEditor({ resume }: { resume: Existing }) {
   });
 
   const wide = useMediaQuery('(min-width: 1024px)');
-  const pdf = useResumePdf(draft.content, draft.template, draft.pageSize);
+  // On phones, the form and the preview take turns.
+  const [tabShown, setTabShown] = useState<'edit' | 'preview'>('edit');
+  const [designOpen, setDesignOpen] = useState(true);
+
+  const pdf = useResumePdf(draft.content, draft.template, draft.pageSize, draft.style);
   // The applications to pick from. The one saved on the resume is known even before this loads.
   const { data: applicationsData } = useQuery(JobApplicationsQuery);
   const applications = applicationsData?.jobApplications ?? [];
@@ -69,14 +80,15 @@ function ResumeEditor({ resume }: { resume: Existing }) {
     return () => window.removeEventListener('beforeunload', warn);
   }, [dirty]);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function save() {
     const sent = draft;
     setErrors([]);
     try {
-      const result = (await updateResume({
+      const result = (
+        await updateResume({
           variables: { id: resume.id, input: { ...sent, jobApplicationId: sent.jobApplicationId || null } },
-        })).data?.updateResume;
+        })
+      ).data?.updateResume;
       if (result?.resume) {
         // The server tidies things up (dates like "Aug 2022" become 2022-08,
         // blank bullets go). Take its version, unless you kept typing meanwhile.
@@ -91,26 +103,174 @@ function ResumeEditor({ resume }: { resume: Existing }) {
     }
   }
 
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void save();
+  }
+
   const tooLong = pdf.pages > 1 && (
     <p
       role="status"
       className="rounded-xl border-2 border-gold-300 bg-gold-100 px-3 py-2 text-sm font-semibold text-stone-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100"
     >
-      This runs onto {plural(pdf.pages, 'page')}. Most resumes are best at one: try trimming a bullet or two.
+      {overflowMessage(pdf.pages, pdf.lastPageFill)}
     </p>
   );
 
-  const pdfButtons = pdf.url && (
-    <>
-      {!wide && (
-        <a href={pdf.url} target="_blank" rel="noreferrer" className={buttonClasses('secondary')}>
-          <ExternalLinkIcon /> Preview PDF
-        </a>
+  const downloadButton = pdf.url && (
+    <a href={pdf.url} download={fileName} className={buttonClasses('secondary')}>
+      <DownloadIcon /> Download PDF
+    </a>
+  );
+
+  const previewStatus = (
+    <span className="text-sm text-stone-500 dark:text-stone-400" role="status">
+      {pdf.working ? 'Updating preview…' : dirty ? 'Preview shows your unsaved changes.' : ''}
+    </span>
+  );
+
+  const design = (
+    <Card className="p-4">
+      <button
+        type="button"
+        aria-expanded={designOpen}
+        onClick={() => setDesignOpen((open) => !open)}
+        className="flex w-full items-center gap-2 text-left text-lg font-black"
+      >
+        <ChevronDownIcon className={`transition-transform ${designOpen ? '' : '-rotate-90'}`} />
+        Design
+        {!designOpen && (
+          <span className="ml-auto text-sm font-bold text-stone-500 dark:text-stone-400">
+            {draft.template.charAt(0) + draft.template.slice(1).toLowerCase()}
+          </span>
+        )}
+      </button>
+      {designOpen && (
+        <div className="mt-3">
+          <DesignPanel
+            template={draft.template}
+            style={draft.style}
+            onChange={(change) => setDraft((current) => ({ ...current, ...change }))}
+          />
+        </div>
       )}
-      <a href={pdf.url} download={fileName} className={buttonClasses('secondary')}>
-        <DownloadIcon /> Download PDF
-      </a>
+    </Card>
+  );
+
+  const pages = pdf.opened ? (
+    <PdfPages pdf={pdf.opened} working={pdf.working} />
+  ) : (
+    !pdf.error && <Spinner label="Making your PDF" />
+  );
+
+  // The form and the preview are the same on every screen; what differs is where they sit.
+  const form = (
+    <>
+      <ErrorBanner messages={generalErrors(errors, ['title', 'jobApplicationId'])} />
+
+      <Card className="space-y-4 p-5">
+        <Field
+          label="Resume name"
+          htmlFor="resume-title"
+          required
+          hint="Only you see this. It helps you tell versions apart."
+          error={fieldError(errors, 'title')}
+        >
+          <Input
+            id="resume-title"
+            value={draft.title}
+            onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+            placeholder="Frontend v3"
+          />
+        </Field>
+        <Field label="Page size" htmlFor="resume-page-size">
+          <Select
+            id="resume-page-size"
+            value={draft.pageSize}
+            onChange={(e) => setDraft({ ...draft, pageSize: e.target.value as ResumePageSize })}
+          >
+            {PAGE_SIZES.map((size) => (
+              <option key={size.id} value={size.id}>
+                {size.label}
+              </option>
+            ))}
+          </Select>
+        </Field>
+      </Card>
+
+      <Card className="space-y-3 p-5">
+        <Field
+          label="Job application"
+          htmlFor="resume-application"
+          error={fieldError(errors, 'jobApplicationId')}
+          hint={
+            application
+              ? `Tailored for this job. It shows on the card, and downloads as "${fileName}".`
+              : 'A base resume. Pick an application to make this the resume tailored for it.'
+          }
+        >
+          <Select
+            id="resume-application"
+            value={draft.jobApplicationId}
+            onChange={(e) => setDraft({ ...draft, jobApplicationId: e.target.value })}
+          >
+            <option value="">None: this is a base resume</option>
+            {/* Shown while the list loads, so the saved choice never looks blank. */}
+            {application && !applications.some((candidate) => candidate.id === application.id) && (
+              <option value={application.id}>
+                {application.company} · {application.role}
+              </option>
+            )}
+            {applications.map((candidate) => {
+              const taken = Boolean(candidate.resume) && candidate.resume?.id !== resume.id;
+              return (
+                <option key={candidate.id} value={candidate.id} disabled={taken}>
+                  {candidate.company} · {candidate.role}
+                  {taken ? ' (has a resume)' : ''}
+                </option>
+              );
+            })}
+          </Select>
+        </Field>
+        {(application || resume.basedOn) && (
+          <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-bold">
+            {application && (
+              <Link to={`/applications/${application.id}`} className="text-brand-600 hover:underline dark:text-brand-300">
+                Open the {application.company} card
+              </Link>
+            )}
+            {resume.basedOn && (
+              <Link to={`/resumes/${resume.basedOn.id}`} className="text-stone-500 hover:text-brand-600 dark:text-stone-400">
+                Tailored from {resume.basedOn.title}
+              </Link>
+            )}
+          </p>
+        )}
+      </Card>
+
+      <ResumeForm content={draft.content} onChange={(content) => setDraft((current) => ({ ...current, content }))} />
     </>
+  );
+
+  const saveBar = (extra?: ReactNode) => (
+    <div className="sticky bottom-0 z-10 -mx-4 space-y-2 border-t-2 border-stone-200 bg-stone-50/95 px-4 py-3 backdrop-blur dark:border-stone-800 dark:bg-stone-950/95">
+      {extra}
+      <div className="flex flex-wrap items-center gap-3">
+        <Button type="submit" disabled={saving || !dirty}>
+          {saving ? 'Saving…' : 'Save changes'}
+        </Button>
+        {!wide && downloadButton}
+        <span className="inline-flex items-center gap-1 text-sm font-semibold text-stone-500 dark:text-stone-400" role="status">
+          {dirty ? (
+            'Unsaved changes'
+          ) : (
+            <>
+              <CheckIcon /> Saved
+            </>
+          )}
+        </span>
+      </div>
+    </div>
   );
 
   return (
@@ -122,148 +282,62 @@ function ResumeEditor({ resume }: { resume: Existing }) {
         <ArrowLeftIcon /> Resumes
       </Link>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <form onSubmit={handleSubmit} noValidate className="min-w-0 space-y-5">
-          <ErrorBanner messages={generalErrors(errors, ['title', 'jobApplicationId'])} />
+      {wide ? (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <form onSubmit={handleSubmit} noValidate className="min-w-0 space-y-5">
+            {form}
+            {saveBar()}
+          </form>
 
-          <Card className="space-y-4 p-5">
-            <Field
-              label="Resume name"
-              htmlFor="resume-title"
-              required
-              hint="Only you see this. It helps you tell versions apart."
-              error={fieldError(errors, 'title')}
-            >
-              <Input
-                id="resume-title"
-                value={draft.title}
-                onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-                placeholder="Frontend v3"
-              />
-            </Field>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Page size" htmlFor="resume-page-size">
-                <Select
-                  id="resume-page-size"
-                  value={draft.pageSize}
-                  onChange={(e) => setDraft({ ...draft, pageSize: e.target.value as ResumePageSize })}
-                >
-                  {PAGE_SIZES.map((size) => (
-                    <option key={size.id} value={size.id}>
-                      {size.label}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-              {/* Shows up once there's more than one template to pick from. */}
-              {TEMPLATES.length > 1 && (
-                <Field label="Template" htmlFor="resume-template">
-                  <Select
-                    id="resume-template"
-                    value={draft.template}
-                    onChange={(e) => setDraft({ ...draft, template: e.target.value as ResumeTemplate })}
-                  >
-                    {TEMPLATES.map((template) => (
-                      <option key={template.id} value={template.id}>
-                        {template.label}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-              )}
-            </div>
-          </Card>
-
-          <Card className="space-y-3 p-5">
-            <Field
-              label="Job application"
-              htmlFor="resume-application"
-              error={fieldError(errors, 'jobApplicationId')}
-              hint={
-                application
-                  ? `Tailored for this job. It shows on the card, and downloads as "${fileName}".`
-                  : 'A base resume. Pick an application to make this the resume tailored for it.'
-              }
-            >
-              <Select
-                id="resume-application"
-                value={draft.jobApplicationId}
-                onChange={(e) => setDraft({ ...draft, jobApplicationId: e.target.value })}
-              >
-                <option value="">None: this is a base resume</option>
-                {/* Shown while the list loads, so the saved choice never looks blank. */}
-                {application && !applications.some((candidate) => candidate.id === application.id) && (
-                  <option value={application.id}>
-                    {application.company} · {application.role}
-                  </option>
-                )}
-                {applications.map((candidate) => {
-                  const taken = Boolean(candidate.resume) && candidate.resume?.id !== resume.id;
-                  return (
-                    <option key={candidate.id} value={candidate.id} disabled={taken}>
-                      {candidate.company} · {candidate.role}
-                      {taken ? ' (has a resume)' : ''}
-                    </option>
-                  );
-                })}
-              </Select>
-            </Field>
-            {(application || resume.basedOn) && (
-              <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-bold">
-                {application && (
-                  <Link to={`/applications/${application.id}`} className="text-brand-600 hover:underline dark:text-brand-300">
-                    Open the {application.company} card
-                  </Link>
-                )}
-                {resume.basedOn && (
-                  <Link to={`/resumes/${resume.basedOn.id}`} className="text-stone-500 hover:text-brand-600 dark:text-stone-400">
-                    Tailored from {resume.basedOn.title}
-                  </Link>
-                )}
-              </p>
-            )}
-          </Card>
-
-          <ResumeForm content={draft.content} onChange={(content) => setDraft((current) => ({ ...current, content }))} />
-
-          {/* Stays in reach at the bottom of the screen while you scroll the form. */}
-          <div className="sticky bottom-0 z-10 -mx-4 space-y-2 border-t-2 border-stone-200 bg-stone-50/95 px-4 py-3 backdrop-blur dark:border-stone-800 dark:bg-stone-950/95">
-            {!wide && tooLong}
-            {!wide && pdf.error && <ErrorBanner messages={[pdf.error]} />}
+          <aside className="sticky top-20 flex h-[calc(100dvh-6.5rem)] min-w-0 flex-col gap-3" aria-label="Design and preview">
             <div className="flex flex-wrap items-center gap-3">
-              <Button type="submit" disabled={saving || !dirty}>
-                {saving ? 'Saving…' : 'Save changes'}
-              </Button>
-              {!wide && pdfButtons}
-              <span className="inline-flex items-center gap-1 text-sm font-semibold text-stone-500 dark:text-stone-400" role="status">
-                {dirty ? (
-                  'Unsaved changes'
-                ) : (
-                  <>
-                    <CheckIcon /> Saved
-                  </>
-                )}
-              </span>
+              {downloadButton}
+              {previewStatus}
             </div>
-          </div>
-        </form>
-
-        {wide && (
-          <aside className="sticky top-20 flex h-[calc(100dvh-6.5rem)] min-w-0 flex-col gap-3" aria-label="PDF preview">
-            <div className="flex flex-wrap items-center gap-3">
-              {pdfButtons}
-              <span className="text-sm text-stone-500 dark:text-stone-400" role="status">
-                {pdf.working ? 'Updating preview…' : dirty ? 'Preview shows your unsaved changes.' : ''}
-              </span>
-            </div>
+            {design}
             {tooLong}
             {pdf.error && <ErrorBanner messages={[pdf.error]} />}
-            <div className="min-h-0 flex-1">
-              {pdf.url ? <PdfFrame url={pdf.url} title="Resume preview" /> : !pdf.error && <Spinner label="Making your PDF" />}
-            </div>
+            <div className="min-h-0 flex-1 overflow-auto rounded-xl bg-stone-200 p-4 dark:bg-stone-800">{pages}</div>
           </aside>
-        )}
-      </div>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} noValidate className="min-w-0 space-y-5">
+          <div className="sticky top-16 z-10 -mx-4 bg-stone-50/95 px-4 py-2 backdrop-blur dark:bg-stone-950/95">
+            <div className="flex gap-1 rounded-2xl bg-stone-200 p-1 dark:bg-stone-800" role="tablist">
+              {(['edit', 'preview'] as const).map((name) => (
+                <button
+                  key={name}
+                  type="button"
+                  role="tab"
+                  aria-selected={tabShown === name}
+                  onClick={() => setTabShown(name)}
+                  className={`${tab} ${tabShown === name ? 'bg-white text-brand-700 shadow dark:bg-stone-900 dark:text-brand-200' : 'text-stone-600 dark:text-stone-300'}`}
+                >
+                  {name === 'edit' ? 'Edit' : 'Preview'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {tabShown === 'edit' ? (
+            form
+          ) : (
+            <div className="space-y-3">
+              {previewStatus}
+              {design}
+              {pdf.error && <ErrorBanner messages={[pdf.error]} />}
+              <div className="-mx-4 bg-stone-200 px-4 py-4 dark:bg-stone-800">{pages}</div>
+            </div>
+          )}
+
+          {saveBar(
+            <>
+              {tooLong}
+              {tabShown === 'edit' && pdf.error && <ErrorBanner messages={[pdf.error]} />}
+            </>,
+          )}
+        </form>
+      )}
     </div>
   );
 }

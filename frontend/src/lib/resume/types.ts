@@ -75,7 +75,11 @@ export function toResumeContent(value: unknown): ResumeContent {
 }
 
 /** The templates you can pick. Adding one: add it here, in resume-pdf/templates, and in the backend's Resume::TEMPLATES. */
-export const TEMPLATES: readonly { id: ResumeTemplate; label: string }[] = [{ id: 'CLASSIC', label: 'Classic' }];
+export const TEMPLATES: readonly { id: ResumeTemplate; label: string }[] = [
+  { id: 'CLASSIC', label: 'Classic' },
+  { id: 'COMPACT', label: 'Compact' },
+  { id: 'MODERN', label: 'Modern' },
+];
 
 export const PAGE_SIZES: readonly { id: ResumePageSize; label: string }[] = [
   { id: 'LETTER', label: 'Letter (Canada and US)' },

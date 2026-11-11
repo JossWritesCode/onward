@@ -1,168 +1,70 @@
-import { Children, type ReactNode } from 'react';
-import { Document, Link, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
+import { Document, Page, StyleSheet, Text } from '@react-pdf/renderer';
 import { formatResumeDate, formatResumeDateRange } from '../../lib/resume/dates';
-import { FONTS, PAGE_SIZE_NAMES, linkTarget, tidy, type TemplateProps } from './types';
+import { GREY, INK, RULE, SEPARATOR, type Theme, type } from '../theme';
+import { ContactLine, Entry, Section } from './shared';
+import { FONTS, PAGE_SIZE_NAMES, contactParts, documentMeta, tidy, type TemplateProps } from './types';
 
 // Classic: one column. The name is large and centred in a serif, section
 // headings are serif with a thin grey line under them, and the rest is Roboto.
 
-const INK = '#1f1f1f';
-const GREY = '#4d4d4d';
-const RULE = '#a3a3a3';
+function buildStyles(t: Theme) {
+  return StyleSheet.create({
+    page: { paddingVertical: t.margin, paddingHorizontal: t.margin + 2, fontFamily: FONTS.sans, fontSize: t.body, color: GREY },
+    name: { ...type(t.name, 1.1), fontFamily: FONTS.serif, textAlign: 'center', color: '#000000' },
+    contact: { ...type(t.body, t.lineHeight), marginTop: 2, textAlign: 'center' },
+    link: { color: GREY, textDecoration: 'none' },
 
-const BODY = 9.4;
-// " | " with a little more air. The no-break spaces keep the bar with the text before it when a line wraps.
-const SEPARATOR = '\u00A0\u00A0|\u00A0 ';
+    section: { marginTop: t.sectionGap },
+    heading: {
+      ...type(t.heading, 1.15),
+      fontFamily: FONTS.serif,
+      color: '#000000',
+      paddingBottom: 2.5,
+      borderBottomWidth: 0.75,
+      borderBottomColor: RULE,
+      marginBottom: Math.max(4, t.sectionGap * 0.6),
+    },
+    summary: type(t.body, t.lineHeight + 0.1),
 
-// react-pdf works out line height from the font size in the *same* style, not
-// an inherited one, so every text style sets both together.
-const type = (fontSize: number, lineHeight: number) => ({ fontSize, lineHeight });
+    skillLine: { ...type(t.body, t.lineHeight), marginBottom: 2 },
+    bold: { fontWeight: 500, color: INK },
 
-const styles = StyleSheet.create({
-  page: { paddingVertical: 30, paddingHorizontal: 32, fontFamily: FONTS.sans, fontSize: BODY, color: GREY },
-  name: { ...type(27, 1.1), fontFamily: FONTS.serif, textAlign: 'center', color: '#000000' },
-  contact: { ...type(BODY, 1.4), marginTop: 2, textAlign: 'center' },
-  link: { color: GREY, textDecoration: 'none' },
+    entry: { marginBottom: t.entryGap },
+    lastEntry: { marginBottom: 0 },
+    row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+    left: { ...type(t.body, 1.25), flexShrink: 1, paddingRight: 12 },
+    right: { ...type(t.body, 1.25), flexShrink: 0, textAlign: 'right' },
+    leftBold: { ...type(t.body, 1.25), flexShrink: 1, paddingRight: 12, fontWeight: 500, color: INK },
+    rightBold: { ...type(t.body, 1.25), flexShrink: 0, textAlign: 'right', fontWeight: 500, color: INK },
+    secondRow: { marginTop: 1.5 },
+    note: { ...type(t.body, 1.25), marginTop: 3 },
 
-  section: { marginTop: 11 },
-  heading: {
-    ...type(13, 1.15),
-    fontFamily: FONTS.serif,
-    color: '#000000',
-    paddingBottom: 2.5,
-    borderBottomWidth: 0.75,
-    borderBottomColor: RULE,
-    marginBottom: 7,
-  },
-  summary: type(BODY, 1.5),
-
-  skillLine: { ...type(BODY, 1.4), marginBottom: 2 },
-  bold: { fontWeight: 500, color: INK },
-
-  entry: { marginBottom: 8 },
-  lastEntry: { marginBottom: 0 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  left: { ...type(BODY, 1.25), flexShrink: 1, paddingRight: 12 },
-  right: { ...type(BODY, 1.25), flexShrink: 0, textAlign: 'right' },
-  secondRow: { marginTop: 1.5 },
-  honors: { ...type(BODY, 1.25), marginTop: 3 },
-
-  bullets: { marginTop: 4.5 },
-  bullet: { flexDirection: 'row', marginBottom: 2.5 },
-  dot: { ...type(BODY, 1.32), width: 8.5 },
-  bulletText: { ...type(BODY, 1.32), flex: 1 },
-});
-
-/** A heading and what's under it. The heading stays on the same page as the first thing in the section. */
-function Section({ heading, children }: { heading: string; children: ReactNode }) {
-  const [first, ...rest] = Children.toArray(children);
-  return (
-    <View style={styles.section}>
-      <View wrap={false}>
-        <Text style={styles.heading}>{heading}</Text>
-        {first}
-      </View>
-      {rest}
-    </View>
-  );
+    bullets: { marginTop: t.bulletGap + 2 },
+    bullet: { flexDirection: 'row', marginBottom: t.bulletGap },
+    dot: { ...type(t.body, t.lineHeight - 0.03), width: 8.5 },
+    bulletText: { ...type(t.body, t.lineHeight - 0.03), flex: 1 },
+  });
 }
 
-/** The layout jobs, schools, and extra sections share: two rows of left and right text, then bullets. */
-function Entry({
-  title,
-  aside,
-  asideBold = true,
-  subtitle,
-  subAside,
-  note,
-  bullets = [],
-  last,
-}: {
-  title: string;
-  aside?: string;
-  asideBold?: boolean;
-  subtitle?: string;
-  subAside?: string;
-  note?: string;
-  bullets?: string[];
-  last: boolean;
-}) {
-  const firstRow = title || aside;
-  const secondRow = subtitle || subAside;
-  return (
-    <View style={last ? styles.lastEntry : styles.entry}>
-      <View wrap={false}>
-        {firstRow ? (
-          <View style={styles.row}>
-            <Text style={[styles.left, styles.bold]}>{title}</Text>
-            <Text style={asideBold ? [styles.right, styles.bold] : styles.right}>{aside}</Text>
-          </View>
-        ) : null}
-        {secondRow ? (
-          <View style={firstRow ? [styles.row, styles.secondRow] : styles.row}>
-            <Text style={styles.left}>{subtitle}</Text>
-            <Text style={styles.right}>{subAside}</Text>
-          </View>
-        ) : null}
-        {note ? <Text style={styles.honors}>{note}</Text> : null}
-      </View>
-      {bullets.length > 0 && (
-        <View style={styles.bullets}>
-          {bullets.map((bullet, index) => (
-            <View key={index} style={styles.bullet} wrap={false}>
-              <Text style={styles.dot}>·</Text>
-              <Text style={styles.bulletText}>{bullet}</Text>
-            </View>
-          ))}
-        </View>
-      )}
-    </View>
-  );
-}
-
-export default function Classic({ content: raw, pageSize }: TemplateProps) {
+export default function Classic({ content: raw, pageSize, theme }: TemplateProps) {
   const content = tidy(raw);
-  const contact = [content.title, content.location, content.phone, content.email, ...content.links]
-    .map((part) => part.trim())
-    .filter(Boolean);
+  const styles = buildStyles(theme);
+  const heading = (text: string) => <Text style={styles.heading}>{text}</Text>;
 
   return (
-    <Document
-      title={[content.name, content.title].filter(Boolean).join(' - ') || 'Resume'}
-      author={content.name || undefined}
-      creator="Onward"
-      producer="Onward"
-    >
+    <Document {...documentMeta(content)}>
       <Page size={PAGE_SIZE_NAMES[pageSize]} style={styles.page}>
         {content.name.trim() ? <Text style={styles.name}>{content.name.trim()}</Text> : null}
-        {contact.length > 0 && (
-          <Text style={styles.contact}>
-            {contact.map((part, index) => {
-              const target = linkTarget(part);
-              return (
-                <Text key={index}>
-                  {index > 0 ? SEPARATOR : ''}
-                  {target ? (
-                    <Link src={target} style={styles.link}>
-                      {part}
-                    </Link>
-                  ) : (
-                    part
-                  )}
-                </Text>
-              );
-            })}
-          </Text>
-        )}
+        <ContactLine parts={contactParts(content)} separator={SEPARATOR} style={styles.contact} linkStyle={styles.link} />
 
         {content.summary.trim() ? (
-          <Section heading="Professional Summary">
+          <Section heading={heading('Professional Summary')} style={styles.section}>
             <Text style={styles.summary}>{content.summary.trim()}</Text>
           </Section>
         ) : null}
 
         {content.skills.length > 0 && (
-          <Section heading="Technical Skills">
+          <Section heading={heading('Technical Skills')} style={styles.section}>
             {content.skills.map((group, index) => (
               <Text key={index} style={styles.skillLine}>
                 {group.label ? <Text style={styles.bold}>{group.label}:  </Text> : null}
@@ -173,10 +75,11 @@ export default function Classic({ content: raw, pageSize }: TemplateProps) {
         )}
 
         {content.experience.length > 0 && (
-          <Section heading="Work Experience">
+          <Section heading={heading('Work Experience')} style={styles.section}>
             {content.experience.map((job, index) => (
               <Entry
                 key={index}
+                styles={styles}
                 title={job.title}
                 aside={job.location}
                 subtitle={job.company}
@@ -189,10 +92,11 @@ export default function Classic({ content: raw, pageSize }: TemplateProps) {
         )}
 
         {content.education.length > 0 && (
-          <Section heading="Education">
+          <Section heading={heading('Education')} style={styles.section}>
             {content.education.map((school, index) => (
               <Entry
                 key={index}
+                styles={styles}
                 title={school.school}
                 aside={formatResumeDate(school.date)}
                 asideBold={false}
@@ -205,10 +109,11 @@ export default function Classic({ content: raw, pageSize }: TemplateProps) {
         )}
 
         {content.sections.map((section, sectionIndex) => (
-          <Section key={sectionIndex} heading={section.heading || 'More'}>
+          <Section key={sectionIndex} heading={heading(section.heading || 'More')} style={styles.section}>
             {section.items.map((item, index) => (
               <Entry
                 key={index}
+                styles={styles}
                 title={item.title}
                 // Without a subtitle, the date moves up beside the title instead of sitting on a row alone.
                 aside={item.subtitle.trim() ? undefined : formatResumeDate(item.date)}

@@ -102,6 +102,7 @@ class AccountsTest < ActionDispatch::IntegrationTest
     assert_equal "Acme", data.dig("job_applications", 0, "company")
     assert_equal 1, data["stories"].size
     assert_equal "Dana Whitfield", data.dig("resumes", 0, "content", "name")
+    assert_equal 9.5, data.dig("resumes", 0, "style", "fontSize")
     assert_not data.dig("resumes", 0).key?("user_id")
     assert_not_includes response.body, "github_pat_secret"
     assert_not_includes response.body, "password_digest"

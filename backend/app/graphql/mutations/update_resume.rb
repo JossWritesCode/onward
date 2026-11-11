@@ -1,6 +1,6 @@
 module Mutations
   class UpdateResume < BaseMutation
-    description "Changes a resume's title, template, page size, content, or which application it's tailored for."
+    description "Changes a resume's title, template, page size, style, content, or which application it's tailored for."
 
     argument :id, ID, required: true
     argument :input, Types::ResumeInput, required: true
@@ -24,6 +24,11 @@ module Mutations
       if attributes.key?(:content)
         problems = resume.replace_content(attributes.delete(:content))
         return { resume: nil, errors: problems.map { |message| { field: "content", message: } } } if problems.any?
+      end
+
+      if attributes.key?(:style)
+        changes = (attributes.delete(:style) || {}).to_h.transform_keys { |key| key.to_s.camelize(:lower) }
+        resume.style = resume.style.merge(changes.compact)
       end
 
       resume.assign_attributes(attributes)

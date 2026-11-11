@@ -350,4 +350,60 @@ class ResumesTest < ActionDispatch::IntegrationTest
     # The model refuses too, if anything ever skips the lookups above.
     assert_not mine.update(job_application: their_application)
   end
+
+  # --- Style: text size, spacing, margins, accent ---------------------------
+
+  test "a new resume gets the default style, and copies keep it" do
+    resume = Resume.import(@user, PASTE).first
+    assert_equal ResumeStyle::DEFAULTS, resume.style
+
+    resume.update!(style: { "fontSize" => 9, "margin" => 0.4 }, template: "modern")
+    assert_equal 9.0, resume.reload.style["fontSize"]
+    assert_equal 1.35, resume.style["lineHeight"], "keys left out get the default"
+
+    copy = resume.duplicate
+    tailored = resume.tailor_for(application)
+    assert_equal resume.style, copy.style
+    assert_equal resume.style, tailored.style
+    assert_equal "modern", tailored.template
+  end
+
+  test "changes the style and template from the editor" do
+    id = import(PASTE).dig("resume", "id")
+
+    result = graphql(<<~GRAPHQL, variables: { id: }).dig("data", "updateResume")
+      mutation($id: ID!) {
+        updateResume(id: $id, input: { template: COMPACT, style: { fontSize: 9, sectionGap: 6, accent: "#0F766E" } }) {
+          resume { template style { fontSize lineHeight margin sectionGap accent } }
+          errors { field message }
+        }
+      }
+    GRAPHQL
+
+    assert_empty result["errors"]
+    assert_equal "COMPACT", result.dig("resume", "template")
+    assert_equal({ "fontSize" => 9.0, "lineHeight" => 1.35, "margin" => 0.45, "sectionGap" => 6.0, "accent" => "#0f766e" },
+      result.dig("resume", "style"))
+
+    # A second change keeps what the first one set.
+    again = graphql('mutation($id: ID!) { updateResume(id: $id, input: { style: { lineHeight: 1.2 } }) { resume { style { fontSize lineHeight } } } }', variables: { id: })
+    assert_equal({ "fontSize" => 9.0, "lineHeight" => 1.2 }, again.dig("data", "updateResume", "resume", "style"))
+  end
+
+  test "style values outside the range are brought back in" do
+    id = import(PASTE).dig("resume", "id")
+
+    result = graphql('mutation($id: ID!) { updateResume(id: $id, input: { style: { fontSize: 2, margin: 5, accent: "red" } }) { resume { style { fontSize margin accent } } errors { message } } }', variables: { id: })
+
+    assert_equal({ "fontSize" => 8.5, "margin" => 1.0, "accent" => "#4f46e5" }, result.dig("data", "updateResume", "resume", "style"))
+  end
+
+  test "every template can be picked" do
+    id = import(PASTE).dig("resume", "id")
+
+    %w[CLASSIC COMPACT MODERN].each do |template|
+      result = graphql("mutation($id: ID!) { updateResume(id: $id, input: { template: #{template} }) { resume { template } errors { message } } }", variables: { id: })
+      assert_equal template, result.dig("data", "updateResume", "resume", "template")
+    end
+  end
 end

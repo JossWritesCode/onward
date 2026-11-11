@@ -1124,7 +1124,7 @@ type Mutation {
   updateQuestion(id: ID!, prompt: String!): UpdateQuestionPayload!
 
   """
-  Changes a resume's title, template, page size, content, or which application it's tailored for.
+  Changes a resume's title, template, page size, style, content, or which application it's tailored for.
   """
   updateResume(id: ID!, input: ResumeInput!): UpdateResumePayload!
 
@@ -1419,6 +1419,11 @@ type Resume {
   """
   jobApplication: JobApplication
   pageSize: ResumePageSize!
+
+  """
+  Text size, spacing, margins, and accent colour.
+  """
+  style: ResumeStyle!
   template: ResumeTemplate!
 
   """
@@ -1442,6 +1447,11 @@ input ResumeInput {
   """
   jobApplicationId: ID
   pageSize: ResumePageSize
+
+  """
+  Changes to the look. Fields left out keep their value.
+  """
+  style: ResumeStyleInput
   template: ResumeTemplate
   title: String
 }
@@ -1462,13 +1472,83 @@ enum ResumePageSize {
 }
 
 """
+How a resume looks, apart from its template. Each resume has its own.
+"""
+type ResumeStyle {
+  """
+  Accent colour as a hex string. Only the Modern template uses it.
+  """
+  accent: String!
+
+  """
+  Body text size, in points.
+  """
+  fontSize: Float!
+
+  """
+  Line spacing, as a multiple of the text size.
+  """
+  lineHeight: Float!
+
+  """
+  Page margins, in inches.
+  """
+  margin: Float!
+
+  """
+  Space above each section heading, in points.
+  """
+  sectionGap: Float!
+}
+
+"""
+Changes to how a resume looks. Values outside the allowed range are brought back into it.
+"""
+input ResumeStyleInput {
+  """
+  Accent colour as a hex string, like "#4f46e5".
+  """
+  accent: String
+
+  """
+  Body text size in points, 8.5 to 11.
+  """
+  fontSize: Float
+
+  """
+  Line spacing, 1.15 to 1.6 times the text size.
+  """
+  lineHeight: Float
+
+  """
+  Page margins in inches, 0.4 to 1.
+  """
+  margin: Float
+
+  """
+  Space above each section heading in points, 4 to 20.
+  """
+  sectionGap: Float
+}
+
+"""
 How a resume is laid out in its PDF.
 """
 enum ResumeTemplate {
   """
-  One column, with serif headings.
+  Centred serif name and headings, with thin rules. The traditional look.
   """
   CLASSIC
+
+  """
+  Tighter, with small sans-serif headings. Fits more on a page.
+  """
+  COMPACT
+
+  """
+  Left-aligned sans-serif name and headings in an accent colour.
+  """
+  MODERN
 }
 
 """

@@ -1,7 +1,8 @@
 import type { ResumePageSize, ResumeTemplate } from '../../gql/graphql';
+import { toStyleValues, type StyleValues } from './style';
 import { pdfFileName, toResumeContent } from './types';
 
-type Downloadable = { title: string; template: ResumeTemplate; pageSize: ResumePageSize; content: unknown };
+type Downloadable = { title: string; template: ResumeTemplate; pageSize: ResumePageSize; content: unknown; style: StyleValues };
 
 /**
  * Makes a resume's PDF and saves it, without opening the editor. The PDF
@@ -10,7 +11,7 @@ type Downloadable = { title: string; template: ResumeTemplate; pageSize: ResumeP
 export async function downloadResumePdf(resume: Downloadable, application?: { role: string; company: string } | null) {
   const content = toResumeContent(resume.content);
   const { renderResumePdf } = await import('../../resume-pdf');
-  const { blob } = await renderResumePdf({ content, template: resume.template, pageSize: resume.pageSize });
+  const { blob } = await renderResumePdf({ content, template: resume.template, pageSize: resume.pageSize, style: toStyleValues(resume.style) });
 
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');

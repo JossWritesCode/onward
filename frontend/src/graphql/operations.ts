@@ -225,6 +225,13 @@ export const JobApplicationQuery = graphql(`
         template
         pageSize
         content
+        style {
+          fontSize
+          lineHeight
+          margin
+          sectionGap
+          accent
+        }
       }
       notes
       createdAt
@@ -1223,6 +1230,13 @@ export const ResumesQuery = graphql(`
       template
       pageSize
       content
+      style {
+        fontSize
+        lineHeight
+        margin
+        sectionGap
+        accent
+      }
       updatedAt
       jobApplication {
         id
@@ -1245,6 +1259,13 @@ export const ResumeQuery = graphql(`
       template
       pageSize
       content
+      style {
+        fontSize
+        lineHeight
+        margin
+        sectionGap
+        accent
+      }
       updatedAt
       jobApplication {
         id
@@ -1268,6 +1289,13 @@ export const ImportResumeMutation = graphql(`
         template
         pageSize
         content
+        style {
+          fontSize
+          lineHeight
+          margin
+          sectionGap
+          accent
+        }
         updatedAt
         jobApplication {
           id
@@ -1297,6 +1325,13 @@ export const UpdateResumeMutation = graphql(`
         template
         pageSize
         content
+        style {
+          fontSize
+          lineHeight
+          margin
+          sectionGap
+          accent
+        }
         updatedAt
         jobApplication {
           id

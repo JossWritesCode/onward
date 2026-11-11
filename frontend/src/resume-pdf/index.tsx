@@ -1,14 +1,16 @@
 import { pdf } from '@react-pdf/renderer';
 import type { ResumePageSize, ResumeTemplate } from '../gql/graphql';
+import type { StyleValues } from '../lib/resume/style';
 import type { ResumeContent } from '../lib/resume/types';
 import { registerFonts } from './fonts';
+import { buildTheme } from './theme';
 import { TEMPLATE_DOCUMENTS } from './templates';
 
 // Everything that needs @react-pdf/renderer lives in this folder, and the rest
 // of the app only reaches it through `import('../resume-pdf')`. That keeps the
 // PDF library (it's big) out of every page except the resume editor.
 
-export type ResumePdfInput = { content: ResumeContent; template: ResumeTemplate; pageSize: ResumePageSize };
+export type ResumePdfInput = { content: ResumeContent; template: ResumeTemplate; pageSize: ResumePageSize; style: StyleValues };
 export type ResumePdf = { blob: Blob; pages: number };
 
 /** How many pages a PDF has, counted from the page objects in the file itself. */
@@ -21,9 +23,9 @@ export function countPages(bytes: Uint8Array): number {
 }
 
 /** Makes the PDF in the browser. Nothing is sent to the server. */
-export async function renderResumePdf({ content, template, pageSize }: ResumePdfInput): Promise<ResumePdf> {
+export async function renderResumePdf({ content, template, pageSize, style }: ResumePdfInput): Promise<ResumePdf> {
   registerFonts();
   const Template = TEMPLATE_DOCUMENTS[template] ?? TEMPLATE_DOCUMENTS.CLASSIC;
-  const blob = await pdf(<Template content={content} pageSize={pageSize} />).toBlob();
+  const blob = await pdf(<Template content={content} pageSize={pageSize} theme={buildTheme(style)} />).toBlob();
   return { blob, pages: countPages(new Uint8Array(await blob.arrayBuffer())) };
 }

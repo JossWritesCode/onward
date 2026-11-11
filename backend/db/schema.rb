@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_10_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_11_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -217,6 +217,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_000002) do
     t.datetime "updated_at", null: false
     t.bigint "job_application_id"
     t.bigint "based_on_id"
+    t.jsonb "style", default: {}, null: false
     t.index ["based_on_id"], name: "index_resumes_on_based_on_id"
     t.index ["job_application_id"], name: "index_resumes_on_job_application_id", unique: true
     t.index ["user_id"], name: "index_resumes_on_user_id"

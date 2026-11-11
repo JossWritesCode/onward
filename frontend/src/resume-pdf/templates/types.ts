@@ -1,13 +1,29 @@
 import type { ComponentType } from 'react';
 import type { ResumePageSize } from '../../gql/graphql';
 import type { ResumeContent } from '../../lib/resume/types';
+import type { Theme } from '../theme';
 
 /** What every template is given. A template is a component that returns a react-pdf <Document>. */
-export type TemplateProps = { content: ResumeContent; pageSize: ResumePageSize };
+export type TemplateProps = { content: ResumeContent; pageSize: ResumePageSize; theme: Theme };
 export type Template = ComponentType<TemplateProps>;
 
 /** The fonts templates can use, registered in ../fonts.ts and embedded in the PDF. */
 export const FONTS = { serif: 'Neuton', sans: 'Roboto' } as const;
+
+/** The document title and author, from the content. */
+export function documentMeta(content: ResumeContent) {
+  return {
+    title: [content.name, content.title].filter(Boolean).join(' - ') || 'Resume',
+    author: content.name || undefined,
+    creator: 'Onward',
+    producer: 'Onward',
+  };
+}
+
+/** The contact line: headline, location, phone, email, links. */
+export function contactParts(content: ResumeContent): string[] {
+  return [content.title, content.location, content.phone, content.email, ...content.links].map((part) => part.trim()).filter(Boolean);
+}
 
 export const PAGE_SIZE_NAMES = { LETTER: 'LETTER', A4: 'A4' } as const satisfies Record<ResumePageSize, string>;
 

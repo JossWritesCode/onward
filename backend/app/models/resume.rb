@@ -2,7 +2,7 @@
 class Resume < ApplicationRecord
   # Adding a template: add it here, to Types::ResumeTemplateEnum, and to the
   # frontend's template list (see frontend/src/resume-pdf/templates).
-  TEMPLATES = %w[classic].freeze
+  TEMPLATES = %w[classic compact modern].freeze
   PAGE_SIZES = %w[letter a4].freeze
 
   belongs_to :user
@@ -16,6 +16,8 @@ class Resume < ApplicationRecord
   enum :page_size, PAGE_SIZES.index_with(&:itself), prefix: true, validate: true
 
   normalizes :title, with: ->(title) { title.to_s.strip }
+  # Every key present, every value in range. See ResumeStyle.
+  normalizes :style, with: ->(style) { ResumeStyle.normalize(style) }, apply_to_nil: true
 
   validates :title, presence: true, length: { maximum: 120 }
 
@@ -71,7 +73,7 @@ class Resume < ApplicationRecord
   def tailor_for(job_application)
     user.resumes.create!(
       title: self.class.unused_title(user, "#{title[0, 80]} – #{job_application.company[0, 40]}"),
-      template:, page_size:, content: content.deep_dup, source_text:,
+      template:, page_size:, style:, content: content.deep_dup, source_text:,
       job_application:, based_on: self
     )
   end
@@ -87,7 +89,7 @@ class Resume < ApplicationRecord
   def duplicate
     user.resumes.create!(
       title: self.class.unused_title(user, "#{title[0, 100]} copy"),
-      template:, page_size:, content: content.deep_dup, source_text:, based_on:
+      template:, page_size:, style:, content: content.deep_dup, source_text:, based_on:
     )
   end
 

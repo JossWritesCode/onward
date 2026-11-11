@@ -8,6 +8,7 @@ module Types
     field :page_size, Types::ResumePageSizeEnum, null: false
     field :content, GraphQL::Types::JSON, null: false,
       description: "Name, contact details, summary, skills, experience, education, and extra sections."
+    field :style, Types::ResumeStyleType, null: false, description: "Text size, spacing, margins, and accent colour."
     field :job_application, Types::JobApplicationType, null: true,
       description: "The application this resume is tailored for. Null for a base resume."
     field :based_on, Types::ResumeType, null: true, description: "The resume this one was tailored from, if it still exists."
