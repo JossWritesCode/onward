@@ -368,6 +368,15 @@ class ResumesTest < ActionDispatch::IntegrationTest
     assert_equal "modern", tailored.template
   end
 
+  test "a resume saved before styles existed reads as Normal" do
+    resume = Resume.import(@user, PASTE).first
+    resume.update_column(:style, {})
+
+    assert_equal ResumeStyle::DEFAULTS, Resume.find(resume.id).style
+    listed = graphql("query { resumes { style { fontSize accent } } }").dig("data", "resumes", 0, "style")
+    assert_equal({ "fontSize" => 9.5, "accent" => "#4f46e5" }, listed)
+  end
+
   test "changes the style and template from the editor" do
     id = import(PASTE).dig("resume", "id")
 

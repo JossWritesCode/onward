@@ -16,8 +16,13 @@ class Resume < ApplicationRecord
   enum :page_size, PAGE_SIZES.index_with(&:itself), prefix: true, validate: true
 
   normalizes :title, with: ->(title) { title.to_s.strip }
-  # Every key present, every value in range. See ResumeStyle.
+  # Every key present, every value in range, on the way in and on the way out
+  # (a resume saved before styles existed has {} stored). See ResumeStyle.
   normalizes :style, with: ->(style) { ResumeStyle.normalize(style) }, apply_to_nil: true
+
+  def style
+    ResumeStyle.normalize(super)
+  end
 
   validates :title, presence: true, length: { maximum: 120 }
 

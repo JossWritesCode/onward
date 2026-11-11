@@ -28,7 +28,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_000001) do
     t.bigint "custom_action_id"
     t.index ["contact_id"], name: "index_activities_on_contact_id"
     t.index ["custom_action_id"], name: "index_activities_on_custom_action_id"
-    t.index ["job_application_id", "kind"], name: "index_activities_once_per_application_and_kind", unique: true, where: "(automatic AND ((kind)::text = ANY (ARRAY[('application_sent'::character varying)::text, ('interview'::character varying)::text, ('offer'::character varying)::text, ('rejection'::character varying)::text])))"
+    t.index ["job_application_id", "kind"], name: "index_activities_once_per_application_and_kind", unique: true, where: "(automatic AND ((kind)::text = ANY ((ARRAY['application_sent'::character varying, 'interview'::character varying, 'offer'::character varying, 'rejection'::character varying])::text[])))"
     t.index ["job_application_id"], name: "index_activities_on_job_application_id"
     t.index ["user_id", "occurred_on"], name: "index_activities_on_user_id_and_occurred_on"
     t.index ["user_id", "occurred_on"], name: "index_activities_one_leetcode_day", unique: true, where: "((kind)::text = 'leetcode'::text)"
