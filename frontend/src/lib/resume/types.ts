@@ -82,8 +82,21 @@ export const PAGE_SIZES: readonly { id: ResumePageSize; label: string }[] = [
   { id: 'A4', label: 'A4' },
 ];
 
-/** A file name for the PDF, like "Dana Whitfield - Frontend v3.pdf". */
-export function pdfFileName(content: ResumeContent, title: string): string {
+const fileSafe = (text: string) => text.replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+/**
+ * A file name for the PDF. A resume tailored for an application is named for
+ * the job, like "Frontend Developer Brightline resume.pdf". A base resume is
+ * named for the person, like "Dana Whitfield - Frontend v3.pdf".
+ */
+export function pdfFileName(
+  content: ResumeContent,
+  title: string,
+  application?: { role: string; company: string } | null,
+): string {
+  if (application) {
+    return `${fileSafe([application.role, application.company, 'resume'].map(fileSafe).filter(Boolean).join(' '))}.pdf`;
+  }
   const name = [content.name, title].map((part) => part.trim()).filter(Boolean).join(' - ') || 'Resume';
-  return `${name.replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim()}.pdf`;
+  return `${fileSafe(name)}.pdf`;
 }

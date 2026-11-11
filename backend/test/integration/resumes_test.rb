@@ -191,4 +191,163 @@ class ResumesTest < ActionDispatch::IntegrationTest
     assert_equal "You need to sign in first.", graphql(IMPORT, variables: { text: PASTE }).dig("errors", 0, "message")
     assert_equal 0, Resume.count
   end
+
+  # --- Tailored resumes: linked to a job application ---------------------
+
+  TAILOR = <<~GRAPHQL
+    mutation($id: ID!, $jobApplicationId: ID!) {
+      tailorResume(id: $id, jobApplicationId: $jobApplicationId) {
+        resume { id title pageSize content basedOn { id } jobApplication { id company role } }
+        errors { field message }
+      }
+    }
+  GRAPHQL
+
+  LINK = <<~GRAPHQL
+    mutation($id: ID!, $jobApplicationId: ID) {
+      updateResume(id: $id, input: { jobApplicationId: $jobApplicationId }) {
+        resume { id jobApplication { id } }
+        errors { field message }
+      }
+    }
+  GRAPHQL
+
+  def application(company: "Brightline", role: "Frontend Developer", user: @user)
+    user.job_applications.create!(company:, role:, status: "saved")
+  end
+
+  def tailor(id, job_application)
+    graphql(TAILOR, variables: { id:, jobApplicationId: job_application.id.to_s }).dig("data", "tailorResume")
+  end
+
+  test "tailors a base resume for an application" do
+    base = Resume.import(@user, PASTE).first
+    base.update!(page_size: "a4")
+    brightline = application
+
+    result = tailor(base.id.to_s, brightline)
+
+    assert_empty result["errors"]
+    tailored = result["resume"]
+    assert_equal "Frontend Developer – Brightline", tailored["title"]
+    assert_equal "A4", tailored["pageSize"]
+    assert_equal "Dana Whitfield", tailored.dig("content", "name")
+    assert_equal base.id.to_s, tailored.dig("basedOn", "id")
+    assert_equal({ "id" => brightline.id.to_s, "company" => "Brightline", "role" => "Frontend Developer" }, tailored["jobApplication"])
+
+    # The base is untouched, and still a base resume.
+    assert_nil base.reload.job_application
+    assert_equal 2, @user.resumes.count
+
+    card = graphql("query($id: ID!) { jobApplication(id: $id) { resume { id title } } }", variables: { id: brightline.id.to_s })
+    assert_equal tailored["id"], card.dig("data", "jobApplication", "resume", "id")
+    board = graphql("query { stages { jobApplications { company resume { title } } } }").dig("data", "stages")
+    assert_equal [ "Frontend Developer – Brightline" ], board.flat_map { |stage| stage["jobApplications"] }.filter_map { |a| a.dig("resume", "title") }
+  end
+
+  test "an application has at most one tailored resume" do
+    base = Resume.import(@user, PASTE).first
+    brightline = application
+    first = tailor(base.id.to_s, brightline)["resume"]
+
+    again = tailor(base.id.to_s, brightline)
+    assert_nil again["resume"]
+    assert_equal [ { "field" => "jobApplicationId", "message" => "Brightline already has a tailored resume." } ], again["errors"]
+
+    linked = graphql(LINK, variables: { id: base.id.to_s, jobApplicationId: brightline.id.to_s }).dig("data", "updateResume")
+    assert_equal "Brightline already has a tailored resume.", linked["errors"].sole["message"]
+
+    pasted = graphql("mutation($text: String!, $app: ID) { importResume(text: $text, jobApplicationId: $app) { resume { id } errors { message } } }",
+      variables: { text: PASTE, app: brightline.id.to_s }).dig("data", "importResume")
+    assert_nil pasted["resume"]
+    assert_equal "Brightline already has a tailored resume.", pasted["errors"].sole["message"]
+
+    assert_equal [ first["id"] ], @user.resumes.where(job_application: brightline).pluck(:id).map(&:to_s)
+    assert_equal 2, @user.resumes.count
+
+    # The database refuses a second one too, whatever the app code does.
+    assert_raises(ActiveRecord::RecordNotUnique) do
+      Resume.transaction(requires_new: true) { base.update_column(:job_application_id, brightline.id) }
+    end
+    # Saving the linked one again is fine: it doesn't collide with itself.
+    assert Resume.find(first["id"]).update(title: "Renamed")
+  end
+
+  test "links, moves, and unlinks a resume from the editor" do
+    resume = Resume.import(@user, PASTE).first
+    brightline = application
+    northwind = application(company: "Northwind Labs", role: "Full Stack Engineer")
+
+    link = ->(job_application) { graphql(LINK, variables: { id: resume.id.to_s, jobApplicationId: job_application&.id&.to_s }).dig("data", "updateResume") }
+
+    assert_equal brightline.id.to_s, link.call(brightline).dig("resume", "jobApplication", "id")
+    assert_equal northwind.id.to_s, link.call(northwind).dig("resume", "jobApplication", "id")
+    assert_nil brightline.reload.resume
+
+    assert_nil link.call(nil).dig("resume", "jobApplication")
+    assert_nil resume.reload.job_application
+
+    # Leaving jobApplicationId out keeps the link as it is.
+    link.call(brightline)
+    graphql('mutation($id: ID!) { updateResume(id: $id, input: { title: "Renamed" }) { resume { id } } }', variables: { id: resume.id.to_s })
+    assert_equal brightline, resume.reload.job_application
+  end
+
+  test "a pasted resume can be linked to an application right away" do
+    brightline = application
+
+    result = graphql("mutation($text: String!, $app: ID) { importResume(text: $text, jobApplicationId: $app) { resume { title jobApplication { company } } errors { message } } }",
+      variables: { text: PASTE, app: brightline.id.to_s }).dig("data", "importResume")
+
+    assert_empty result["errors"]
+    assert_equal "Frontend Developer – Brightline", result.dig("resume", "title")
+    assert_equal "Brightline", result.dig("resume", "jobApplication", "company")
+  end
+
+  test "deleting an application keeps its resume, as a base resume" do
+    base = Resume.import(@user, PASTE).first
+    brightline = application
+    tailored_id = tailor(base.id.to_s, brightline).dig("resume", "id")
+
+    graphql("mutation($id: ID!) { deleteJobApplication(id: $id) { id } }", variables: { id: brightline.id.to_s })
+
+    kept = @user.resumes.find(tailored_id)
+    assert_nil kept.job_application_id
+    assert_equal base, kept.based_on
+  end
+
+  test "deleting the base keeps the tailored resume, and a copy of a tailored resume is a base resume" do
+    base = Resume.import(@user, PASTE).first
+    tailored_id = tailor(base.id.to_s, application).dig("resume", "id")
+
+    copy = graphql("mutation($id: ID!) { duplicateResume(id: $id) { resume { id jobApplication { id } } } }", variables: { id: tailored_id })
+      .dig("data", "duplicateResume", "resume")
+    assert_nil copy["jobApplication"]
+
+    graphql("mutation($id: ID!) { deleteResume(id: $id) { id } }", variables: { id: base.id.to_s })
+    assert_nil @user.resumes.find(tailored_id).based_on_id
+  end
+
+  test "you can't link resumes and applications across accounts" do
+    other = create_user
+    their_application = application(user: other, company: "Theirs")
+    their_resume = Resume.import(other, PASTE).first
+    mine = Resume.import(@user, PASTE).first
+    my_application = application
+
+    attempts = [
+      [ TAILOR, { id: mine.id.to_s, jobApplicationId: their_application.id.to_s } ],
+      [ TAILOR, { id: their_resume.id.to_s, jobApplicationId: my_application.id.to_s } ],
+      [ LINK, { id: mine.id.to_s, jobApplicationId: their_application.id.to_s } ],
+      [ "mutation($text: String!, $app: ID) { importResume(text: $text, jobApplicationId: $app) { resume { id } } }", { text: PASTE, app: their_application.id.to_s } ]
+    ]
+    attempts.each do |operation, variables|
+      assert_equal "We couldn't find that.", graphql(operation, variables:).dig("errors", 0, "message"), operation
+    end
+
+    assert_equal 0, Resume.where.not(job_application_id: nil).count
+    assert_equal [ 1, 1 ], [ @user.resumes.count, other.resumes.count ]
+    # The model refuses too, if anything ever skips the lookups above.
+    assert_not mine.update(job_application: their_application)
+  end
 end

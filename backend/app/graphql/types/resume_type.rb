@@ -8,7 +8,18 @@ module Types
     field :page_size, Types::ResumePageSizeEnum, null: false
     field :content, GraphQL::Types::JSON, null: false,
       description: "Name, contact details, summary, skills, experience, education, and extra sections."
+    field :job_application, Types::JobApplicationType, null: true,
+      description: "The application this resume is tailored for. Null for a base resume."
+    field :based_on, Types::ResumeType, null: true, description: "The resume this one was tailored from, if it still exists."
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+
+    def job_application
+      dataload_association(:job_application)
+    end
+
+    def based_on
+      dataload_association(:based_on)
+    end
   end
 end

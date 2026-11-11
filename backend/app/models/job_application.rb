@@ -19,6 +19,9 @@ class JobApplication < ApplicationRecord
   has_many :contacts, through: :job_application_contacts
   # Activities stay in your history (and streak) even if the application is deleted.
   has_many :activities, dependent: :nullify
+  # The resume tailored for this application, if there is one. Deleting the
+  # application keeps it, as a base resume.
+  has_one :resume, dependent: :nullify
   has_many :interview_rounds, -> { order(:created_at) }, dependent: :destroy
 
   # The status always matches the kind of the column the card is in. It's kept

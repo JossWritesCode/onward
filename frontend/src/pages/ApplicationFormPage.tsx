@@ -23,6 +23,7 @@ import { blankToNull, formatDate } from '../lib/format';
 import { WORK_ARRANGEMENTS, WORK_ARRANGEMENT_LABELS } from '../lib/status';
 import LinkPicker from '../components/LinkPicker';
 import InterviewRoundCard from '../components/prep/InterviewRoundCard';
+import ApplicationResume from '../components/resume/ApplicationResume';
 import { ArrowLeftIcon, BookmarkIcon, ExternalLinkIcon, TrashIcon } from '../components/icons';
 import { Button, Card, ErrorBanner, Field, Input, Select, Spinner, Textarea } from '../components/ui';
 
@@ -296,6 +297,8 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
         </section>
       )}
 
+      {existing && <ApplicationResume application={existing} />}
+
       <form onSubmit={handleSubmit} noValidate className="space-y-5">
         <ErrorBanner messages={generalErrors(errors, FIELDS)} />
 
@@ -422,19 +425,26 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
               placeholder="$90k–$110k"
             />
           </Field>
-          <Field
-            label="Resume version"
-            htmlFor="resume-version"
-            hint="Which resume you sent, so you can tell what works."
-            error={fieldError(errors, 'resumeVersion')}
-          >
-            <Input
-              id="resume-version"
-              value={form.resumeVersion}
-              onChange={(e) => set('resumeVersion', e.target.value)}
-              placeholder="Frontend v3"
-            />
-          </Field>
+          {/* Once a resume is linked (see the Resume section above), this note isn't needed. */}
+          {!existing?.resume && (
+            <Field
+              label="Resume version"
+              htmlFor="resume-version"
+              hint={
+                existing
+                  ? 'For a resume kept outside Onward. Or tailor one above.'
+                  : 'Which resume you sent. After saving, you can tailor one in Onward from this page.'
+              }
+              error={fieldError(errors, 'resumeVersion')}
+            >
+              <Input
+                id="resume-version"
+                value={form.resumeVersion}
+                onChange={(e) => set('resumeVersion', e.target.value)}
+                placeholder="Frontend v3"
+              />
+            </Field>
+          )}
         </Card>
 
         <Card className="space-y-4 p-5">

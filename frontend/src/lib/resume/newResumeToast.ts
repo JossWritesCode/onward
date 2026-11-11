@@ -16,23 +16,22 @@ function list(words: string[]) {
 }
 
 /**
- * The toast after a new resume is saved. It offers to log the win, and only
- * logs it if the button is pressed: a new resume isn't always a tailored one.
+ * A toast with a "Log a win: tailored resume" button. The win is only logged
+ * if the button is pressed. With an application, it's logged against that
+ * application, so it shows up in its history.
  */
-export function showNewResumeToast(filledFields: readonly string[]) {
-  const filled = filledFields.map((field) => FIELD_NAMES[field] ?? field);
-  const body =
-    filled.length > 0
-      ? `Your ${list(filled)} came from your last resume. Give everything a read-through.`
-      : 'Give it a read-through, then download your PDF.';
-
-  showToast('celebrate', 'Resume saved', body, {
+function showResumeToast(title: string, body: string, application?: { id: string; company: string } | null) {
+  showToast('celebrate', title, body, {
     label: 'Log a win: tailored resume',
     onClick: () => {
       client
         .mutate({
           mutation: LogActivityMutation,
-          variables: { kind: 'TAILORED_MATERIALS', note: 'Tailored resume' },
+          variables: {
+            kind: 'TAILORED_MATERIALS',
+            jobApplicationId: application?.id ?? null,
+            note: application ? `Tailored resume for ${application.company}` : 'Tailored resume',
+          },
           refetchQueries: ['Progress', 'Streak', 'Today'],
         })
         .then(({ data }) => {
@@ -43,4 +42,23 @@ export function showNewResumeToast(filledFields: readonly string[]) {
         .catch(() => showToast('gentle', "That didn't log", 'You can log it from the Progress page instead.'));
     },
   });
+}
+
+/** After a pasted resume is saved. */
+export function showNewResumeToast(filledFields: readonly string[], application?: { id: string; company: string } | null) {
+  const filled = filledFields.map((field) => FIELD_NAMES[field] ?? field);
+  const body =
+    filled.length > 0
+      ? `Your ${list(filled)} came from your last resume. Give everything a read-through.`
+      : 'Give it a read-through, then download your PDF.';
+  showResumeToast(application ? `Resume saved for ${application.company}` : 'Resume saved', body, application);
+}
+
+/** After a resume is copied for an application. */
+export function showTailoredToast(application: { id: string; company: string }, baseTitle: string) {
+  showResumeToast(
+    `Copied for ${application.company}`,
+    `This started as "${baseTitle}". Shape it for this job, then log the win when you're done.`,
+    application,
+  );
 }

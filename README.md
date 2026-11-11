@@ -81,6 +81,12 @@ Onward is being built in milestones. So far:
 - The Classic template: one column, your name large and centred, serif headings with a thin line under them. Letter or A4.
 - The PDF is made in your browser, with real selectable text and the fonts (Neuton and Roboto) embedded. A note appears if it runs past one page.
 - After a new resume is saved, a "Log a win: tailored resume" button. It's only logged if you press it.
+- Base and tailored resumes: a resume is a **base** resume until it's linked to a job application, which makes it the resume **tailored** for that job. Each application has at most one.
+- Tailor from an application's page ("Tailor a resume" copies a base resume and links the copy), from the Resumes page ("Tailor for…"), from the paste screen ("For an application"), or by picking an application in the editor.
+- A tailored resume shows as a tag on its card on the board and in the phone list (click the tag to open it), and in a Resume section on the application's page with **Open** and **Download PDF**.
+- A tailored resume downloads as "[Job title] [Company] resume.pdf", like "Frontend Developer Brightline resume.pdf". Base resumes download as "Your Name - Resume name.pdf".
+- Logging the win from a tailored resume's toast records it against that application.
+- Deleting an application keeps its resume, as a base resume. The "Resume version" note on an application stays for resumes kept outside Onward, and is hidden once a resume is linked.
 - Resumes are part of "Download my data" and are deleted with your account.
 
 ## Tech stack
@@ -276,6 +282,8 @@ If LinkedIn or Indeed change how their pages are built, some fields may come up 
 Dates are kept as `2022-08` (or `Present`) and shown on the resume as "Aug '22 - Present". If you type "Aug 2022" or "08/2022" in the editor, saving tidies it up.
 
 If Format reports a problem, the message names the line of your paste to look at. The quickest fix is usually to ask the AI to "reply again with valid JSON only", or to fix that one line by hand.
+
+**Tailoring for a job.** Open the application from the board and use **Tailor a resume** in its Resume section: pick a base resume, and Onward copies it, links the copy to that application, and opens it. Edit the copy for the job, then download it. To swap in a different resume, open the linked one and set its **Job application** to "None" (or delete it) first, since each application has one.
 
 **Adding a template.** Classic is the only template so far, and the code is laid out so more are easy to add. A template is one React component that takes the resume's content and a page size:
 

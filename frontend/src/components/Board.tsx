@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { useMutation } from '@apollo/client';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import type { BoardQuery } from '../gql/graphql';
 import { MoveJobApplicationMutation } from '../graphql/operations';
 import { celebrateMove, showToast } from '../lib/celebrate';
@@ -9,6 +9,7 @@ import { formatDate } from '../lib/format';
 import { playSound } from '../lib/sounds';
 import { KIND_ACCENTS, WORK_ARRANGEMENT_LABELS } from '../lib/status';
 import FollowUpTag from './FollowUpTag';
+import ResumeTag, { resumePathFromClick } from './resume/ResumeTag';
 import { CalendarIcon, ColumnsIcon, MapPinIcon, PlusIcon, UsersIcon } from './icons';
 
 type BoardStage = BoardQuery['stages'][number];
@@ -62,6 +63,7 @@ function toColumns(stages: readonly BoardStage[]): Column[] {
 export default function Board({ stages }: { stages: readonly BoardStage[] }) {
   const [columns, setColumns] = useState<Column[]>(() => toColumns(stages));
   const [drag, setDrag] = useState<Drag | null>(null);
+  const navigate = useNavigate();
   const [moveApplication] = useMutation(MoveJobApplicationMutation);
 
   // Window listeners outlive a render, so they read the latest state through refs.
@@ -347,7 +349,16 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
                             if (pressRef.current && pressRef.current.pointerType !== 'mouse') e.preventDefault();
                           }}
                           onClick={(e) => {
-                            if (suppressClickRef.current) e.preventDefault();
+                            if (suppressClickRef.current) {
+                              e.preventDefault();
+                              return;
+                            }
+                            // The resume tag on a card opens the resume instead of the application.
+                            const resumePath = resumePathFromClick(e);
+                            if (resumePath) {
+                              e.preventDefault();
+                              navigate(resumePath);
+                            }
                           }}
                           className="no-callout block cursor-grab touch-manipulation rounded-xl border-2 border-b-4 border-stone-200 bg-white p-3 transition select-none hover:border-brand-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 active:cursor-grabbing dark:border-stone-700 dark:bg-stone-900 dark:hover:border-brand-700"
                         >
@@ -435,7 +446,7 @@ function CardContent({ card }: { card: BoardCard }) {
     <>
       <p className="truncate font-extrabold">{card.company}</p>
       <p className="truncate text-sm text-stone-600 dark:text-stone-300">{card.role}</p>
-      {(card.nextInterviewAt || card.followUpOn) && (
+      {(card.nextInterviewAt || card.followUpOn || card.resume) && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {card.nextInterviewAt && (
             <span className="inline-flex rounded-full bg-gold-100 px-2 py-0.5 text-xs font-extrabold text-gold-700 dark:bg-amber-900/40 dark:text-amber-200">
@@ -443,6 +454,7 @@ function CardContent({ card }: { card: BoardCard }) {
             </span>
           )}
           <FollowUpTag on={card.followUpOn} due={card.followUpDue} />
+          {card.resume && <ResumeTag resume={card.resume} />}
         </div>
       )}
       {(applied || where || card.contacts.length > 0) && (

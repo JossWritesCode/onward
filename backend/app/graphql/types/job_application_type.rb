@@ -15,7 +15,8 @@ module Types
     field :location, String, null: true
     field :work_arrangement, Types::WorkArrangementEnum, null: true
     field :job_description, String, null: true
-    field :resume_version, String, null: true
+    field :resume_version, String, null: true, description: "A note about which resume you sent, for resumes kept outside Onward."
+    field :resume, Types::ResumeType, null: true, description: "The resume tailored for this application, if there is one."
     field :notes, String, null: true
     field :contacts, [ Types::ContactType ], null: false
     field :interview_rounds, [ Types::InterviewRoundType ], null: false, description: "Oldest first."
@@ -34,6 +35,10 @@ module Types
 
     def stage
       dataload_association(:stage)
+    end
+
+    def resume
+      dataload_association(:resume)
     end
 
     def interview_rounds

@@ -78,6 +78,10 @@ export const BoardQuery = graphql(`
         nextInterviewAt
         followUpOn
         followUpDue
+        resume {
+          id
+          title
+        }
         contacts {
           id
           name
@@ -188,6 +192,9 @@ export const JobApplicationsQuery = graphql(`
       location
       workArrangement
       updatedAt
+      resume {
+        id
+      }
       contacts {
         id
         name
@@ -212,6 +219,13 @@ export const JobApplicationQuery = graphql(`
       workArrangement
       jobDescription
       resumeVersion
+      resume {
+        id
+        title
+        template
+        pageSize
+        content
+      }
       notes
       createdAt
       updatedAt
@@ -1210,6 +1224,15 @@ export const ResumesQuery = graphql(`
       pageSize
       content
       updatedAt
+      jobApplication {
+        id
+        company
+        role
+      }
+      basedOn {
+        id
+        title
+      }
     }
   }
 `);
@@ -1223,13 +1246,22 @@ export const ResumeQuery = graphql(`
       pageSize
       content
       updatedAt
+      jobApplication {
+        id
+        company
+        role
+      }
+      basedOn {
+        id
+        title
+      }
     }
   }
 `);
 
 export const ImportResumeMutation = graphql(`
-  mutation ImportResume($text: String!) {
-    importResume(text: $text) {
+  mutation ImportResume($text: String!, $jobApplicationId: ID) {
+    importResume(text: $text, jobApplicationId: $jobApplicationId) {
       resume {
         id
         title
@@ -1237,6 +1269,15 @@ export const ImportResumeMutation = graphql(`
         pageSize
         content
         updatedAt
+        jobApplication {
+          id
+          company
+          role
+        }
+        basedOn {
+          id
+          title
+        }
       }
       filledFields
       errors {
@@ -1257,6 +1298,36 @@ export const UpdateResumeMutation = graphql(`
         pageSize
         content
         updatedAt
+        jobApplication {
+          id
+          company
+          role
+        }
+        basedOn {
+          id
+          title
+        }
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+// Copies a resume and links the copy to a job application.
+export const TailorResumeMutation = graphql(`
+  mutation TailorResume($id: ID!, $jobApplicationId: ID!) {
+    tailorResume(id: $id, jobApplicationId: $jobApplicationId) {
+      resume {
+        id
+        title
+        jobApplication {
+          id
+          company
+          role
+        }
       }
       errors {
         field

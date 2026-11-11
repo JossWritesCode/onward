@@ -1,11 +1,11 @@
 import { useState, type FormEvent } from 'react';
-import { useMutation } from '@apollo/client';
-import { Link, useNavigate } from 'react-router';
-import { ImportResumeMutation } from '../graphql/operations';
+import { useMutation, useQuery } from '@apollo/client';
+import { Link, useNavigate, useSearchParams } from 'react-router';
+import { ImportResumeMutation, JobApplicationsQuery } from '../graphql/operations';
 import { showNewResumeToast } from '../lib/resume/newResumeToast';
 import { RESUME_PROMPT } from '../lib/resume/prompt';
 import { ArrowLeftIcon, CheckIcon, CopyIcon, SparklesIcon } from '../components/icons';
-import { Button, Card, ErrorBanner, Textarea } from '../components/ui';
+import { Button, Card, ErrorBanner, Field, Select, Textarea } from '../components/ui';
 
 const STEPS = [
   'Copy the prompt and paste it into any AI chat.',
@@ -19,7 +19,15 @@ export default function ResumeNewPage() {
   const [text, setText] = useState('');
   const [errors, setErrors] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
-  const [importResume, { loading }] = useMutation(ImportResumeMutation, { refetchQueries: ['Resumes'] });
+  // "Paste it in instead" on an application's page arrives with ?application=ID.
+  const [searchParams] = useSearchParams();
+  const [applicationId, setApplicationId] = useState(searchParams.get('application') ?? '');
+  const { data: applicationsData } = useQuery(JobApplicationsQuery);
+  const applications = applicationsData?.jobApplications ?? [];
+  const application = applications.find((candidate) => candidate.id === applicationId);
+  const [importResume, { loading }] = useMutation(ImportResumeMutation, {
+    refetchQueries: ['Resumes', 'Board', 'JobApplications', 'JobApplication'],
+  });
 
   async function copyPrompt() {
     try {
@@ -35,10 +43,10 @@ export default function ResumeNewPage() {
     event.preventDefault();
     setErrors([]);
     try {
-      const result = (await importResume({ variables: { text } })).data?.importResume;
+      const result = (await importResume({ variables: { text, jobApplicationId: applicationId || null } })).data?.importResume;
       if (result?.resume) {
         navigate(`/resumes/${result.resume.id}`);
-        showNewResumeToast(result.filledFields);
+        showNewResumeToast(result.filledFields, result.resume.jobApplication);
       } else {
         setErrors(result?.errors.map((error) => error.message) ?? ['Something went wrong. Try again.']);
       }
@@ -102,6 +110,28 @@ export default function ResumeNewPage() {
         <p id="resume-json-hint" className="-mt-2 text-sm text-stone-500 dark:text-stone-400">
           Paste the whole reply. Code-fence marks, stray commas, and curly quotes are fine.
         </p>
+
+        {applications.length > 0 && (
+          <Field
+            label="For an application"
+            htmlFor="resume-application"
+            hint={
+              application
+                ? `It'll show on the ${application.company} card, and download as "${application.role} ${application.company} resume.pdf".`
+                : 'Optional. Pick one if this resume is tailored for a particular job.'
+            }
+          >
+            <Select id="resume-application" value={applicationId} onChange={(event) => setApplicationId(event.target.value)}>
+              <option value="">None: this is a base resume</option>
+              {applications.map((candidate) => (
+                <option key={candidate.id} value={candidate.id} disabled={Boolean(candidate.resume)}>
+                  {candidate.company} · {candidate.role}
+                  {candidate.resume ? ' (has a resume)' : ''}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        )}
 
         <ErrorBanner messages={errors} />
 

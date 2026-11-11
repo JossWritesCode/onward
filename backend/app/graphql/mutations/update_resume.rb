@@ -1,6 +1,6 @@
 module Mutations
   class UpdateResume < BaseMutation
-    description "Changes a resume's title, template, page size, or content."
+    description "Changes a resume's title, template, page size, content, or which application it's tailored for."
 
     argument :id, ID, required: true
     argument :input, Types::ResumeInput, required: true
@@ -9,8 +9,17 @@ module Mutations
     field :errors, [ Types::UserErrorType ], null: false
 
     def resolve(id:, input:)
-      resume = current_user!.resumes.find(id)
+      user = current_user!
+      resume = user.resumes.find(id)
       attributes = input.to_h
+
+      if attributes.key?(:job_application_id)
+        application_id = attributes.delete(:job_application_id)
+        resume.job_application = application_id.present? ? user.job_applications.find(application_id) : nil
+        if (problem = Resume.link_problem(resume.job_application, except: resume))
+          return { resume: nil, errors: [ { field: "jobApplicationId", message: problem } ] }
+        end
+      end
 
       if attributes.key?(:content)
         problems = resume.replace_content(attributes.delete(:content))

@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react';
 import { useMutation } from '@apollo/client';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import type { BoardQuery } from '../gql/graphql';
 import { MoveJobApplicationMutation } from '../graphql/operations';
 import { celebrateMove, showToast } from '../lib/celebrate';
 import { formatDate } from '../lib/format';
 import { STATUS_STYLES, WORK_ARRANGEMENT_LABELS } from '../lib/status';
 import FollowUpTag from './FollowUpTag';
+import ResumeTag, { resumePathFromClick } from './resume/ResumeTag';
 import { CalendarIcon, MapPinIcon, UsersIcon } from './icons';
 import { Card } from './ui';
 
@@ -90,6 +91,7 @@ function FilterPill({
 
 function ApplicationRow({ row, stages }: { row: Row; stages: readonly BoardStage[] }) {
   const [moveApplication, { loading }] = useMutation(MoveJobApplicationMutation, { refetchQueries: ['Board', 'Streak', 'Progress', 'Today'] });
+  const navigate = useNavigate();
   const applied = formatDate(row.dateApplied);
   const where = [row.location, row.workArrangement ? WORK_ARRANGEMENT_LABELS[row.workArrangement] : null]
     .filter(Boolean)
@@ -115,11 +117,24 @@ function ApplicationRow({ row, stages }: { row: Row; stages: readonly BoardStage
     <Card className="flex flex-col gap-3 p-4 transition hover:border-brand-300 sm:flex-row sm:items-center dark:hover:border-brand-700">
       <Link
         to={`/applications/${row.id}`}
+        onClick={(e) => {
+          // The resume tag opens the resume instead of the application.
+          const resumePath = resumePathFromClick(e);
+          if (resumePath) {
+            e.preventDefault();
+            navigate(resumePath);
+          }
+        }}
         className="min-w-0 flex-1 rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30"
       >
         <p className="truncate text-lg font-extrabold">{row.company}</p>
         <p className="truncate text-stone-600 dark:text-stone-300">{row.role}</p>
-        <FollowUpTag on={row.followUpOn} due={row.followUpDue} className="mt-1.5" />
+        {(row.followUpOn || row.resume) && (
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            <FollowUpTag on={row.followUpOn} due={row.followUpDue} />
+            {row.resume && <ResumeTag resume={row.resume} />}
+          </div>
+        )}
         <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-stone-500 dark:text-stone-400">
           {applied && (
             <span className="inline-flex items-center gap-1">

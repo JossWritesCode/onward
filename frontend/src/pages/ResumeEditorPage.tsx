@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import { Link, useParams } from 'react-router';
 import type { ResumePageSize, ResumeQuery as ResumeQueryData, ResumeTemplate } from '../gql/graphql';
-import { ResumeQuery, UpdateResumeMutation } from '../graphql/operations';
+import { JobApplicationsQuery, ResumeQuery, UpdateResumeMutation } from '../graphql/operations';
 import { generalErrors, fieldError, type UserError } from '../lib/errors';
 import { plural } from '../lib/activities';
 import { PAGE_SIZES, TEMPLATES, pdfFileName, toResumeContent, type ResumeContent } from '../lib/resume/types';
@@ -14,13 +14,21 @@ import { ArrowLeftIcon, CheckIcon, DownloadIcon, ExternalLinkIcon } from '../com
 import { Button, Card, ErrorBanner, Field, Input, Select, Spinner, buttonClasses } from '../components/ui';
 
 type Existing = ResumeQueryData['resume'];
-type Draft = { title: string; template: ResumeTemplate; pageSize: ResumePageSize; content: ResumeContent };
+type Draft = {
+  title: string;
+  template: ResumeTemplate;
+  pageSize: ResumePageSize;
+  content: ResumeContent;
+  /** The application this is tailored for, or '' for a base resume. */
+  jobApplicationId: string;
+};
 
 const toDraft = (resume: Existing): Draft => ({
   title: resume.title,
   template: resume.template,
   pageSize: resume.pageSize,
   content: toResumeContent(resume.content),
+  jobApplicationId: resume.jobApplication?.id ?? '',
 });
 
 /** The editor at /resumes/:id: the form on the left, the PDF on the right. */
@@ -38,11 +46,19 @@ function ResumeEditor({ resume }: { resume: Existing }) {
   const [saved, setSaved] = useState<Draft>(() => toDraft(resume));
   const [draft, setDraft] = useState<Draft>(saved);
   const [errors, setErrors] = useState<UserError[]>([]);
-  const [updateResume, { loading: saving }] = useMutation(UpdateResumeMutation, { refetchQueries: ['Resumes'] });
+  const [updateResume, { loading: saving }] = useMutation(UpdateResumeMutation, {
+    refetchQueries: ['Resumes', 'Board', 'JobApplications', 'JobApplication'],
+  });
 
   const wide = useMediaQuery('(min-width: 1024px)');
   const pdf = useResumePdf(draft.content, draft.template, draft.pageSize);
-  const fileName = pdfFileName(draft.content, draft.title);
+  // The applications to pick from. The one saved on the resume is known even before this loads.
+  const { data: applicationsData } = useQuery(JobApplicationsQuery);
+  const applications = applicationsData?.jobApplications ?? [];
+  const application =
+    applications.find((candidate) => candidate.id === draft.jobApplicationId) ??
+    (resume.jobApplication?.id === draft.jobApplicationId ? resume.jobApplication : null);
+  const fileName = pdfFileName(draft.content, draft.title, application);
   const dirty = useMemo(() => JSON.stringify(draft) !== JSON.stringify(saved), [draft, saved]);
 
   // Ask before closing the tab with unsaved changes.
@@ -58,7 +74,9 @@ function ResumeEditor({ resume }: { resume: Existing }) {
     const sent = draft;
     setErrors([]);
     try {
-      const result = (await updateResume({ variables: { id: resume.id, input: sent } })).data?.updateResume;
+      const result = (await updateResume({
+          variables: { id: resume.id, input: { ...sent, jobApplicationId: sent.jobApplicationId || null } },
+        })).data?.updateResume;
       if (result?.resume) {
         // The server tidies things up (dates like "Aug 2022" become 2022-08,
         // blank bullets go). Take its version, unless you kept typing meanwhile.
@@ -106,7 +124,7 @@ function ResumeEditor({ resume }: { resume: Existing }) {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <form onSubmit={handleSubmit} noValidate className="min-w-0 space-y-5">
-          <ErrorBanner messages={generalErrors(errors, ['title'])} />
+          <ErrorBanner messages={generalErrors(errors, ['title', 'jobApplicationId'])} />
 
           <Card className="space-y-4 p-5">
             <Field
@@ -154,6 +172,56 @@ function ResumeEditor({ resume }: { resume: Existing }) {
                 </Field>
               )}
             </div>
+          </Card>
+
+          <Card className="space-y-3 p-5">
+            <Field
+              label="Job application"
+              htmlFor="resume-application"
+              error={fieldError(errors, 'jobApplicationId')}
+              hint={
+                application
+                  ? `Tailored for this job. It shows on the card, and downloads as "${fileName}".`
+                  : 'A base resume. Pick an application to make this the resume tailored for it.'
+              }
+            >
+              <Select
+                id="resume-application"
+                value={draft.jobApplicationId}
+                onChange={(e) => setDraft({ ...draft, jobApplicationId: e.target.value })}
+              >
+                <option value="">None: this is a base resume</option>
+                {/* Shown while the list loads, so the saved choice never looks blank. */}
+                {application && !applications.some((candidate) => candidate.id === application.id) && (
+                  <option value={application.id}>
+                    {application.company} · {application.role}
+                  </option>
+                )}
+                {applications.map((candidate) => {
+                  const taken = Boolean(candidate.resume) && candidate.resume?.id !== resume.id;
+                  return (
+                    <option key={candidate.id} value={candidate.id} disabled={taken}>
+                      {candidate.company} · {candidate.role}
+                      {taken ? ' (has a resume)' : ''}
+                    </option>
+                  );
+                })}
+              </Select>
+            </Field>
+            {(application || resume.basedOn) && (
+              <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-bold">
+                {application && (
+                  <Link to={`/applications/${application.id}`} className="text-brand-600 hover:underline dark:text-brand-300">
+                    Open the {application.company} card
+                  </Link>
+                )}
+                {resume.basedOn && (
+                  <Link to={`/resumes/${resume.basedOn.id}`} className="text-stone-500 hover:text-brand-600 dark:text-stone-400">
+                    Tailored from {resume.basedOn.title}
+                  </Link>
+                )}
+              </p>
+            )}
           </Card>
 
           <ResumeForm content={draft.content} onChange={(content) => setDraft((current) => ({ ...current, content }))} />
