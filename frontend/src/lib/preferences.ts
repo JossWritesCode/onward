@@ -43,6 +43,7 @@ const mutedSetting = createSetting('onward:muted');
 const viewSetting = createSetting('onward:view');
 const quoteHiddenSetting = createSetting('onward:quote-hidden-on');
 const quotePickSetting = createSetting('onward:quote-pick');
+const designOpenSetting = createSetting('onward:resume-design-open');
 
 export function isMuted() {
   return mutedSetting.get() === 'true';
@@ -78,6 +79,12 @@ export function useQuotePick(today: string): [number | null, (index: number) => 
   const [day, index] = (stored ?? '').split(':');
   const pick = day === today && index !== undefined && /^\d+$/.test(index) ? Number(index) : null;
   return [pick, (next) => quotePickSetting.set(`${today}:${next}`)];
+}
+
+/** Whether the resume editor's Design panel is open. It starts closed, so the preview gets the room. */
+export function useDesignOpen(): [boolean, (open: boolean) => void] {
+  const stored = useSyncExternalStore(designOpenSetting.subscribe, designOpenSetting.get);
+  return [stored === 'true', (open) => designOpenSetting.set(open ? 'true' : 'false')];
 }
 
 export function prefersReducedMotion() {

@@ -8,9 +8,10 @@ import { overflowMessage } from '../lib/resume/overflow';
 import { toStyleValues, type StyleValues } from '../lib/resume/style';
 import { PAGE_SIZES, pdfFileName, toResumeContent, type ResumeContent } from '../lib/resume/types';
 import { useResumePdf } from '../lib/resume/useResumePdf';
+import { useDesignOpen } from '../lib/preferences';
 import { useMediaQuery } from '../lib/useMediaQuery';
 import DesignPanel from '../components/resume/DesignPanel';
-import PdfPages from '../components/resume/PdfPages';
+import ResumePreview from '../components/resume/ResumePreview';
 import ResumeForm from '../components/resume/ResumeForm';
 import { ArrowLeftIcon, CheckIcon, ChevronDownIcon, DownloadIcon } from '../components/icons';
 import { Button, Card, ErrorBanner, Field, Input, Select, Spinner, buttonClasses } from '../components/ui';
@@ -60,7 +61,8 @@ function ResumeEditor({ resume }: { resume: Existing }) {
   const wide = useMediaQuery('(min-width: 1024px)');
   // On phones, the form and the preview take turns.
   const [tabShown, setTabShown] = useState<'edit' | 'preview'>('edit');
-  const [designOpen, setDesignOpen] = useState(true);
+  // Closed until you open it, so the preview gets the room. Your choice is remembered.
+  const [designOpen, setDesignOpen] = useDesignOpen();
 
   const pdf = useResumePdf(draft.content, draft.template, draft.pageSize, draft.style);
   // The applications to pick from. The one saved on the resume is known even before this loads.
@@ -134,7 +136,7 @@ function ResumeEditor({ resume }: { resume: Existing }) {
       <button
         type="button"
         aria-expanded={designOpen}
-        onClick={() => setDesignOpen((open) => !open)}
+        onClick={() => setDesignOpen(!designOpen)}
         className="flex w-full items-center gap-2 text-left text-lg font-black"
       >
         <ChevronDownIcon className={`transition-transform ${designOpen ? '' : '-rotate-90'}`} />
@@ -157,10 +159,14 @@ function ResumeEditor({ resume }: { resume: Existing }) {
     </Card>
   );
 
-  const pages = pdf.opened ? (
-    <PdfPages pdf={pdf.opened} working={pdf.working} />
-  ) : (
-    !pdf.error && <Spinner label="Making your PDF" />
+  const preview = (layout: 'panel' | 'flow') => (
+    <ResumePreview
+      pdf={pdf.opened}
+      working={pdf.working}
+      loading={!pdf.error}
+      layout={layout}
+      className={layout === 'panel' ? 'rounded-xl' : '-mx-4'}
+    />
   );
 
   // The form and the preview are the same on every screen; what differs is where they sit.
@@ -273,18 +279,24 @@ function ResumeEditor({ resume }: { resume: Existing }) {
     </div>
   );
 
+  const backLink = (
+    <Link
+      to="/resumes"
+      className={`inline-flex items-center gap-1.5 font-bold text-stone-500 hover:text-brand-600 dark:text-stone-400 ${wide ? '' : 'mb-4'}`}
+    >
+      <ArrowLeftIcon /> Resumes
+    </Link>
+  );
+
   return (
     <div>
-      <Link
-        to="/resumes"
-        className="mb-4 inline-flex items-center gap-1.5 font-bold text-stone-500 hover:text-brand-600 dark:text-stone-400"
-      >
-        <ArrowLeftIcon /> Resumes
-      </Link>
+      {!wide && backLink}
 
       {wide ? (
         <div className="grid gap-6 lg:grid-cols-2">
           <form onSubmit={handleSubmit} noValidate className="min-w-0 space-y-5">
+            {/* In the form's column, so the preview starts at the top and a whole page fits without scrolling. */}
+            <div className="-mb-1">{backLink}</div>
             {form}
             {saveBar()}
           </form>
@@ -297,7 +309,7 @@ function ResumeEditor({ resume }: { resume: Existing }) {
             {design}
             {tooLong}
             {pdf.error && <ErrorBanner messages={[pdf.error]} />}
-            <div className="min-h-0 flex-1 overflow-auto rounded-xl bg-stone-200 p-4 dark:bg-stone-800">{pages}</div>
+            {preview('panel')}
           </aside>
         </div>
       ) : (
@@ -326,7 +338,7 @@ function ResumeEditor({ resume }: { resume: Existing }) {
               {previewStatus}
               {design}
               {pdf.error && <ErrorBanner messages={[pdf.error]} />}
-              <div className="-mx-4 bg-stone-200 px-4 py-4 dark:bg-stone-800">{pages}</div>
+              {preview('flow')}
             </div>
           )}
 

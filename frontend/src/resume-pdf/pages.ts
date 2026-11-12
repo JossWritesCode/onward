@@ -7,6 +7,8 @@ import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 GlobalWorkerOptions.workerSrc = workerUrl;
 
+const MAX_CANVAS_PIXELS = 16_000_000;
+
 /** How much of the page the text reaches down to, 0 to 1. For a one-page resume this is page 1; otherwise the last page. */
 export type Overflow = { pages: number; lastPageFill: number };
 
@@ -33,8 +35,11 @@ export async function openPdf(bytes: ArrayBuffer): Promise<OpenedPdf> {
 
     async draw(number, canvas, cssWidth) {
       const page = await document.getPage(number);
-      const ratio = Math.min(window.devicePixelRatio || 1, 3);
-      const scale = cssWidth / page.getViewport({ scale: 1 }).width;
+      const base = page.getViewport({ scale: 1 });
+      const scale = cssWidth / base.width;
+      // Sharp on high-density screens, but never a canvas so big the browser refuses it when zoomed in.
+      const sharpest = Math.sqrt(MAX_CANVAS_PIXELS / (base.width * scale * base.height * scale));
+      const ratio = Math.max(1, Math.min(window.devicePixelRatio || 1, 3, sharpest));
       const viewport = page.getViewport({ scale: scale * ratio });
       canvas.width = Math.floor(viewport.width);
       canvas.height = Math.floor(viewport.height);

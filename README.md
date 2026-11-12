@@ -18,7 +18,8 @@ Onward is being built in milestones. So far:
 
 **The board and encouragement**
 - A drag-and-drop board, the main view on computers. Phones get a list view by default, and on the board you press and hold a card to drag it.
-- Customizable columns: add, rename, reorder, and delete them. Each column has a type (saved, applied, interviewing, offer, rejected), so "Phone screen" and "Final round" both count as interviewing.
+- A **Board** button in the header takes you back to the board from anywhere. The logo does too.
+- Customizable columns: add, rename, reorder, and delete them. With a mouse or trackpad, drag a column by the grip in its header to move it. On a phone, reorder from **Add or edit columns**. Each column has a type (saved, applied, interviewing, offer, rejected), so "Phone screen" and "Final round" both count as interviewing.
 - A daily quote at the top of the board. Every quote's wording was checked against its original source.
 - Celebrations that scale: confetti and a chime for applying, more for an interview, a full-screen celebration for an offer, and a kind word when you get a rejection.
 - A sound toggle in the header. Confetti is skipped when your device is set to reduce motion.
@@ -78,8 +79,9 @@ Onward is being built in milestones. So far:
 - New resume: copy Onward's prompt into any AI chat along with your resume, paste back the JSON it writes, and press **Format**. Onward forgives the usual slips (code-fence marks, trailing commas, curly quotes, leftover `**`). If it still can't read the JSON, it tells you where it broke, like "Line 12: missing a comma", and saves nothing.
 - Contact details the AI left blank (it's told never to make them up) are filled in from your most recent resume.
 - An editor with the form on the left and a live preview on the right, drawn page by page as you type. On phones, Edit and Preview tabs.
+- The preview shows a whole page at once. Zoom with **−** and **+**, switch between **Fit page** and **Fit width**, or press **Expand** to see it over the whole window (Esc closes it).
 - Three templates: Classic (centred serif name, thin rules), Compact (small sans-serif headings, fits more on a page), and Modern (left-aligned, with an accent colour you pick). Letter or A4.
-- A Design panel beside the preview: Density (Roomy, Normal, Tight) moves text size, line spacing, margins, and section spacing together, and Fine-tune adjusts each on its own. Each resume keeps its own settings, so a tailored copy can be tightened for one job.
+- A Design panel above the preview, closed until you open it (Onward remembers which you prefer): Density (Roomy, Normal, Tight) moves text size, line spacing, margins, and section spacing together, and Fine-tune adjusts each on its own. Each resume keeps its own settings, so a tailored copy can be tightened for one job.
 - The PDF is made in your browser, with real selectable text and the fonts (Neuton and Roboto) embedded. If it runs past one page, a note says how full the last page is, so you know whether you're a bullet away or a section away.
 - After a new resume is saved, a "Log a win: tailored resume" button. It's only logged if you press it.
 - Base and tailored resumes: a resume is a **base** resume until it's linked to a job application, which makes it the resume **tailored** for that job. Each application has at most one.
@@ -286,7 +288,7 @@ If Format reports a problem, the message names the line of your paste to look at
 
 **Tailoring for a job.** Open the application from the board and use **Tailor a resume** in its Resume section: pick a base resume, and Onward copies it, links the copy to that application, and opens it. Edit the copy for the job, then download it. To swap in a different resume, open the linked one and set its **Job application** to "None" (or delete it) first, since each application has one.
 
-**Fitting one page.** Open **Design** above the preview and pick **Tight**, or open **Fine-tune** and nudge the text size or margins. The note under the panel says how much is spilling over, and the preview redraws as you go. Compact is the template that fits the most.
+**Fitting one page.** Click **Design** above the preview to open it, and pick **Tight**, or open **Fine-tune** and nudge the text size or margins. The note under the panel says how much is spilling over, and the preview redraws as you go. Compact is the template that fits the most.
 
 **Adding a template.** A template is one React component that takes the resume's content, a page size, and a theme (the sizes worked out from the Design panel's settings, see `frontend/src/resume-pdf/theme.ts`):
 
@@ -426,6 +428,8 @@ frontend/
 **"Forgot your password?" doesn't appear on the hosted app.** It shows once email is set up. See [Sending email with Gmail](#sending-email-with-gmail).
 
 **Format says something like "Line 12: missing a comma."** The AI's JSON has a mistake on that line of what you pasted. Fix the line, or ask the AI to reply again with valid JSON only. Nothing is saved until the paste can be read.
+
+**The resume preview is too small to read.** Press **Fit width** or **+** above it, or **Expand** for the whole window. Closing the Design panel gives the page more room.
 
 **The resume preview never appears.** The preview is drawn by pdf.js in a web worker, which some privacy extensions block. Try the page with extensions off; **Download PDF** works either way.
 

@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { Fragment, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { useMutation } from '@apollo/client';
 import { Link, useNavigate } from 'react-router';
 import type { BoardQuery } from '../gql/graphql';
-import { MoveJobApplicationMutation } from '../graphql/operations';
+import { MoveJobApplicationMutation, ReorderStagesMutation } from '../graphql/operations';
 import { celebrateMove, showToast } from '../lib/celebrate';
 import { shortInterviewTime } from '../lib/countdown';
 import { formatDate } from '../lib/format';
@@ -10,7 +10,7 @@ import { playSound } from '../lib/sounds';
 import { KIND_ACCENTS, WORK_ARRANGEMENT_LABELS } from '../lib/status';
 import FollowUpTag from './FollowUpTag';
 import ResumeTag, { resumePathFromClick } from './resume/ResumeTag';
-import { CalendarIcon, ColumnsIcon, MapPinIcon, PlusIcon, UsersIcon } from './icons';
+import { CalendarIcon, ColumnsIcon, GripIcon, MapPinIcon, PlusIcon, UsersIcon } from './icons';
 
 type BoardStage = BoardQuery['stages'][number];
 type BoardCard = BoardStage['jobApplications'][number];
@@ -47,6 +47,31 @@ type Press = {
   timer?: number;
 };
 
+/** A column being dragged by its grip to a new place in the row. */
+type ColumnDrag = {
+  stage: BoardStage;
+  count: number;
+  fromIndex: number;
+  /** Where the column would land, counting the other columns. */
+  overIndex: number;
+  x: number;
+  y: number;
+  offsetX: number;
+  offsetY: number;
+  width: number;
+  height: number;
+};
+
+type ColumnPress = {
+  pointerId: number;
+  startX: number;
+  startY: number;
+  lastX: number;
+  lastY: number;
+  stageId: string;
+  element: HTMLElement;
+};
+
 // Mouse drags start after a small movement. Touch drags start after a long
 // press, so a normal swipe still scrolls the page.
 const MOUSE_THRESHOLD = 5;
@@ -65,6 +90,8 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
   const [drag, setDrag] = useState<Drag | null>(null);
   const navigate = useNavigate();
   const [moveApplication] = useMutation(MoveJobApplicationMutation);
+  const [columnDrag, setColumnDrag] = useState<ColumnDrag | null>(null);
+  const [reorderStages] = useMutation(ReorderStagesMutation);
 
   // Window listeners outlive a render, so they read the latest state through refs.
   const columnsRef = useRef(columns);
@@ -74,14 +101,22 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef(0);
   const suppressClickRef = useRef(false);
+  const columnDragRef = useRef<ColumnDrag | null>(null);
+  const columnPressRef = useRef<ColumnPress | null>(null);
 
   // Take fresh data from the server, except mid-drag.
   useEffect(() => {
-    if (!dragRef.current) setColumns(toColumns(stages));
+    if (!dragRef.current && !columnDragRef.current) setColumns(toColumns(stages));
   }, [stages]);
 
   // Clean up if the board goes away mid-drag.
-  useEffect(() => () => endPress(), []);
+  useEffect(
+    () => () => {
+      endPress();
+      endColumnPress();
+    },
+    [],
+  );
 
   function updateDrag(next: Drag | null) {
     dragRef.current = next;
@@ -161,7 +196,7 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
 
   function handlePointerDown(event: ReactPointerEvent<HTMLElement>, card: BoardCard, stageId: string, index: number) {
     if (event.pointerType === 'mouse' && event.button !== 0) return;
-    if (pressRef.current) return;
+    if (pressRef.current || columnPressRef.current) return;
 
     const element = event.currentTarget;
     // Touch pointers are captured by the element they start on. Release it so
@@ -297,88 +332,251 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
     });
   }
 
+  // Columns are dragged by their grip, with a mouse or trackpad. The pattern
+  // is the cards' one, kept apart so the two kinds of drag can't get mixed up.
+  // Touch is left alone: a swipe on the grip scrolls the board like anywhere
+  // else, and the Add or edit columns page reorders with buttons.
+
+  function updateColumnDrag(next: ColumnDrag | null) {
+    columnDragRef.current = next;
+    setColumnDrag(next);
+  }
+
+  /** Where the dragged column would land: before the first other column whose middle is right of the pointer. */
+  function findColumnIndex(x: number, draggedId: string) {
+    const others = [...(scrollRef.current?.querySelectorAll<HTMLElement>('[data-stage-id]') ?? [])].filter(
+      (element) => element.dataset.stageId !== draggedId,
+    );
+    const index = others.findIndex((element) => {
+      const rect = element.getBoundingClientRect();
+      return x < rect.left + rect.width / 2;
+    });
+    return index === -1 ? others.length : index;
+  }
+
+  function moveColumnTo(x: number, y: number) {
+    const current = columnDragRef.current;
+    if (!current) return;
+    updateColumnDrag({ ...current, x, y, overIndex: findColumnIndex(x, current.stage.id) });
+  }
+
+  function beginColumnDrag() {
+    const press = columnPressRef.current;
+    if (!press) return;
+    const fromIndex = columnsRef.current.findIndex((column) => column.stage.id === press.stageId);
+    const section = press.element.closest<HTMLElement>('[data-stage-id]');
+    if (fromIndex === -1 || !section) return;
+    const column = columnsRef.current[fromIndex];
+    const rect = section.getBoundingClientRect();
+    updateColumnDrag({
+      stage: column.stage,
+      count: column.cards.length,
+      fromIndex,
+      overIndex: fromIndex,
+      x: press.lastX,
+      y: press.lastY,
+      offsetX: press.startX - rect.left,
+      offsetY: press.startY - rect.top,
+      width: rect.width,
+      height: rect.height,
+    });
+    document.body.classList.add('dragging');
+    frameRef.current = requestAnimationFrame(autoScrollColumns);
+  }
+
+  // Scrolls the board sideways when a column is held near its left or right edge.
+  function autoScrollColumns() {
+    const current = columnDragRef.current;
+    const box = scrollRef.current;
+    if (!current) return;
+    if (box) {
+      const rect = box.getBoundingClientRect();
+      if (current.x < rect.left + EDGE && box.scrollLeft > 0) {
+        box.scrollLeft -= 14;
+        moveColumnTo(current.x, current.y);
+      } else if (current.x > rect.right - EDGE && box.scrollLeft < box.scrollWidth - box.clientWidth) {
+        box.scrollLeft += 14;
+        moveColumnTo(current.x, current.y);
+      }
+    }
+    frameRef.current = requestAnimationFrame(autoScrollColumns);
+  }
+
+  function handleGripPointerDown(event: ReactPointerEvent<HTMLElement>, stageId: string) {
+    if (event.pointerType === 'touch' || event.button !== 0) return;
+    if (pressRef.current || columnPressRef.current) return;
+    // Don't start selecting text while the grip is held.
+    event.preventDefault();
+
+    columnPressRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      lastX: event.clientX,
+      lastY: event.clientY,
+      stageId,
+      element: event.currentTarget,
+    };
+    window.addEventListener('pointermove', handleGripPointerMove);
+    window.addEventListener('pointerup', handleGripPointerUp);
+    window.addEventListener('pointercancel', endColumnPress);
+    window.addEventListener('keydown', handleGripKeyDown);
+  }
+
+  function handleGripPointerMove(event: PointerEvent) {
+    const press = columnPressRef.current;
+    if (!press || event.pointerId !== press.pointerId) return;
+    press.lastX = event.clientX;
+    press.lastY = event.clientY;
+
+    if (!columnDragRef.current) {
+      if (Math.hypot(event.clientX - press.startX, event.clientY - press.startY) <= MOUSE_THRESHOLD) return;
+      beginColumnDrag();
+    }
+    moveColumnTo(event.clientX, event.clientY);
+  }
+
+  function handleGripKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Escape') endColumnPress();
+  }
+
+  function handleGripPointerUp(event: PointerEvent) {
+    const press = columnPressRef.current;
+    if (!press || event.pointerId !== press.pointerId) return;
+    const current = columnDragRef.current;
+    endColumnPress();
+    if (current) dropColumn(current);
+  }
+
+  function endColumnPress() {
+    columnPressRef.current = null;
+    window.removeEventListener('pointermove', handleGripPointerMove);
+    window.removeEventListener('pointerup', handleGripPointerUp);
+    window.removeEventListener('pointercancel', endColumnPress);
+    window.removeEventListener('keydown', handleGripKeyDown);
+    if (columnDragRef.current) {
+      cancelAnimationFrame(frameRef.current);
+      document.body.classList.remove('dragging');
+      updateColumnDrag(null);
+    }
+  }
+
+  function dropColumn(finished: ColumnDrag) {
+    if (finished.overIndex === finished.fromIndex) return;
+
+    const current = columnsRef.current;
+    const moved = current.find((column) => column.stage.id === finished.stage.id);
+    if (!moved) return;
+    const reordered = current.filter((column) => column !== moved);
+    reordered.splice(finished.overIndex, 0, moved);
+
+    // Update the board right away; the server catches up in the background.
+    setColumns(reordered.map((column, position) => ({ ...column, stage: { ...column.stage, position } })));
+    playSound('pop');
+
+    reorderStages({
+      variables: { ids: reordered.map((column) => column.stage.id) },
+      refetchQueries: ['Board', 'Stages'],
+    }).catch(() => {
+      showToast('gentle', "That move didn't save", 'Check that the Onward server is running, then try again.');
+      setColumns(toColumns(stages));
+    });
+  }
+
   const dragging = drag !== null;
+  const shownColumns = columnDrag ? columns.filter((column) => column.stage.id !== columnDrag.stage.id) : columns;
 
   return (
     <>
       <div ref={scrollRef} className="-mx-4 overflow-x-auto px-4 pb-4">
         <div className="flex min-h-[60vh] gap-3">
-          {columns.map((column) => (
-            <section
-              key={column.stage.id}
-              data-stage-id={column.stage.id}
-              aria-label={column.stage.name}
-              className={`flex w-72 shrink-0 flex-col rounded-2xl border-2 p-2 transition-colors ${
-                dragging && drag.overStageId === column.stage.id
-                  ? 'border-brand-300 bg-brand-50 dark:border-brand-700 dark:bg-brand-950/40'
-                  : 'border-transparent bg-stone-100 dark:bg-stone-900/70'
-              }`}
-            >
-              <header className="flex items-center gap-2 px-2 pt-1 pb-2">
-                <span className={`size-2.5 shrink-0 rounded-full ${KIND_ACCENTS[column.stage.kind]}`} aria-hidden="true" />
-                <h2 className="min-w-0 flex-1 truncate font-extrabold">{column.stage.name}</h2>
-                <span className="rounded-full bg-white px-2 text-sm font-extrabold text-stone-500 dark:bg-stone-800 dark:text-stone-400">
-                  {column.cards.filter((c) => !(dragging && c.id === drag.card.id)).length}
-                </span>
-                <Link
-                  to={`/applications/new?stage=${column.stage.id}`}
-                  aria-label={`Add an application to ${column.stage.name}`}
-                  className="rounded-lg p-1 text-lg text-stone-400 hover:bg-white hover:text-brand-600 dark:hover:bg-stone-800 dark:hover:text-brand-300"
-                >
-                  <PlusIcon />
-                </Link>
-              </header>
+          {shownColumns.map((column, columnIndex) => (
+            <Fragment key={column.stage.id}>
+              {columnDrag && columnDrag.overIndex === columnIndex && <ColumnPlaceholder drag={columnDrag} />}
+              <section
+                data-stage-id={column.stage.id}
+                aria-label={column.stage.name}
+                className={`flex w-72 shrink-0 flex-col rounded-2xl border-2 p-2 transition-colors ${
+                  dragging && drag.overStageId === column.stage.id
+                    ? 'border-brand-300 bg-brand-50 dark:border-brand-700 dark:bg-brand-950/40'
+                    : 'border-transparent bg-stone-100 dark:bg-stone-900/70'
+                }`}
+              >
+                <header className="flex items-center gap-2 pt-1 pr-2 pb-2">
+                  <span
+                    data-column-grip
+                    title={`Drag to reorder ${column.stage.name}`}
+                    onPointerDown={(e) => handleGripPointerDown(e, column.stage.id)}
+                    className="-mr-1 shrink-0 cursor-grab rounded-lg px-0.5 py-1 text-lg text-stone-400 select-none hover:bg-white hover:text-stone-600 active:cursor-grabbing dark:hover:bg-stone-800 dark:hover:text-stone-200"
+                  >
+                    <GripIcon />
+                  </span>
+                  <span className={`size-2.5 shrink-0 rounded-full ${KIND_ACCENTS[column.stage.kind]}`} aria-hidden="true" />
+                  <h2 className="min-w-0 flex-1 truncate font-extrabold">{column.stage.name}</h2>
+                  <span className="rounded-full bg-white px-2 text-sm font-extrabold text-stone-500 dark:bg-stone-800 dark:text-stone-400">
+                    {column.cards.filter((c) => !(dragging && c.id === drag.card.id)).length}
+                  </span>
+                  <Link
+                    to={`/applications/new?stage=${column.stage.id}`}
+                    aria-label={`Add an application to ${column.stage.name}`}
+                    className="rounded-lg p-1 text-lg text-stone-400 hover:bg-white hover:text-brand-600 dark:hover:bg-stone-800 dark:hover:text-brand-300"
+                  >
+                    <PlusIcon />
+                  </Link>
+                </header>
 
-              <ul className="flex flex-1 flex-col gap-2">
-                {column.cards.map((card, index) => {
-                  const isDragged = dragging && drag.card.id === card.id;
-                  return (
-                    <PlaceholderAware
-                      key={card.id}
-                      show={dragging && drag.overStageId === column.stage.id && drag.overIndex === visibleIndex(column, card, drag)}
-                      height={drag?.height ?? 0}
-                    >
-                      <li data-card-id={card.id} className={isDragged ? 'hidden' : ''}>
-                        <Link
-                          to={`/applications/${card.id}`}
-                          draggable={false}
-                          onDragStart={(e) => e.preventDefault()}
-                          onPointerDown={(e) => handlePointerDown(e, card, column.stage.id, index)}
-                          onContextMenu={(e) => {
-                            // A long press on a phone would otherwise open the browser's link menu.
-                            if (pressRef.current && pressRef.current.pointerType !== 'mouse') e.preventDefault();
-                          }}
-                          onClick={(e) => {
-                            if (suppressClickRef.current) {
-                              e.preventDefault();
-                              return;
-                            }
-                            // The resume tag on a card opens the resume instead of the application.
-                            const resumePath = resumePathFromClick(e);
-                            if (resumePath) {
-                              e.preventDefault();
-                              navigate(resumePath);
-                            }
-                          }}
-                          className="no-callout block cursor-grab touch-manipulation rounded-xl border-2 border-b-4 border-stone-200 bg-white p-3 transition select-none hover:border-brand-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 active:cursor-grabbing dark:border-stone-700 dark:bg-stone-900 dark:hover:border-brand-700"
-                        >
-                          <CardContent card={card} />
-                        </Link>
-                      </li>
-                    </PlaceholderAware>
-                  );
-                })}
-                {dragging && drag.overStageId === column.stage.id && drag.overIndex >= otherCount(column, drag) && (
-                  <Placeholder height={drag.height} />
-                )}
-                {column.cards.length === 0 && !(dragging && drag.overStageId === column.stage.id) && (
-                  <li className="rounded-xl border-2 border-dashed border-stone-300 px-3 py-6 text-center text-sm text-stone-400 dark:border-stone-700">
-                    Drop a card here
-                  </li>
-                )}
-              </ul>
-            </section>
+                <ul className="flex flex-1 flex-col gap-2">
+                  {column.cards.map((card, index) => {
+                    const isDragged = dragging && drag.card.id === card.id;
+                    return (
+                      <PlaceholderAware
+                        key={card.id}
+                        show={dragging && drag.overStageId === column.stage.id && drag.overIndex === visibleIndex(column, card, drag)}
+                        height={drag?.height ?? 0}
+                      >
+                        <li data-card-id={card.id} className={isDragged ? 'hidden' : ''}>
+                          <Link
+                            to={`/applications/${card.id}`}
+                            draggable={false}
+                            onDragStart={(e) => e.preventDefault()}
+                            onPointerDown={(e) => handlePointerDown(e, card, column.stage.id, index)}
+                            onContextMenu={(e) => {
+                              // A long press on a phone would otherwise open the browser's link menu.
+                              if (pressRef.current && pressRef.current.pointerType !== 'mouse') e.preventDefault();
+                            }}
+                            onClick={(e) => {
+                              if (suppressClickRef.current) {
+                                e.preventDefault();
+                                return;
+                              }
+                              // The resume tag on a card opens the resume instead of the application.
+                              const resumePath = resumePathFromClick(e);
+                              if (resumePath) {
+                                e.preventDefault();
+                                navigate(resumePath);
+                              }
+                            }}
+                            className="no-callout block cursor-grab touch-manipulation rounded-xl border-2 border-b-4 border-stone-200 bg-white p-3 transition select-none hover:border-brand-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 active:cursor-grabbing dark:border-stone-700 dark:bg-stone-900 dark:hover:border-brand-700"
+                          >
+                            <CardContent card={card} />
+                          </Link>
+                        </li>
+                      </PlaceholderAware>
+                    );
+                  })}
+                  {dragging && drag.overStageId === column.stage.id && drag.overIndex >= otherCount(column, drag) && (
+                    <Placeholder height={drag.height} />
+                  )}
+                  {column.cards.length === 0 && !(dragging && drag.overStageId === column.stage.id) && (
+                    <li className="rounded-xl border-2 border-dashed border-stone-300 px-3 py-6 text-center text-sm text-stone-400 dark:border-stone-700">
+                      Drop a card here
+                    </li>
+                  )}
+                </ul>
+              </section>
+            </Fragment>
           ))}
+          {columnDrag && columnDrag.overIndex >= shownColumns.length && <ColumnPlaceholder drag={columnDrag} />}
 
           <Link
             to="/columns"
@@ -402,7 +600,37 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
           <CardContent card={drag.card} />
         </div>
       )}
+
+      {columnDrag && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed top-0 left-0 z-40 flex items-center gap-2 rounded-2xl border-2 border-brand-300 bg-stone-100 px-2 py-3 shadow-xl shadow-brand-900/15 dark:border-brand-700 dark:bg-stone-900"
+          style={{
+            width: columnDrag.width,
+            transform: `translate(${columnDrag.x - columnDrag.offsetX}px, ${columnDrag.y - columnDrag.offsetY}px) rotate(1.5deg)`,
+          }}
+        >
+          <GripIcon className="shrink-0 text-lg text-stone-500" />
+          <span className={`size-2.5 shrink-0 rounded-full ${KIND_ACCENTS[columnDrag.stage.kind]}`} />
+          <span className="min-w-0 flex-1 truncate font-extrabold">{columnDrag.stage.name}</span>
+          <span className="rounded-full bg-white px-2 text-sm font-extrabold text-stone-500 dark:bg-stone-800 dark:text-stone-400">
+            {columnDrag.count}
+          </span>
+        </div>
+      )}
     </>
+  );
+}
+
+/** The dashed slot where a dragged column would land. */
+function ColumnPlaceholder({ drag }: { drag: ColumnDrag }) {
+  return (
+    <div
+      aria-hidden="true"
+      data-column-placeholder
+      className="shrink-0 rounded-2xl border-2 border-dashed border-brand-400 bg-brand-100/60 dark:border-brand-600 dark:bg-brand-900/30"
+      style={{ width: drag.width, height: drag.height }}
+    />
   );
 }
 

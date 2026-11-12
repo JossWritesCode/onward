@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useApolloClient, useMutation, useQuery } from '@apollo/client';
-import { NavLink, Outlet, useNavigate } from 'react-router';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { MeQuery, SignOutMutation, UpdateTimeZoneMutation } from '../graphql/operations';
 import { useMuted } from '../lib/preferences';
 import { playSound } from '../lib/sounds';
@@ -8,7 +8,7 @@ import Logo from './Logo';
 import StreakFlame from './StreakFlame';
 import TimerPill from './prep/TimerPill';
 import Toaster from './Toaster';
-import { BookIcon, CodeIcon, DotsIcon, FileTextIcon, LogOutIcon, UserIcon, UsersIcon, VolumeIcon, VolumeOffIcon } from './icons';
+import { BoardIcon, BookIcon, CodeIcon, DotsIcon, FileTextIcon, LogOutIcon, UserIcon, UsersIcon, VolumeIcon, VolumeOffIcon } from './icons';
 
 const headerButton =
   'inline-flex items-center gap-1.5 rounded-xl px-2 py-2 text-sm font-extrabold transition sm:px-2.5 ' +
@@ -19,6 +19,9 @@ const headerButton =
 export default function Layout() {
   const client = useApolloClient();
   const navigate = useNavigate();
+  // The board's own pages: applications, and the page that edits its columns.
+  const { pathname } = useLocation();
+  const onBoard = /^\/(applications|columns)(\/|$)/.test(pathname);
   const { data } = useQuery(MeQuery, { fetchPolicy: 'cache-first' });
   const [signOut, { loading: signingOut }] = useMutation(SignOutMutation);
   const [muted, setMuted] = useMuted();
@@ -56,6 +59,16 @@ export default function Layout() {
 
           <TimerPill />
           <StreakFlame />
+
+          <NavLink
+            to="/applications"
+            aria-current={onBoard ? 'page' : undefined}
+            className={`${headerButton} ${onBoard ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-200' : ''}`}
+          >
+            <BoardIcon className="text-lg" />
+            <span className="hidden sm:inline">Board</span>
+            <span className="sr-only sm:hidden">Board</span>
+          </NavLink>
 
           <NavLink
             to="/prep"

@@ -352,3 +352,21 @@ export const DownloadIcon = (props: IconProps) => (
     <path d="M5 19h14" />
   </Icon>
 );
+
+export const MinusIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M5 12h14" />
+  </Icon>
+);
+
+export const ExpandIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M15 4h5v5M9 20H4v-5M20 4l-6 6M4 20l6-6" />
+  </Icon>
+);
+
+export const GripIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01" strokeWidth={3} />
+  </Icon>
+);

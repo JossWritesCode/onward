@@ -76,11 +76,11 @@ export default function ApplicationsPage() {
             </div>
             {view === 'board' && (
               <p className="hidden text-sm text-stone-500 md:block dark:text-stone-400">
-                Drag cards between columns to update them.
+                Drag cards between columns to update them. Drag a column by its grip to reorder it.
               </p>
             )}
             {view === 'board' && (
-              <p className="text-sm text-stone-500 md:hidden dark:text-stone-400">Press and hold a card to move it.</p>
+              <p className="text-sm text-stone-500 md:hidden dark:text-stone-400">Press and hold a card to move it. Reorder columns from “Add or edit columns”.</p>
             )}
             {view === 'list' && (
               <ButtonLink to="/columns" variant="ghost" className="text-sm">
