@@ -31,22 +31,29 @@ export default defineConfig({
     // for computers where `npx playwright install` can't download one.
     launchOptions: process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {},
   },
+  // Both servers listen on 127.0.0.1 exactly, the address Playwright checks.
+  // Left to "localhost", Vite listens on whichever address that name resolves
+  // to first, which is IPv6 (::1) on GitHub's machines, so Playwright never
+  // sees it start. It also keeps these test servers off your Wi-Fi network.
+  // On CI their output goes into the log, so a server that won't start says why.
   webServer: [
     {
       // Its own pid file, so it can run while your development server is up.
-      command: `bin/rails server -p ${RAILS_PORT} -P tmp/pids/e2e-server.pid`,
+      command: `bin/rails server -b 127.0.0.1 -p ${RAILS_PORT} -P tmp/pids/e2e-server.pid`,
       cwd: '../backend',
       url: `http://127.0.0.1:${RAILS_PORT}/up`,
       env: { RAILS_ENV: 'test', TEST_DATABASE: 'onward_e2e' },
       reuseExistingServer: false,
       timeout: 120_000,
+      stdout: CI ? 'pipe' : 'ignore',
     },
     {
-      command: `npm run dev -- --port ${APP_PORT} --strictPort`,
+      command: `npm run dev -- --host 127.0.0.1 --port ${APP_PORT} --strictPort`,
       url: `http://127.0.0.1:${APP_PORT}`,
       env: { ONWARD_API_URL: `http://127.0.0.1:${RAILS_PORT}` },
       reuseExistingServer: false,
       timeout: 120_000,
+      stdout: CI ? 'pipe' : 'ignore',
     },
   ],
 });
