@@ -362,10 +362,55 @@ Reset emails will come from your Gmail address. Any other email service that off
 
 ## Running the tests
 
+Onward has three kinds of tests:
+
+| Tests | What they check | Where they live |
+| --- | --- | --- |
+| Rails tests | Models and the GraphQL API: follow-up dates, streaks, goals, resume import | `backend/test/` |
+| Unit tests | Frontend logic: the "Save to Onward" bookmark, the resume preview's zoom, dates, goals | next to the code, as `*.test.ts` |
+| End-to-end tests | The app in a real browser, against the real Rails server: signing in, dragging cards and columns, the resume preview, importing a resume, logging wins, follow-ups, interview prep | `frontend/e2e/` |
+
+To run everything, the way CI does on every push, start Postgres and run this from the top folder:
+
 ```sh
-cd backend
-bin/rails test
+bin/test
 ```
+
+It stops at the first part that fails. To run one part:
+
+```sh
+cd backend && bin/rails test        # Rails tests
+cd frontend && npm test             # unit tests (npm run test:watch reruns them as you edit)
+cd frontend && npm run typecheck    # TypeScript, including the tests
+bin/e2e                             # end-to-end tests, from the top folder
+```
+
+### Setting up the end-to-end tests
+
+The end-to-end tests drive Chromium, which Playwright downloads once:
+
+- **macOS:** `cd frontend && npx playwright install chromium`
+- **Linux and Windows (WSL):** `cd frontend && npx playwright install --with-deps chromium`. The `--with-deps` part installs the system libraries Chromium needs, so it asks for your password.
+
+If the download is blocked (some company networks do this), point the tests at a Chrome you already have with `CHROME_PATH`, like `CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" bin/e2e`.
+
+### How the end-to-end tests run
+
+`bin/e2e` empties a database of their own, `onward_e2e`, and fills it with one account per spec file from `backend/db/seeds/e2e.rb`, so the tests never touch your own data, and files running side by side never touch each other's cards. Then Playwright starts Rails on port 3001 and the app on port 5174, runs every spec, and stops both. Your development servers on 3000 and 5173 can keep running.
+
+Anything after `bin/e2e` goes to Playwright:
+
+```sh
+bin/e2e --ui                        # Playwright's debugger: watch each step, and pick tests to rerun
+bin/e2e e2e/board.spec.ts           # one spec
+bin/e2e --headed                    # watch the browser while it runs
+```
+
+When a test fails, Playwright keeps a screenshot and a trace in `frontend/test-results/`. Open a trace with `npx playwright show-trace <path to trace.zip>` from `frontend/` to step through what the browser saw.
+
+### Continuous integration
+
+`.github/workflows/ci.yml` runs on every push and pull request, in three jobs: the Rails tests (plus a check that `schema.graphql` is up to date), the type check and unit tests, and the end-to-end tests. If the end-to-end job fails, its report and traces are attached to the run on GitHub as `playwright-report`.
 
 ## Changing the API
 
@@ -379,7 +424,7 @@ cd ../frontend
 npm run codegen                 # regenerates the types in src/gql/
 ```
 
-`npm run dev` and `npm run build` run codegen for you, and a backend test fails if `schema.graphql` is out of date, so it's hard to forget.
+`npm run dev` and `npm run build` run codegen for you, and a backend test (and CI) fails if `schema.graphql` is out of date, so it's hard to forget.
 
 All the queries and mutations the frontend sends live in `frontend/src/graphql/operations.ts`.
 
@@ -387,12 +432,16 @@ All the queries and mutations the frontend sends live in `frontend/src/graphql/o
 
 ```
 render.yaml           How Render hosts Onward (see "Putting Onward online")
+bin/test              Runs every test, like CI
+bin/e2e               Runs the end-to-end tests
+.github/workflows/    CI: the tests on every push
 backend/
   bin/render-build    What Render runs on each deploy
   app/graphql/        GraphQL schema: types, queries, and mutations
   app/models/         Users, board columns, applications, contacts, activities, streaks, interview prep, resumes
   db/migrate/         Database tables
   test/               Model and API tests
+  db/seeds/e2e.rb     Accounts for the end-to-end tests
   schema.graphql      Generated schema the frontend reads
 frontend/
   src/pages/          One file per screen
@@ -401,11 +450,18 @@ frontend/
   src/lib/            Helpers: quotes, celebrations, sounds, confetti, settings, resume dates and the AI prompt
   src/resume-pdf/     Resume templates and PDF code, downloaded only when the resume editor opens
   src/assets/fonts/   Fonts embedded in resume PDFs
+  e2e/                End-to-end tests (Playwright)
 ```
+
+Unit tests sit next to the code they test, like `src/lib/format.test.ts` beside `src/lib/format.ts`.
 
 ## Troubleshooting
 
-**`bin/setup` says permission denied.** Some unzip tools drop the "executable" flag. Run `chmod +x backend/bin/*` and try again.
+**`bin/setup` or `bin/test` says permission denied.** Some unzip tools drop the "executable" flag. Run `chmod +x bin/* backend/bin/*` from the top folder and try again.
+
+**`bin/e2e` says a port is already in use.** Something is still running on port 3001 or 5174, usually an end-to-end run that was stopped partway. On macOS or Linux, `lsof -ti :3001,5174 | xargs kill` stops it.
+
+**`bin/e2e` says Chromium (or an "executable") doesn't exist.** Playwright's browser isn't downloaded yet. See [Setting up the end-to-end tests](#setting-up-the-end-to-end-tests).
 
 **Installing the `pg` gem fails.** Ruby can't find PostgreSQL's tools. On macOS, check step 3 of the macOS setup. On Linux, make sure `libpq-dev` is installed.
 

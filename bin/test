@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Runs every test, the same checks CI runs on each push:
+#   1. the Rails tests
+#   2. the frontend's type check and unit tests
+#   3. the end-to-end tests in a real browser (bin/e2e)
+# Stops at the first part that fails. Postgres needs to be running.
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+echo "== Rails tests =="
+(cd "$root/backend" && bin/rails test)
+
+echo
+echo "== Type check and unit tests =="
+(cd "$root/frontend" && npm run typecheck && npm test)
+
+echo
+echo "== End-to-end tests =="
+"$root/bin/e2e"
+
+echo
+echo "All tests passed."

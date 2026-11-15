@@ -93,10 +93,13 @@ export function readJobPage(origin: string): void {
       (/&lt;\/?[a-z]/i.test(html) ? decodeEntities(html) : html)
         .replace(/<\s*br\s*\/?>/gi, '\n')
         .replace(/<\s*li[^>]*>/gi, '\n• ')
-        .replace(/<\/\s*(p|div|h[1-6]|ul|ol|li)\s*>/gi, '\n')
+        // Not </li>: the next <li> starts its own line, so a list stays single-spaced.
+        .replace(/<\/\s*(p|div|h[1-6]|ul|ol)\s*>/gi, '\n')
         .replace(/<[^>]+>/g, ''),
     )
       .replace(/[ \t]+\n/g, '\n')
+      // A bullet wrapped in <p> (<li><p>…</p></li>) would still leave a blank line before the next one.
+      .replace(/(• [^\n]*)\n\s*\n(?=• )/g, '$1\n')
       .replace(/\n{3,}/g, '\n\n')
       .trim();
 

@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
@@ -8,9 +9,10 @@ export default defineConfig({
     port: 5173,
     // Send API calls to the Rails server. Because the browser sees one origin,
     // the session cookie works without any CORS setup.
+    // ONWARD_API_URL points it at another Rails server, like the end-to-end tests' one.
     proxy: {
-      '/graphql': 'http://127.0.0.1:3000',
-      '/account/export': 'http://127.0.0.1:3000',
+      '/graphql': process.env.ONWARD_API_URL ?? 'http://127.0.0.1:3000',
+      '/account/export': process.env.ONWARD_API_URL ?? 'http://127.0.0.1:3000',
     },
   },
   // `npm run build` puts the app in backend/public, where Rails serves it in
@@ -18,5 +20,10 @@ export default defineConfig({
   build: {
     outDir: '../backend/public',
     emptyOutDir: true,
+  },
+  // Unit tests (`npm test`). The end-to-end tests in e2e/ run with Playwright instead.
+  test: {
+    include: ['src/**/*.test.ts'],
+    setupFiles: ['src/test/setup.ts'],
   },
 });

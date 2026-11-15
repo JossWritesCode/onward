@@ -9,7 +9,10 @@
     "dev": "vite",
     "prebuild": "npm run codegen",
     "build": "tsc --noEmit && vite build",
-    "typecheck": "npm run codegen && tsc --noEmit",
+    "typecheck": "npm run codegen && tsc --noEmit && tsc --noEmit -p e2e",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "../bin/e2e",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -24,13 +27,17 @@
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.6",
     "@graphql-codegen/client-preset": "^4.8.1",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "^4.1.8",
+    "@types/jsdom": "^21.1.7",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
     "@vitejs/plugin-react": "^4.5.0",
+    "jsdom": "^26.1.0",
     "tailwindcss": "^4.1.8",
     "typescript": "~5.8.3",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vitest": "^3.2.7"
   },
   "engines": {
     "node": ">=20"

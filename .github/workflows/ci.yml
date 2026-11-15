@@ -1,0 +1,117 @@
+# Runs every test on each push and pull request: the Rails tests, the
+# frontend's type check and unit tests, and the end-to-end tests in a real
+# browser. `bin/test` runs the same checks on your own computer.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+# A newer push to the same branch cancels the run that's still going.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  RAILS_ENV: test
+  DATABASE_HOST: localhost
+  DATABASE_USERNAME: postgres
+  DATABASE_PASSWORD: postgres
+
+jobs:
+  backend:
+    name: Rails tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+          working-directory: backend
+      - name: Set up the database
+        run: bin/rails db:create db:schema:load
+      - name: Run the tests
+        run: bin/rails test
+      - name: Check schema.graphql is up to date
+        run: |
+          bin/rails graphql:dump_schema
+          git diff --exit-code schema.graphql || {
+            echo "::error file=backend/schema.graphql::schema.graphql is out of date. Run bin/rails graphql:dump_schema and commit it."
+            exit 1
+          }
+
+  frontend:
+    name: Type check and unit tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Type check
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm test
+
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+          working-directory: backend
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - name: Cache Playwright's browser
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+      - name: Install Playwright's browser
+        run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - name: Run the end-to-end tests
+        run: bin/e2e
+      - name: Keep the report and traces from a failed run
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 14

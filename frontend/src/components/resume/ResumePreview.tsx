@@ -3,16 +3,9 @@ import { createPortal } from 'react-dom';
 import type { OpenedPdf } from '../../resume-pdf/pages';
 import { ExpandIcon, MinusIcon, PlusIcon, XIcon } from '../icons';
 import { Spinner } from '../ui';
+import { MAX_ZOOM, MIN_ZOOM, POINTS_TO_PIXELS, pageWidth, stepZoom, zoomPercent, type Zoom } from '../../lib/resume/zoom';
 import PdfPages, { PAGE_LABEL_HEIGHT } from './PdfPages';
 
-/** Fit a whole page in the panel, fit the panel's width, or a set size where 100 is the page's real size. */
-type Zoom = 'page' | 'width' | number;
-
-const MIN_ZOOM = 25;
-const MAX_ZOOM = 300;
-const ZOOM_STEP = 10;
-/** PDF points are 1/72 inch and CSS pixels 1/96 inch, so this is a page's real size on screen. */
-const POINTS_TO_PIXELS = 96 / 72;
 /** The grey space around the pages (p-4), on each side. */
 const PADDING = 16;
 
@@ -112,32 +105,14 @@ function PreviewPane({
   }, []);
 
   const mode: Zoom = zoomable ? zoom : 'width';
-  const actualWidth = pdf ? pdf.pageSize.width * POINTS_TO_PIXELS : 0;
-
-  let width = 0;
-  if (pdf && room.width > 0) {
-    if (mode === 'width') {
-      width = room.width;
-    } else if (mode === 'page') {
-      // A whole page and its label, top to bottom, without being wider than the panel.
-      const label = pdf.pages > 1 ? PAGE_LABEL_HEIGHT : 0;
-      const tallest = Math.max(0, room.height - label);
-      width = Math.min(room.width, Math.floor((tallest * pdf.pageSize.width) / pdf.pageSize.height));
-    } else {
-      width = Math.round((actualWidth * mode) / 100);
-    }
-    width = Math.max(width, 80);
-  }
-  const percent = actualWidth > 0 && width > 0 ? Math.round((width / actualWidth) * 100) : 100;
+  const width = pdf ? pageWidth(mode, room, pdf.pageSize, pdf.pages > 1 ? PAGE_LABEL_HEIGHT : 0) : 0;
+  const percent = pdf ? zoomPercent(width, pdf.pageSize) : 100;
 
   /** One step in or out, landing on a round number even when starting from a fit. */
   function step(direction: -1 | 1) {
-    const from = typeof mode === 'number' ? mode : (width / actualWidth) * 100;
-    const next =
-      direction === 1
-        ? Math.floor(from / ZOOM_STEP + 1e-6) * ZOOM_STEP + ZOOM_STEP
-        : Math.ceil(from / ZOOM_STEP - 1e-6) * ZOOM_STEP - ZOOM_STEP;
-    setZoom(Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, next)));
+    // From a fit, start from the exact size shown rather than the rounded readout.
+    const from = typeof mode === 'number' ? mode : pdf ? (width / (pdf.pageSize.width * POINTS_TO_PIXELS)) * 100 : 100;
+    setZoom(stepZoom(from, direction));
   }
 
   return (

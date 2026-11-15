@@ -18,7 +18,9 @@ development:
 
 test:
   <<: *default
-  database: onward_test
+  # bin/e2e sets TEST_DATABASE=onward_e2e, so the end-to-end tests never touch
+  # the database `bin/rails test` uses.
+  database: <%= ENV.fetch("TEST_DATABASE", "onward_test") %>
 
 production:
   <<: *default

@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Runs the end-to-end tests in frontend/e2e against a real Rails server and the
+# React app, using a database of their own (onward_e2e) that starts fresh
+# every run. Anything after `bin/e2e` goes to Playwright, so
+#   bin/e2e --ui                   opens Playwright's debugger
+#   bin/e2e e2e/board.spec.ts      runs one spec
+#
+# Postgres needs to be running. The first time, also run
+#   (cd frontend && npx playwright install chromium)
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export RAILS_ENV=test
+export TEST_DATABASE=onward_e2e
+
+echo "Resetting the $TEST_DATABASE database…"
+(
+  cd "$root/backend"
+  bin/rails db:drop db:create db:schema:load >/dev/null
+  bin/rails e2e:seed
+)
+
+# Playwright starts Rails and Vite itself (see frontend/playwright.config.ts)
+# and stops them when it's done.
+cd "$root/frontend"
+exec npx playwright test "$@"

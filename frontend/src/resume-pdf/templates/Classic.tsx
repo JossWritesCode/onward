@@ -11,7 +11,9 @@ function buildStyles(t: Theme) {
   return StyleSheet.create({
     page: { paddingVertical: t.margin, paddingHorizontal: t.margin + 2, fontFamily: FONTS.sans, fontSize: t.body, color: GREY },
     name: { ...type(t.name, 1.1), fontFamily: FONTS.serif, textAlign: 'center', color: '#000000' },
-    contact: { ...type(t.body, t.lineHeight), marginTop: 2, textAlign: 'center' },
+    // About a line of space under the name, so its descenders (J, y, g) clear the contact line.
+    // It follows the text size only, so tightening section spacing can't crowd the name again.
+    contact: { ...type(t.body, t.lineHeight), marginTop: Math.round(t.body), textAlign: 'center' },
     link: { color: GREY, textDecoration: 'none' },
 
     section: { marginTop: t.sectionGap },
