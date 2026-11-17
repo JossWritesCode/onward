@@ -93,4 +93,45 @@ class JobApplicationsTest < ActionDispatch::IntegrationTest
 
     assert_not JobApplication.exists?(application.id)
   end
+
+  test "moving a card back from a mistaken move says what it took back" do
+    sign_in_as(@user)
+    application = @user.job_applications.create!(company: "Acme", role: "Developer")
+    applied = @user.stages.find_by!(name: "Applied")
+    saved = @user.stages.find_by!(name: "Saved")
+    move = <<~GRAPHQL
+      mutation($id: ID!, $stageId: ID!) {
+        moveJobApplication(id: $id, stageId: $stageId) { undone jobApplication { status dateApplied } errors { message } }
+      }
+    GRAPHQL
+
+    result = graphql(move, variables: { id: application.id, stageId: applied.id })
+    assert_empty result.dig("data", "moveJobApplication", "undone")
+
+    result = graphql(move, variables: { id: application.id, stageId: saved.id })
+    assert_equal [ "APPLICATION_SENT" ], result.dig("data", "moveJobApplication", "undone")
+    assert_nil result.dig("data", "moveJobApplication", "jobApplication", "dateApplied")
+    assert_empty @user.activities
+  end
+
+  test "changing the column on the application's page takes back a mistaken move too" do
+    sign_in_as(@user)
+    application = @user.job_applications.create!(company: "Acme", role: "Developer", status: "applied")
+    application.update_columns(recent_moves: [])
+    phone_screen = @user.stages.find_by!(name: "Phone screen")
+    applied = @user.stages.find_by!(name: "Applied")
+    update = <<~GRAPHQL
+      mutation($id: ID!, $input: JobApplicationInput!) {
+        updateJobApplication(id: $id, input: $input) { undone jobApplication { status } errors { message } }
+      }
+    GRAPHQL
+    input = { company: "Acme", role: "Developer" }
+
+    graphql(update, variables: { id: application.id, input: input.merge(stageId: phone_screen.id) })
+    result = graphql(update, variables: { id: application.id, input: input.merge(stageId: applied.id) })
+
+    assert_equal [ "INTERVIEW" ], result.dig("data", "updateJobApplication", "undone")
+    assert_equal %w[application_sent], @user.activities.pluck(:kind)
+    assert_empty application.interview_rounds
+  end
 end

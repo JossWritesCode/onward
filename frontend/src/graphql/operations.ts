@@ -105,6 +105,7 @@ export const StagesQuery = graphql(`
 export const MoveJobApplicationMutation = graphql(`
   mutation MoveJobApplication($id: ID!, $stageId: ID!, $position: Int) {
     moveJobApplication(id: $id, stageId: $stageId, position: $position) {
+      undone
       jobApplication {
         id
         status
@@ -281,6 +282,7 @@ export const CreateJobApplicationMutation = graphql(`
 export const UpdateJobApplicationMutation = graphql(`
   mutation UpdateJobApplication($id: ID!, $input: JobApplicationInput!) {
     updateJobApplication(id: $id, input: $input) {
+      undone
       jobApplication {
         id
         company

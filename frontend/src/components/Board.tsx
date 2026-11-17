@@ -3,7 +3,7 @@ import { useMutation } from '@apollo/client';
 import { Link, useNavigate } from 'react-router';
 import type { BoardQuery } from '../gql/graphql';
 import { MoveJobApplicationMutation, ReorderStagesMutation } from '../graphql/operations';
-import { celebrateMove, showToast } from '../lib/celebrate';
+import { celebrateMove, noteUndone, showToast } from '../lib/celebrate';
 import { shortInterviewTime } from '../lib/countdown';
 import { formatDate } from '../lib/format';
 import { playSound } from '../lib/sounds';
@@ -326,10 +326,13 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
     moveApplication({
       variables: { id: card.id, stageId: overStageId, position: overIndex },
       refetchQueries: ['Board', 'Streak', 'Progress', 'Today'],
-    }).catch(() => {
-      showToast('gentle', "That move didn't save", 'Check that the Onward server is running, then try again.');
-      setColumns(toColumns(stages));
-    });
+    })
+      // Moving a card back from a mistaken move takes back what it recorded.
+      .then((result) => noteUndone(result.data?.moveJobApplication?.undone))
+      .catch(() => {
+        showToast('gentle', "That move didn't save", 'Check that the Onward server is running, then try again.');
+        setColumns(toColumns(stages));
+      });
   }
 
   // Columns are dragged by their grip, with a mouse or trackpad. The pattern

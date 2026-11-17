@@ -1,5 +1,7 @@
 # Onward
 
+[![CI](https://github.com/JossWritesCode/onward/actions/workflows/ci.yml/badge.svg)](https://github.com/JossWritesCode/onward/actions/workflows/ci.yml)
+
 A job hunt tracker that makes the search feel rewarding. Track your applications on a drag-and-drop board, get a little celebration every time you move forward, keep a daily streak, and watch your effort fill in a GitHub-style heat map, whether or not it pays off right away.
 
 ![The job board](docs/screenshot.png)
@@ -20,6 +22,7 @@ Onward is being built in milestones. So far:
 - A drag-and-drop board, the main view on computers. Phones get a list view by default, and on the board you press and hold a card to drag it.
 - A **Board** button in the header takes you back to the board from anywhere. The logo does too.
 - Customizable columns: add, rename, reorder, and delete them. With a mouse or trackpad, drag a column by the grip in its header to move it. On a phone, reorder from **Add or edit columns**. Each column has a type (saved, applied, interviewing, offer, rejected), so "Phone screen" and "Final round" both count as interviewing.
+- Mistakes don't count. If you drop a card in the wrong column, move it back to an earlier column within a day and Onward takes back what the mistake recorded: the application, interview, offer, or closure (and so your streak, heat map, and goals), the prep checklist it started if you haven't touched it, and the follow-up date it replaced. Moving forward never takes anything back, and after a day a move back is treated as real news, so your history stays.
 - A daily quote at the top of the board. Every quote's wording was checked against its original source.
 - Celebrations that scale: confetti and a chime for applying, more for an interview, a full-screen celebration for an offer, and a kind word when you get a rejection.
 - A sound toggle in the header. Confetti is skipped when your device is set to reduce motion.
@@ -109,7 +112,7 @@ The app is two parts that run side by side: the Rails API in `backend/` and the 
 You'll need:
 
 - **Ruby 3.2 or newer** (3.3 recommended)
-- **Node.js 20 or newer**
+- **Node.js 22.15 or newer** (check with `node --version`)
 - **PostgreSQL 14 or newer**
 
 Pick the steps for your computer, then continue with [Running Onward](#running-onward).
@@ -456,6 +459,8 @@ frontend/
 Unit tests sit next to the code they test, like `src/lib/format.test.ts` beside `src/lib/format.ts`.
 
 ## Troubleshooting
+
+**`npm install` warns about an "Unsupported engine".** Your Node.js is older than 22.15. Check with `node --version`, then update: `brew upgrade node` with Homebrew on macOS, or `nvm install --lts` if you installed Node with nvm (Linux and WSL).
 
 **`bin/setup` or `bin/test` says permission denied.** Some unzip tools drop the "executable" flag. Run `chmod +x bin/* backend/bin/*` from the top folder and try again.
 

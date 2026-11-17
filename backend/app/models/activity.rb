@@ -60,13 +60,27 @@ class Activity < ApplicationRecord
   after_create_commit :check_daily_goals
 
   # Called when an application's status changes. Records the step the first
-  # time an application reaches it, and never again.
+  # time an application reaches it, and never again. Returns the new activity,
+  # or nil if there was nothing new to record.
   def self.record_status_change!(job_application)
     kind = KIND_FOR_STATUS[job_application.status]
     return if kind.nil?
     return if where(job_application:, kind:, automatic: true).exists?
 
     create!(user: job_application.user, job_application:, kind:, automatic: true)
+  end
+
+  # Removes an activity that was recorded by mistake, like from a card dropped
+  # in the wrong column. If the day was only a perfect day because of it, the
+  # day goes back to unfinished, and can still be earned again.
+  def take_back!
+    destroy!
+
+    perfect_day = user.perfect_days.find_by(achieved_on: occurred_on)
+    return if perfect_day.nil? || perfect_day.created_at < created_at
+    return if DailyGoals.for(user, date: occurred_on, refresh: false).perfect?
+
+    perfect_day.destroy!
   end
 
   private

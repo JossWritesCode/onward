@@ -1,6 +1,7 @@
 import { burst, celebrateFullScreen } from './confetti';
 import { playSound } from './sounds';
 import type { StageKind } from './status';
+import { undoneMessage } from './undo';
 
 // Decides what happens when an application moves forward (or gets a no), and
 // tells the toaster what to say. Effort is celebrated; rejections get kindness.
@@ -84,7 +85,8 @@ function pick(items: readonly (readonly [string, string])[]): readonly [string, 
 
 // How far along each kind is. Rejected sits at 0 so moving a card back out of
 // "Rejected" into "Saved" doesn't celebrate.
-const RANK: Record<StageKind, number> = { SAVED: 0, REJECTED: 0, APPLIED: 1, INTERVIEWING: 2, OFFER: 3 };
+// Rejected ranks last, so moving a card out of it is a move back, never a new win to celebrate.
+const RANK: Record<StageKind, number> = { SAVED: 0, APPLIED: 1, INTERVIEWING: 2, OFFER: 3, REJECTED: 4 };
 
 type Move = {
   from: { kind: StageKind; position: number } | null;
@@ -129,6 +131,15 @@ export function celebrateMove({ from, to, origin }: Move) {
       showToast('celebrate', title, body);
     }
   }
+}
+
+/**
+ * Call with a move's `undone` answer from the server. When moving a card back
+ * took back what a mistaken move recorded, says so quietly.
+ */
+export function noteUndone(kinds: readonly string[] | null | undefined) {
+  const message = undoneMessage(kinds);
+  if (message) showToast('gentle', message.title, message.body);
 }
 
 const LET_GO_MESSAGES = [

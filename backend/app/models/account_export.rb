@@ -12,7 +12,7 @@ class AccountExport
       account: user.as_json(only: %i[email_address time_zone engineering_track leetcode_username github_username created_at]),
       board_columns: rows(user.stages),
       job_applications: user.job_applications.includes(:contacts, interview_rounds: :checklist_items).map do |application|
-        application.as_json(except: %i[user_id]).merge(
+        application.as_json(except: %i[user_id recent_moves]).merge(
           "contact_ids" => application.contact_ids,
           "interview_rounds" => application.interview_rounds.map do |round|
             round.as_json(except: %i[job_application_id]).merge("checklist" => rows(round.checklist_items, except: %i[interview_round_id]))

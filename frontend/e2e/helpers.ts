@@ -13,7 +13,8 @@ export type Account =
   | 'resume-import'
   | 'log-win'
   | 'follow-up'
-  | 'interview-prep';
+  | 'interview-prep'
+  | 'undo-move';
 
 export const PASSWORD = 'password123';
 export const emailFor = (account: Account) => `${account}@e2e.onward.test`;

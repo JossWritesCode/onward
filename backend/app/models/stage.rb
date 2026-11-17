@@ -34,6 +34,13 @@ class Stage < ApplicationRecord
     end
   end
 
+  # Where the column sits in a job hunt, for telling a move back from a move
+  # forward: saved, applied, interviews, offer, rejected. Interview columns
+  # also go by their place on the board, so a later round ranks higher.
+  def board_rank
+    [ KINDS.index(kind), kind_interviewing? ? position : 0 ]
+  end
+
   private
 
   def place_at_end

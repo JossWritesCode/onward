@@ -6,6 +6,8 @@ module Mutations
     argument :input, Types::JobApplicationInput, required: true
 
     field :job_application, Types::JobApplicationType, null: true
+    field :undone, [ Types::ActivityKindEnum ], null: false,
+      description: "What a move to another column took back, like INTERVIEW, because it moved the card back from a column it was only just moved into. Usually empty."
     field :errors, [ Types::UserErrorType ], null: false
 
     def resolve(id:, input:)
@@ -22,9 +24,9 @@ module Mutations
       end
 
       if saved
-        { job_application: job_application.reload, errors: [] }
+        { job_application: job_application.reload, undone: job_application.undone_kinds, errors: [] }
       else
-        { job_application: nil, errors: errors_for(job_application) }
+        { job_application: nil, undone: [], errors: errors_for(job_application) }
       end
     end
   end

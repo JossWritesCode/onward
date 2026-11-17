@@ -33,6 +33,16 @@ class InterviewRound < ApplicationRecord
     checklist_items.any? && checklist_items.all?(&:done?)
   end
 
+  # Whether the round is still exactly as it was created: no date set, and no
+  # checklist item ticked, edited, added, or removed. `item_count` is how many
+  # items it started with.
+  def untouched?(item_count)
+    return false if scheduled_at.present? || prepped_at.present?
+
+    items = checklist_items.to_a
+    items.size == item_count.to_i && items.none?(&:done?) && items.all? { |item| item.updated_at == item.created_at }
+  end
+
   # Finishing the checklist the first time counts as a prep activity.
   def record_progress!
     return if prepped_at.present? || !complete?

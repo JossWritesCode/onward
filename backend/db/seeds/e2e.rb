@@ -5,7 +5,7 @@
 # run side by side without moving each other's cards. (The tests inside one
 # file share its account and run in order.) Every
 # account starts the same: the default columns, three applications, and one
-# resume, with no activity yet, so the streak starts at zero.
+# resume. Nothing has happened in the last few days, so the streak starts at zero.
 #
 # Dates count from today on the account's own clock, so the follow-up that's
 # due is due whenever the tests run.
@@ -20,6 +20,7 @@ E2E_ACCOUNTS = %w[
   log-win
   follow-up
   interview-prep
+  undo-move
 ].freeze
 E2E_PASSWORD = "password123"
 
@@ -62,9 +63,16 @@ E2E_ACCOUNTS.each do |name|
   user.resumes.create!(title: "Frontend v3", content: E2E_RESUME)
 
   # Creating applied cards logs "sent an application" for today, as moving a
-  # card would. Clear it, so each account starts with no streak and today's
-  # goal not yet done (a done goal folds the Today strip and hides its nudges).
-  user.activities.delete_all
+  # card would. These cards were sent days ago, so date their activity then:
+  # each account starts with no streak and today's goal not yet done (a done
+  # goal folds the Today strip and hides its nudges). They also haven't been
+  # moved lately, so there's no recent move to take back.
+  user.activities.includes(:job_application).each do |activity|
+    sent_on = activity.job_application.date_applied
+    activity.update_columns(occurred_on: sent_on, created_at: sent_on.noon)
+  end
+  user.perfect_days.delete_all
+  user.job_applications.update_all(recent_moves: [])
 end
 
 puts "Loaded #{E2E_ACCOUNTS.size} end-to-end accounts (password: #{E2E_PASSWORD})"

@@ -17,7 +17,7 @@ import {
   UpdateJobApplicationMutation,
 } from '../graphql/operations';
 import { importedJobFromHash, postingKey, type ImportedJob } from '../lib/bookmarklet';
-import { celebrateMove } from '../lib/celebrate';
+import { celebrateMove, noteUndone } from '../lib/celebrate';
 import { fieldError, generalErrors, type UserError } from '../lib/errors';
 import { blankToNull, formatDate } from '../lib/format';
 import { WORK_ARRANGEMENTS, WORK_ARRANGEMENT_LABELS } from '../lib/status';
@@ -221,6 +221,7 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
             to: { kind: selectedStage.kind, position: selectedStage.position },
           });
         }
+        if ('undone' in result) noteUndone(result.undone);
         navigate('/applications');
       } else {
         setErrors(result?.errors ?? [{ message: 'Something went wrong. Try again.' }]);

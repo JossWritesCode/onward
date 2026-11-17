@@ -12,6 +12,9 @@ class JobApplication < ApplicationRecord
     "applied" => %w[follow_up follow_up],
     "interviewing" => %w[thank_you check_in check_in last_note]
   }.freeze
+  # How long after a move you can take it back by moving the card to an
+  # earlier column. After this, moving a card back is treated as real news.
+  UNDO_WINDOW = 24.hours
 
   belongs_to :user
   belongs_to :stage, inverse_of: :job_applications
@@ -41,6 +44,8 @@ class JobApplication < ApplicationRecord
   validate :stage_belongs_to_user
 
   before_validation :sync_stage_and_status
+  # First, so it sees the card as it was before the other callbacks touch it.
+  before_save :plan_move
   before_save :place_at_top_of_stage, if: -> { (new_record? || will_save_change_to_stage_id?) && !@positioned }
   # When something moves to "applied" without a date, assume it happened today.
   before_save :default_date_applied, if: -> { will_save_change_to_status? && status_applied? }
@@ -49,10 +54,14 @@ class JobApplication < ApplicationRecord
   before_save :restart_follow_ups, if: :follow_ups_restart?
   # Saved, offer, and rejected cards never have a follow-up date.
   before_save -> { self.follow_up_on = nil }, unless: -> { FOLLOW_UP_STATUSES.include?(status) }
-  # Applying, interviews, offers, and rejections count toward your streak.
-  after_save -> { Activity.record_status_change!(self) }, if: :saved_change_to_status?
-  # Landing in an interview column starts a prep checklist for that round.
-  after_save -> { InterviewRound.start_for!(self) }, if: :saved_change_to_stage_id?
+  # Takes back any mistaken moves, then records this one: applying,
+  # interviews, offers, and rejections count toward your streak, and landing in
+  # an interview column starts a prep checklist for that round.
+  after_save :finish_move, if: -> { saved_change_to_stage_id? || saved_change_to_status? }
+
+  # The kinds of activity the last save took back, like ["interview"], because
+  # it moved the card back from a column it had only just been moved into.
+  def undone_kinds = @undone_kinds || []
 
   # Moves the card into a column at a given spot (0 is the top) and renumbers
   # the cards around it.
@@ -111,6 +120,8 @@ class JobApplication < ApplicationRecord
   end
 
   def restart_follow_ups
+    return restore_follow_ups if @back_at_origin
+
     self.follow_ups_sent = 0
     # A date you typed in yourself in the same save wins.
     return if will_save_change_to_follow_up_on?
@@ -150,6 +161,104 @@ class JobApplication < ApplicationRecord
 
   def default_date_applied
     self.date_applied ||= Date.current
+  end
+
+  # Taking back a mistaken move
+  #
+  # Dragging a card into the wrong column records an activity, may start a prep
+  # checklist, and restarts the follow-up schedule. Moving the card to an
+  # earlier column within UNDO_WINDOW takes all of that back, for every recent
+  # move that put the card somewhere later than where it is now. Moving forward
+  # never takes anything back, and neither does moving back after the window:
+  # that's real news, like a rejected job reopening, and history stays.
+  #
+  # recent_moves holds the moves still inside the window, oldest first:
+  #   "at"           when the card was moved
+  #   "to"           the column it landed in
+  #   "from"         where it was before, with its follow-up date and count
+  #   "activity_id"  the activity the move recorded, if it recorded one
+  #   "round_id"     the interview round it started, if it started one,
+  #   "round_items"  and how many checklist items that round began with
+  #   "date_applied" the applied date the move filled in, if it did
+
+  # Before saving: works out which recent moves this one takes back, and puts
+  # the card's own dates back the way they were.
+  def plan_move
+    @undone_kinds = []
+    @moves_to_undo = []
+    @back_at_origin = false
+    return unless will_save_change_to_stage_id?
+
+    @origin = {
+      "stage_id" => stage_id_was, "follow_up_on" => follow_up_on_was&.iso8601, "follow_ups_sent" => follow_ups_sent_was
+    }
+    @typed_date_applied = will_save_change_to_date_applied?
+    recent = recent_moves.select { |move| Time.iso8601(move["at"]) > UNDO_WINDOW.ago }
+    @moves_to_undo, recent = recent.partition { |move| later_than_here?(move) } if moved_back?
+    self.recent_moves = recent
+    return if @moves_to_undo.empty?
+
+    # The card counts as having come from wherever it was before the first mistake.
+    @origin = @moves_to_undo.first["from"]
+    @back_at_origin = @origin["stage_id"] == stage_id
+    filled_in = @moves_to_undo.filter_map { |move| move["date_applied"] }
+    self.date_applied = nil if !@typed_date_applied && filled_in.include?(date_applied&.iso8601)
+  end
+
+  # After saving: takes back the mistaken moves, newest first, then records
+  # this move and remembers it in case it turns out to be a mistake too.
+  def finish_move
+    @moves_to_undo.reverse_each { |move| undo_move(move) }
+
+    activity = Activity.record_status_change!(self) if saved_change_to_status?
+    return unless saved_change_to_stage_id?
+
+    round = InterviewRound.start_for!(self)
+    return if @back_at_origin
+
+    filled_in_date = saved_change_to_date_applied? && !@typed_date_applied && date_applied.present?
+    update_column(:recent_moves, recent_moves + [ {
+      "at" => Time.current.iso8601(3),
+      "to" => stage_id,
+      "from" => @origin,
+      "activity_id" => activity&.id,
+      "round_id" => round&.id,
+      "round_items" => round&.checklist_items&.size,
+      "date_applied" => (date_applied.iso8601 if filled_in_date)
+    }.compact ])
+  end
+
+  def undo_move(move)
+    activity = activities.find_by(id: move["activity_id"], automatic: true) if move["activity_id"]
+    if activity
+      @undone_kinds << activity.kind
+      activity.take_back!
+    end
+
+    # A checklist you've started on is real prep, so it stays.
+    round = interview_rounds.find_by(id: move["round_id"]) if move["round_id"]
+    round.destroy! if round&.untouched?(move["round_items"])
+  end
+
+  def moved_back?
+    return false if new_record?
+
+    was = user.stages.find_by(id: stage_id_was)
+    was.present? && (stage.board_rank <=> was.board_rank) == -1
+  end
+
+  def later_than_here?(move)
+    landed_in = user.stages.find_by(id: move["to"])
+    landed_in.present? && (landed_in.board_rank <=> stage.board_rank) == 1
+  end
+
+  # Back in the column the mistake started from: the follow-up date and count
+  # pick up where they were. A date you typed in yourself in the same save wins.
+  def restore_follow_ups
+    self.follow_ups_sent = @origin["follow_ups_sent"].to_i
+    return if will_save_change_to_follow_up_on?
+
+    self.follow_up_on = @origin["follow_up_on"]&.to_date
   end
 
   def stage_belongs_to_user

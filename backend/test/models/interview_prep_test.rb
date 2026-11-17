@@ -23,9 +23,11 @@ class InterviewPrepTest < ActiveSupport::TestCase
   test "each interview column gets its own round, once" do
     application = @user.job_applications.create!(company: "Acme", role: "Dev", stage: @phone_screen)
     application.move_to!(@interviewing, 0)
+    # More than a day later, so this isn't taking back a mistaken move.
+    travel 25.hours
     application.move_to!(@phone_screen, 0)
 
-    assert_equal [ "Phone screen", "Interviewing" ], application.interview_rounds.map(&:name)
+    assert_equal [ "Phone screen", "Interviewing" ], application.interview_rounds.reload.map(&:name)
   end
 
   test "finishing a checklist counts once" do

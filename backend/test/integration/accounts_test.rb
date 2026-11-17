@@ -100,6 +100,7 @@ class AccountsTest < ActionDispatch::IntegrationTest
     assert_match "attachment", response.headers["Content-Disposition"]
     data = JSON.parse(response.body)
     assert_equal "Acme", data.dig("job_applications", 0, "company")
+    assert_not data.dig("job_applications", 0).key?("recent_moves"), "the undo history is bookkeeping, not your data"
     assert_equal 1, data["stories"].size
     assert_equal "Dana Whitfield", data.dig("resumes", 0, "content", "name")
     assert_equal 9.5, data.dig("resumes", 0, "style", "fontSize")
