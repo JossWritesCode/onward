@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test';
-import { addDays, card, shortDay, signIn, todayInToronto, toast } from './helpers';
+import { expect } from '@playwright/test';
+import { addDays, card, shortDay, signIn, test, toast, todayInToronto } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await signIn(page, 'follow-up');

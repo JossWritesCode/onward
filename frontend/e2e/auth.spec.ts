@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test';
-import { emailFor, PASSWORD, signIn } from './helpers';
+import { expect } from '@playwright/test';
+import { emailFor, PASSWORD, signIn, test } from './helpers';
 
 test('signs in and out', async ({ page }) => {
   await signIn(page, 'auth');

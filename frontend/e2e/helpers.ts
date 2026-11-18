@@ -1,8 +1,11 @@
-import { expect, type Locator, type Page } from '@playwright/test';
+import path from 'node:path';
+import { test as base, expect, type Locator, type Page, type Response } from '@playwright/test';
+import { RAILS_URL } from './ports';
 
 /**
- * The accounts in backend/db/seeds/e2e.rb. Each spec file signs in as its
- * own, so files running side by side never move each other's cards.
+ * The accounts in backend/lib/e2e_accounts.rb. Each spec file signs in as its
+ * own, named for the file, so files running side by side never move each
+ * other's cards.
  */
 export type Account =
   | 'auth'
@@ -15,6 +18,45 @@ export type Account =
   | 'follow-up'
   | 'interview-prep'
   | 'undo-move';
+
+const ACCOUNTS: readonly Account[] = [
+  'auth',
+  'applications',
+  'board',
+  'columns',
+  'resume-preview',
+  'resume-import',
+  'log-win',
+  'follow-up',
+  'interview-prep',
+  'undo-move',
+];
+
+/**
+ * Playwright's `test`, with one addition: before each test, the account named
+ * for the spec file (board.spec.ts uses "board") is rebuilt on the server, so
+ * every test starts from the seeded data. That keeps the tests in a file from
+ * leaning on each other, and makes a retry on CI a real second try rather than
+ * a run against whatever the failed attempt left behind.
+ *
+ * Spec files import `test` from here, not from '@playwright/test'.
+ */
+export const test = base.extend<{ freshAccount: Account }>({
+  freshAccount: [
+    async ({ playwright }, use, testInfo) => {
+      const account = path.basename(testInfo.file, '.spec.ts') as Account;
+      if (!ACCOUNTS.includes(account)) {
+        throw new Error(`No end-to-end account for ${path.basename(testInfo.file)}. Add "${account}" to E2eAccounts in backend/lib/e2e_accounts.rb and to ACCOUNTS in e2e/helpers.ts.`);
+      }
+      const request = await playwright.request.newContext({ baseURL: RAILS_URL });
+      const response = await request.post(`/e2e/reset/${account}`);
+      await request.dispose();
+      if (!response.ok()) throw new Error(`Resetting the ${account} account failed: HTTP ${response.status()}`);
+      await use(account);
+    },
+    { auto: true },
+  ],
+});
 
 export const PASSWORD = 'password123';
 export const emailFor = (account: Account) => `${account}@e2e.onward.test`;
@@ -51,16 +93,63 @@ export const columnOrder = (page: Page) =>
  * Drags with a mouse, the way a person does: press, nudge past the 5px
  * threshold, glide to the target in steps, let go. Playwright's dragTo jumps
  * straight there, which the board's hand-built drag doesn't see as a drag.
+ *
+ * It waits for the thing to be on screen and holding still first, since the
+ * board can redraw a card just as a test reaches for it.
  */
 export async function drag(page: Page, from: Locator, to: { x: number; y: number }, { release = true } = {}) {
-  const box = await from.boundingBox();
-  if (!box) throw new Error('Nothing to drag from');
-  const start = { x: box.x + Math.min(box.width / 2, 30), y: box.y + Math.min(box.height / 2, 20) };
+  // A trial hover runs Playwright's checks (attached, visible, stable, not
+  // covered) without moving the mouse.
+  await from.hover({ trial: true });
+  let box: Awaited<ReturnType<Locator['boundingBox']>> = null;
+  await expect
+    .poll(async () => (box = await from.boundingBox()), { message: 'Nothing to drag from', timeout: 5_000 })
+    .not.toBeNull();
+  const { x, y, width, height } = box!;
+  const start = { x: x + Math.min(width / 2, 30), y: y + Math.min(height / 2, 20) };
   await page.mouse.move(start.x, start.y);
   await page.mouse.down();
   await page.mouse.move(start.x + 12, start.y + 8, { steps: 3 });
   await page.mouse.move(to.x, to.y, { steps: 15 });
   if (release) await page.mouse.up();
+}
+
+/** The GraphQL operation a response answers, like "Board". */
+function operationOf(response: Response): string | undefined {
+  if (!response.url().endsWith('/graphql')) return undefined;
+  try {
+    return response.request().postDataJSON()?.operationName;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Drags a card to a point and waits until the move is saved and the board has
+ * fetched itself again, so the card won't be redrawn under the next step.
+ * Use it whenever a test goes on to drag, click, or check the same card.
+ */
+export async function moveCard(page: Page, from: Locator, to: { x: number; y: number }) {
+  let onResponse: (response: Response) => void = () => {};
+  const settled = new Promise<void>((resolve) => {
+    let saved = false;
+    onResponse = (response) => {
+      const operation = operationOf(response);
+      if (operation === 'MoveJobApplication') saved = true;
+      else if (saved && operation === 'Board') void response.finished().then(() => resolve());
+    };
+    page.on('response', onResponse);
+  });
+  try {
+    await drag(page, from, to);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error('The move never saved, or the board never refetched')), 10_000);
+    });
+    await Promise.race([settled, timeout]).finally(() => clearTimeout(timer));
+  } finally {
+    page.off('response', onResponse);
+  }
 }
 
 /** A point inside a locator, as fractions of its width and height. */

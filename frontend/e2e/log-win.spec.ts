@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test';
-import { signIn, toast } from './helpers';
+import { expect } from '@playwright/test';
+import { signIn, test, toast } from './helpers';
 
 test('logging a networking message counts for the streak and shows in your history', async ({ page }) => {
   await signIn(page, 'log-win');

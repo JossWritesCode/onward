@@ -399,7 +399,15 @@ If the download is blocked (some company networks do this), point the tests at a
 
 ### How the end-to-end tests run
 
-`bin/e2e` empties a database of their own, `onward_e2e`, and fills it with one account per spec file from `backend/db/seeds/e2e.rb`, so the tests never touch your own data, and files running side by side never touch each other's cards. Then Playwright starts Rails on port 3001 and the app on port 5174, runs every spec, and stops both. Your development servers on 3000 and 5173 can keep running.
+`bin/e2e` empties a database of their own, `onward_e2e`, and fills it with one account per spec file (see `backend/lib/e2e_accounts.rb`), so the tests never touch your own data, and files running side by side never touch each other's cards. Then Playwright starts Rails on port 3001 and the app on port 5174, runs every spec, and stops both. Your development servers on 3000 and 5173 can keep running.
+
+Before each test, the account named for its spec file (`board.spec.ts` signs in as `board@e2e.onward.test`) is rebuilt from scratch. So every test starts from the same three applications, whatever the test before it did, and when CI retries a failed test, the retry starts fresh too. The rebuild goes through `POST /e2e/reset/<account>`, a route that only exists in the test environment and only works on an `_e2e` database. The accounts are described in `backend/lib/e2e_accounts.rb`.
+
+When you write a spec:
+
+- Import `test` from `./helpers`, not from `@playwright/test`. That's what resets the account.
+- A new spec file needs an account of its own, named for the file. Add it to `ACCOUNTS` in `backend/lib/e2e_accounts.rb` and in `frontend/e2e/helpers.ts`.
+- To drag a card and then do something more with it, use `moveCard`, not `drag`. It waits until the move is saved and the board has refreshed, so the card isn't redrawn under the next step.
 
 Anything after `bin/e2e` goes to Playwright:
 
@@ -444,7 +452,7 @@ backend/
   app/models/         Users, board columns, applications, contacts, activities, streaks, interview prep, resumes
   db/migrate/         Database tables
   test/               Model and API tests
-  db/seeds/e2e.rb     Accounts for the end-to-end tests
+  lib/e2e_accounts.rb The end-to-end tests' accounts, and how each test resets its own
   schema.graphql      Generated schema the frontend reads
 frontend/
   src/pages/          One file per screen

@@ -3,6 +3,7 @@ import { useMutation } from '@apollo/client';
 import { Link, useNavigate } from 'react-router';
 import type { BoardQuery } from '../gql/graphql';
 import { MoveJobApplicationMutation, ReorderStagesMutation } from '../graphql/operations';
+import { placeMovedCard } from '../lib/boardCache';
 import { celebrateMove, noteUndone, showToast } from '../lib/celebrate';
 import { shortInterviewTime } from '../lib/countdown';
 import { formatDate } from '../lib/format';
@@ -325,6 +326,9 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
 
     moveApplication({
       variables: { id: card.id, stageId: overStageId, position: overIndex },
+      // Keeps the card in its new column until the refetch arrives.
+      update: (cache, { data }) =>
+        placeMovedCard(cache, card.id, data?.moveJobApplication?.jobApplication?.stage.id, overIndex),
       refetchQueries: ['Board', 'Streak', 'Progress', 'Today'],
     })
       // Moving a card back from a mistaken move takes back what it recorded.

@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test';
-import { addDays, card, column, drag, pointIn, shortDay, signIn, todayInToronto, toast, waitForBoard } from './helpers';
+import { expect } from '@playwright/test';
+import { addDays, card, column, moveCard, pointIn, shortDay, signIn, test, toast, todayInToronto, waitForBoard } from './helpers';
 
 // Moving a card back within a day takes back what the mistaken move recorded.
 
@@ -11,10 +11,11 @@ test('dragging a card to Applied and back takes the application back', async ({ 
   const streak = page.getByRole('link', { name: /streak/i });
   await expect(streak).toHaveAttribute('title', /^No streak yet/);
 
-  await drag(page, card(page, 'Maple & Co'), await pointIn(column(page, 'Applied'), 0.5, 0.3));
+  await moveCard(page, card(page, 'Maple & Co'), await pointIn(column(page, 'Applied'), 0.5, 0.3));
+  await expect(column(page, 'Applied').locator(card(page, 'Maple & Co'))).toBeVisible();
   await expect(streak).toHaveAttribute('title', "1-day streak. You've shown up today.");
 
-  await drag(page, card(page, 'Maple & Co'), await pointIn(column(page, 'Saved'), 0.5, 0.3));
+  await moveCard(page, card(page, 'Maple & Co'), await pointIn(column(page, 'Saved'), 0.5, 0.3));
 
   await expect(toast(page, "That won't count as an application.")).toBeVisible();
   await expect(column(page, 'Saved').locator(card(page, 'Maple & Co'))).toBeVisible();
@@ -31,12 +32,12 @@ test('dragging a card to an interview column and back removes the checklist and 
   const brightline = card(page, 'Brightline');
   await expect(brightline).toContainText(`Follow up ${shortDay(today)}`);
 
-  await drag(page, brightline, await pointIn(column(page, 'Phone screen'), 0.5, 0.3));
+  await moveCard(page, brightline, await pointIn(column(page, 'Phone screen'), 0.5, 0.3));
   await expect(toast(page, /You landed an interview|Interview stage unlocked/)).toBeVisible();
-  // The interview column gave it a thank-you note for tomorrow: the move is saved.
-  await expect(brightline).toContainText(shortDay(addDays(today, 1)));
+  // Saved: it's in the interview column, with a thank-you note due tomorrow.
+  await expect(column(page, 'Phone screen').locator(brightline)).toContainText(`Follow up ${shortDay(addDays(today, 1))}`);
 
-  await drag(page, brightline, await pointIn(column(page, 'Applied'), 0.5, 0.3));
+  await moveCard(page, brightline, await pointIn(column(page, 'Applied'), 0.5, 0.3));
 
   await expect(toast(page, "That won't count as an interview.")).toBeVisible();
   await expect(column(page, 'Applied').locator(brightline)).toBeVisible();

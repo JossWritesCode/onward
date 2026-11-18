@@ -1,14 +1,11 @@
-import { expect, test } from '@playwright/test';
-import { column, columnOrder, drag, pointIn, signIn, waitForBoard } from './helpers';
+import { expect } from '@playwright/test';
+import { column, columnOrder, drag, pointIn, signIn, test, waitForBoard } from './helpers';
 
 const START = ['Saved', 'Applied', 'Phone screen', 'Interviewing', 'Offer', 'Rejected'];
 
 test.beforeEach(async ({ page }) => {
   await signIn(page, 'columns');
 });
-
-// These run in order: the first moves a column, the rest expect where it landed.
-test.describe.configure({ mode: 'serial' });
 
 test('every column has a grip', async ({ page }) => {
   await expect.poll(() => columnOrder(page)).toEqual(START);
@@ -49,13 +46,21 @@ test("dragging a column's title, not its grip, does nothing", async ({ page }) =
 
 test('the Add or edit columns page still reorders with its buttons', async ({ page }) => {
   await page.goto('/columns');
-  const left = page.getByRole('button', { name: 'Move Saved left' });
-  // Saved is third after the drag above: two moves left make it first, which disables the button.
-  await left.click();
-  await expect(page.getByRole('button', { name: 'Move Saved right' })).toBeEnabled();
-  await left.click();
-  await expect(left).toBeDisabled();
+  // Top to bottom on this page, which changes once the server has the new order.
+  const listed = () =>
+    page.getByRole('button', { name: /^Move .+ left$/ }).evaluateAll((buttons) => buttons.map((b) => b.getAttribute('aria-label')!.slice(5, -5)));
+  await expect.poll(listed).toEqual(START);
+  // Saved starts first, so it can't move left.
+  await expect(page.getByRole('button', { name: 'Move Saved left' })).toBeDisabled();
+
+  const right = page.getByRole('button', { name: 'Move Saved right' });
+  await right.click();
+  await expect.poll(listed).toEqual(['Applied', 'Saved', 'Phone screen', 'Interviewing', 'Offer', 'Rejected']);
+  await right.click();
+  const moved = ['Applied', 'Phone screen', 'Saved', 'Interviewing', 'Offer', 'Rejected'];
+  await expect.poll(listed).toEqual(moved);
+
   await page.goto('/applications');
   await waitForBoard(page);
-  await expect.poll(() => columnOrder(page)).toEqual(START);
+  await expect.poll(() => columnOrder(page)).toEqual(moved);
 });

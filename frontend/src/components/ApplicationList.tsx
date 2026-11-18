@@ -3,6 +3,7 @@ import { useMutation } from '@apollo/client';
 import { Link, useNavigate } from 'react-router';
 import type { BoardQuery } from '../gql/graphql';
 import { MoveJobApplicationMutation } from '../graphql/operations';
+import { placeMovedCard } from '../lib/boardCache';
 import { celebrateMove, noteUndone, showToast } from '../lib/celebrate';
 import { formatDate } from '../lib/format';
 import { STATUS_STYLES, WORK_ARRANGEMENT_LABELS } from '../lib/status';
@@ -107,7 +108,11 @@ function ApplicationRow({ row, stages }: { row: Row; stages: readonly BoardStage
       origin: { x: rect.left + rect.width / 2, y: rect.top },
     });
     try {
-      const result = await moveApplication({ variables: { id: row.id, stageId, position: 0 } });
+      const result = await moveApplication({
+        variables: { id: row.id, stageId, position: 0 },
+        // Shows the row under its new column right away, not after the refetch.
+        update: (cache, { data }) => placeMovedCard(cache, row.id, data?.moveJobApplication?.jobApplication?.stage.id, 0),
+      });
       noteUndone(result.data?.moveJobApplication?.undone);
     } catch {
       showToast('gentle', "That change didn't save", 'Check that the Onward server is running, then try again.');

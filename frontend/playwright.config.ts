@@ -1,11 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
+import { APP_PORT, RAILS_PORT } from './e2e/ports';
 
 // End-to-end tests: a real browser against the real Rails server and the React
 // app. Run them with `npm run e2e` (or `bin/e2e` from the top folder), which
 // resets their database first. See "Testing" in the README.
 
-const RAILS_PORT = 3001;
-const APP_PORT = 5174;
 const CI = Boolean(process.env.CI);
 
 export default defineConfig({
@@ -14,6 +13,8 @@ export default defineConfig({
   // inside a file share that account, so they run one after another.
   fullyParallel: false,
   forbidOnly: CI,
+  // Every test, and so every retry, starts with its account freshly reset
+  // (see `test` in e2e/helpers.ts), so a retry runs the test as it was written.
   retries: CI ? 1 : 0,
   reporter: CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {

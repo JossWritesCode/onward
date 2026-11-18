@@ -1,5 +1,5 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
-import { signIn } from './helpers';
+import { expect, type Locator, type Page } from '@playwright/test';
+import { signIn, test } from './helpers';
 
 // Where page 1 and its label sit, against the scrolling preview panel they're in.
 async function layout(scope: Locator) {

@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test';
-import { card, column, drag, pointIn, signIn, toast } from './helpers';
+import { expect } from '@playwright/test';
+import { card, column, drag, pointIn, signIn, test, toast } from './helpers';
 
 test('moving a card to an interview column starts a prep checklist, and finishing it celebrates', async ({ page }) => {
   await signIn(page, 'interview-prep');
