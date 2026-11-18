@@ -7,9 +7,7 @@ import {
   DuplicateResumeMutation,
   JobApplicationsQuery,
   ResumesQuery,
-  TailorResumeMutation,
 } from '../graphql/operations';
-import { showTailoredToast } from '../lib/resume/newResumeToast';
 import { TEMPLATES, toResumeContent } from '../lib/resume/types';
 import { BriefcaseIcon, CopyIcon, FileTextIcon, PlusIcon, SparklesIcon, TrashIcon } from '../components/icons';
 import { Button, ButtonLink, Card, EmptyState, ErrorBanner, PageHeader, Select, Spinner } from '../components/ui';
@@ -74,7 +72,6 @@ export default function ResumesPage() {
         busy={busyId === resume.id}
         onDuplicate={() => duplicate(resume)}
         onDelete={() => remove(resume)}
-        onProblem={setProblem}
       />
     </li>
   );
@@ -146,13 +143,11 @@ function ResumeCard({
   busy,
   onDuplicate,
   onDelete,
-  onProblem,
 }: {
   resume: Resume;
   busy: boolean;
   onDuplicate: () => void;
   onDelete: () => void;
-  onProblem: (message: string | null) => void;
 }) {
   const [picking, setPicking] = useState(false);
   const content = toResumeContent(resume.content);
@@ -190,7 +185,7 @@ function ResumeCard({
       )}
 
       {picking ? (
-        <TailorPicker resume={resume} onClose={() => setPicking(false)} onProblem={onProblem} />
+        <TailorPicker resume={resume} onClose={() => setPicking(false)} />
       ) : (
         <div className="mt-3 flex flex-wrap items-center gap-1 border-t-2 border-stone-100 pt-2 dark:border-stone-800">
           {!application && (
@@ -210,38 +205,20 @@ function ResumeCard({
   );
 }
 
-/** Picks the application to tailor a base resume for. */
-function TailorPicker({
-  resume,
-  onClose,
-  onProblem,
-}: {
-  resume: Resume;
-  onClose: () => void;
-  onProblem: (message: string | null) => void;
-}) {
+/**
+ * Picks the application to tailor a base resume for, then goes to its page,
+ * where the Resume section does the tailoring with this resume picked.
+ */
+function TailorPicker({ resume, onClose }: { resume: Resume; onClose: () => void }) {
   const navigate = useNavigate();
   const { data, loading } = useQuery(JobApplicationsQuery);
-  const [tailorResume, { loading: tailoring }] = useMutation(TailorResumeMutation, { refetchQueries: REFETCH });
   const [applicationId, setApplicationId] = useState('');
   const applications = data?.jobApplications ?? [];
   const free = applications.filter((application) => !application.resume);
 
-  async function tailor() {
-    const application = applications.find((candidate) => candidate.id === applicationId);
-    if (!application) return;
-    onProblem(null);
-    try {
-      const result = (await tailorResume({ variables: { id: resume.id, jobApplicationId: application.id } })).data?.tailorResume;
-      if (result?.resume) {
-        navigate(`/resumes/${result.resume.id}`);
-        showTailoredToast(application, resume.title);
-      } else {
-        onProblem(result?.errors.map((error) => error.message).join(' ') || 'Something went wrong. Try again.');
-      }
-    } catch (caught) {
-      onProblem(caught instanceof Error ? caught.message : 'Something went wrong. Try again.');
-    }
+  function tailor() {
+    if (!applicationId) return;
+    navigate(`/applications/${applicationId}?tailor=${resume.id}`);
   }
 
   return (
@@ -267,8 +244,8 @@ function TailorPicker({
         </Select>
       )}
       <div className="flex items-center gap-2">
-        <Button onClick={tailor} disabled={!applicationId || tailoring}>
-          {tailoring ? 'Copying…' : 'Tailor'}
+        <Button onClick={tailor} disabled={!applicationId}>
+          Tailor
         </Button>
         <Button variant="ghost" onClick={onClose}>
           Cancel

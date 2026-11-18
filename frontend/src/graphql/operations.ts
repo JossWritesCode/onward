@@ -1353,10 +1353,11 @@ export const UpdateResumeMutation = graphql(`
   }
 `);
 
-// Copies a resume and links the copy to a job application.
+// Makes an application's tailored resume from a base resume: from ChatGPT's
+// reply to the tailoring message when there's text, or as a plain copy.
 export const TailorResumeMutation = graphql(`
-  mutation TailorResume($id: ID!, $jobApplicationId: ID!) {
-    tailorResume(id: $id, jobApplicationId: $jobApplicationId) {
+  mutation TailorResume($id: ID!, $jobApplicationId: ID!, $text: String) {
+    tailorResume(id: $id, jobApplicationId: $jobApplicationId, text: $text) {
       resume {
         id
         title
@@ -1365,6 +1366,24 @@ export const TailorResumeMutation = graphql(`
           company
           role
         }
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
+// Replaces a tailored resume's content with ChatGPT's reply to the re-tailoring message.
+export const RetailorResumeMutation = graphql(`
+  mutation RetailorResume($id: ID!, $text: String!) {
+    retailorResume(id: $id, text: $text) {
+      resume {
+        id
+        title
+        content
+        updatedAt
       }
       errors {
         field

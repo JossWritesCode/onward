@@ -40,17 +40,27 @@ class Resume < ApplicationRecord
       return [ nil, [ problem ], [] ]
     end
 
-    data = ResumeImport.parse(text)
-    result = ResumeContent.normalize(data)
-    return [ nil, result.problems, [] ] unless result.ok?
-
-    content = result.content
-    filled = ResumeContent.fill_contact!(content, user.resumes.recent_first.first&.content)
-    return [ nil, [ "Your resume needs a name. Add it to \"name\" in the JSON and paste again." ], [] ] if content["name"].blank?
+    content, problems, filled = content_from_paste(text, contact_from: user.resumes.recent_first.first&.content)
+    return [ nil, problems, [] ] if content.nil?
 
     title = [ content["title"].presence || "Resume", job_application&.company ].compact.join(" – ")
     resume = user.resumes.create!(title: unused_title(user, title), content:, source_text: text, job_application:)
     [ resume, [], filled ]
+  end
+
+  # Reads resume JSON an AI wrote. Returns [content, problems, filled]: the
+  # checked content (nil if the paste can't be used), what was wrong in plain
+  # words, and which contact fields were blank in the paste and so were copied
+  # from `contact_from`, another resume's content.
+  def self.content_from_paste(text, contact_from: nil)
+    result = ResumeContent.normalize(ResumeImport.parse(text))
+    return [ nil, result.problems, [] ] unless result.ok?
+
+    content = result.content
+    filled = ResumeContent.fill_contact!(content, contact_from)
+    return [ nil, [ "Your resume needs a name. Add it to \"name\" in the JSON and paste again." ], [] ] if content["name"].blank?
+
+    [ content, [], filled ]
   rescue ResumeImport::Error => error
     [ nil, [ error.message ], [] ]
   end
@@ -75,12 +85,41 @@ class Resume < ApplicationRecord
   end
 
   # A copy of this resume, linked to an application and ready to tailor.
-  def tailor_for(job_application)
-    user.resumes.create!(
+  # A copy of this resume linked to an application, keeping its template, page
+  # size, and design. Without `text` the content is copied as it is, to edit
+  # by hand. With `text`, an AI's reply to the tailoring message (see
+  # frontend/src/lib/resume/tailorPrompt.ts), the content comes from that, and
+  # any contact details it left blank come from this resume.
+  # Returns [resume, problems]. Nothing is saved if the paste can't be used.
+  def tailor_for(job_application, text: nil)
+    if text.nil?
+      tailored_content, source = content.deep_dup, source_text
+    else
+      tailored_content, problems = self.class.content_from_paste(text, contact_from: content)
+      return [ nil, problems ] if tailored_content.nil?
+
+      source = text
+    end
+
+    resume = user.resumes.create!(
       title: self.class.unused_title(user, "#{title[0, 80]} – #{job_application.company[0, 40]}"),
-      template:, page_size:, style:, content: content.deep_dup, source_text:,
+      template:, page_size:, style:, content: tailored_content, source_text: source,
       job_application:, based_on: self
     )
+    [ resume, [] ]
+  end
+
+  # Replaces a tailored resume's content with an AI's reply to the re-tailoring
+  # message, keeping everything else: title, template, design, its link.
+  # Returns the problems; nothing changes unless there are none.
+  def retailor(text)
+    return [ "Only a tailored resume can be re-tailored. Link it to an application first." ] if job_application.nil?
+
+    new_content, problems = self.class.content_from_paste(text, contact_from: content)
+    return problems if new_content.nil?
+
+    update!(content: new_content, source_text: text)
+    []
   end
 
   # Replaces the content after checking its shape. Returns the problems.

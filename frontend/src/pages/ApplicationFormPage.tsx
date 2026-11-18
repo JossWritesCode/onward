@@ -298,7 +298,13 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
         </section>
       )}
 
-      {existing && <ApplicationResume application={existing} />}
+      {existing && (
+        <ApplicationResume
+          application={existing}
+          jobDescription={form.jobDescription}
+          onJobDescriptionChange={(text) => set('jobDescription', text)}
+        />
+      )}
 
       <form onSubmit={handleSubmit} noValidate className="space-y-5">
         <ErrorBanner messages={generalErrors(errors, FIELDS)} />
