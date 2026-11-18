@@ -362,7 +362,7 @@ class ResumesTest < ActionDispatch::IntegrationTest
     assert_equal 1.35, resume.style["lineHeight"], "keys left out get the default"
 
     copy = resume.duplicate
-    tailored = resume.tailor_for(application)
+    tailored, = resume.tailor_for(application)
     assert_equal resume.style, copy.style
     assert_equal resume.style, tailored.style
     assert_equal "modern", tailored.template
@@ -415,4 +415,132 @@ class ResumesTest < ActionDispatch::IntegrationTest
       assert_equal template, result.dig("data", "updateResume", "resume", "template")
     end
   end
+
+  # --- Tailoring with an AI's reply ------------------------------------
+
+  TAILOR_WITH_TEXT = <<~GRAPHQL
+    mutation($id: ID!, $jobApplicationId: ID!, $text: String) {
+      tailorResume(id: $id, jobApplicationId: $jobApplicationId, text: $text) {
+        resume { id title template pageSize content basedOn { id } jobApplication { id } }
+        errors { field message }
+      }
+    }
+  GRAPHQL
+
+  RETAILOR = <<~GRAPHQL
+    mutation($id: ID!, $text: String!) {
+      retailorResume(id: $id, text: $text) {
+        resume { id title template content jobApplication { id } }
+        errors { field message }
+      }
+    }
+  GRAPHQL
+
+  # ChatGPT's reply: the summary and bullet reworded for the job, and the
+  # contact details left out.
+  TAILORED_REPLY = <<~TEXT
+    Here's your tailored resume:
+
+    ```json
+    {
+      "name": "Dana Whitfield", "title": "Frontend Engineer, Design Systems", "location": "", "phone": "", "email": "",
+      "links": [],
+      "summary": "Frontend developer who builds accessible design systems in React.",
+      "skills": [{ "label": "Design Systems", "items": ["React", "Storybook"] }],
+      "experience": [{
+        "title": "Frontend Developer", "company": "Tidewater Apps", "location": "Remote",
+        "start": "2022-08", "end": "Present", "bullets": ["Built the shared component library the booking flow runs on."]
+      }],
+      "education": [{ "school": "Dalhousie University", "degree": "BSc", "date": "2019-05", "honors": "" }],
+      "sections": []
+    }
+    ```
+  TEXT
+
+  def tailor_with(text, base, job_application)
+    graphql(TAILOR_WITH_TEXT, variables: { id: base.id.to_s, jobApplicationId: job_application.id.to_s, text: })
+      .dig("data", "tailorResume")
+  end
+
+  test "tailors from an AI's reply, keeping the base resume's look and contact details" do
+    base = Resume.import(@user, PASTE).first
+    base.update!(template: "modern", page_size: "a4", style: { "fontSize" => 9.5, "accent" => "#0f766e" })
+    brightline = application
+
+    result = tailor_with(TAILORED_REPLY, base, brightline)
+
+    assert_empty result["errors"]
+    tailored = result["resume"]
+    assert_equal "Frontend Developer – Brightline", tailored["title"]
+    assert_equal [ "MODERN", "A4" ], [ tailored["template"], tailored["pageSize"] ]
+    assert_equal "Frontend developer who builds accessible design systems in React.", tailored.dig("content", "summary")
+    assert_equal [ "Built the shared component library the booking flow runs on." ], tailored.dig("content", "experience", 0, "bullets")
+    # Left blank in the reply, so copied from the base resume.
+    assert_equal [ "Halifax, NS", "+1 902 555 0142", "dana@example.com" ], tailored["content"].values_at("location", "phone", "email")
+    assert_equal base.id.to_s, tailored.dig("basedOn", "id")
+    assert_equal brightline.id.to_s, tailored.dig("jobApplication", "id")
+
+    saved = Resume.find(tailored["id"])
+    assert_equal 9.5, saved.style["fontSize"]
+    assert_equal "#0f766e", saved.style["accent"]
+    assert_equal TAILORED_REPLY, saved.source_text
+    assert_equal "Frontend developer who likes accessible interfaces.", base.reload.content["summary"], "the base is untouched"
+  end
+
+  test "a reply that can't be read saves nothing and says where it broke" do
+    base = Resume.import(@user, PASTE).first
+    brightline = application
+
+    result = tailor_with("Sure! I've tailored it.\n```json\n{\n  \"name\": \"Dana\",\n  \"summary\": \"oops\n}\n```", base, brightline)
+
+    assert_nil result["resume"]
+    assert_equal "text", result["errors"].sole["field"]
+    assert_match(/line/i, result["errors"].sole["message"])
+    assert_equal 1, @user.resumes.count
+    assert_nil brightline.reload.resume
+
+    still_one = tailor_with(TAILORED_REPLY, base, brightline)
+    assert_empty still_one["errors"], "a failed try doesn't use up the application's one resume"
+  end
+
+  test "re-tailoring replaces only the content of a tailored resume" do
+    base = Resume.import(@user, PASTE).first
+    brightline = application
+    tailored, = base.tailor_for(brightline)
+    tailored.update!(title: "Brightline, final", template: "compact", style: { "margin" => 0.5 })
+
+    result = graphql(RETAILOR, variables: { id: tailored.id.to_s, text: TAILORED_REPLY }).dig("data", "retailorResume")
+
+    assert_empty result["errors"]
+    assert_equal "Frontend Engineer, Design Systems", result.dig("resume", "content", "title")
+    assert_equal "dana@example.com", result.dig("resume", "content", "email"), "blank contact details stay as they were"
+    assert_equal [ "Brightline, final", "COMPACT" ], result["resume"].values_at("title", "template")
+    assert_equal brightline.id.to_s, result.dig("resume", "jobApplication", "id")
+    assert_equal 0.5, tailored.reload.style["margin"]
+    assert_equal "Frontend developer who likes accessible interfaces.", base.reload.content["summary"]
+  end
+
+  test "re-tailoring keeps the resume as it was when the reply can't be read, and only works on tailored resumes" do
+    base = Resume.import(@user, PASTE).first
+    tailored, = base.tailor_for(application)
+    before = tailored.content
+
+    broken = graphql(RETAILOR, variables: { id: tailored.id.to_s, text: "no json here" }).dig("data", "retailorResume")
+    assert_nil broken["resume"]
+    assert_equal "text", broken["errors"].sole["field"]
+    assert_equal before, tailored.reload.content
+
+    not_tailored = graphql(RETAILOR, variables: { id: base.id.to_s, text: TAILORED_REPLY }).dig("data", "retailorResume")
+    assert_equal "Only a tailored resume can be re-tailored. Link it to an application first.", not_tailored["errors"].sole["message"]
+  end
+
+  test "can't tailor or re-tailor someone else's resume" do
+    other = create_user(email_address: "someone@example.com")
+    theirs, = Resume.import(other, PASTE).first.tailor_for(application(user: other))
+
+    response = graphql(RETAILOR, variables: { id: theirs.id.to_s, text: TAILORED_REPLY })
+    assert_nil response.dig("data", "retailorResume")
+    assert_equal "Frontend developer who likes accessible interfaces.", theirs.reload.content["summary"]
+  end
+
 end

@@ -62,3 +62,21 @@ export function showTailoredToast(application: { id: string; company: string }, 
     application,
   );
 }
+
+/** After ChatGPT's tailored version of a base resume is saved for an application. */
+export function showTailoredFromReplyToast(application: { id: string; company: string }) {
+  showResumeToast(
+    `Tailored for ${application.company}`,
+    'Give it a read-through and make sure every line is true, then download your PDF.',
+    application,
+  );
+}
+
+/** After a tailored resume's content is replaced with ChatGPT's new version. */
+export function showRetailoredToast(application: { id: string; company: string }) {
+  showResumeToast(
+    `Re-tailored for ${application.company}`,
+    'Give the new version a read-through, then download your PDF.',
+    application,
+  );
+}

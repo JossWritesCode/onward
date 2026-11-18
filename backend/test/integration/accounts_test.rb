@@ -130,7 +130,7 @@ class AccountsTest < ActionDispatch::IntegrationTest
     user.nudge_dismissals.create!(key: "contact:1:2026-01-01")
     user.update!(admin: true)
     user.invites.create!
-    Resume.import(user, '{ "name": "Dana Whitfield", "title": "Developer" }').first.tailor_for(application)
+    Resume.import(user, '{ "name": "Dana Whitfield", "title": "Developer" }').first.tailor_for(application).first
     assert application.interview_rounds.any?
 
     wrong = graphql('mutation { deleteAccount(password: "nope") { deleted errors { field } } }').dig("data", "deleteAccount")

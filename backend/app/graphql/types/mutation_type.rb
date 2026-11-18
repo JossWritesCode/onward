@@ -52,6 +52,7 @@ module Types
     field :import_resume, mutation: Mutations::ImportResume
     field :update_resume, mutation: Mutations::UpdateResume
     field :tailor_resume, mutation: Mutations::TailorResume
+    field :retailor_resume, mutation: Mutations::RetailorResume
     field :duplicate_resume, mutation: Mutations::DuplicateResume
     field :delete_resume, mutation: Mutations::DeleteResume
 

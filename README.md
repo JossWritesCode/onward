@@ -88,7 +88,7 @@ Onward is being built in milestones. So far:
 - The PDF is made in your browser, with real selectable text and the fonts (Neuton and Roboto) embedded. If it runs past one page, a note says how full the last page is, so you know whether you're a bullet away or a section away.
 - After a new resume is saved, a "Log a win: tailored resume" button. It's only logged if you press it.
 - Base and tailored resumes: a resume is a **base** resume until it's linked to a job application, which makes it the resume **tailored** for that job. Each application has at most one.
-- Tailor from an application's page ("Tailor a resume" copies a base resume and links the copy), from the Resumes page ("Tailor for…"), from the paste screen ("For an application"), or by picking an application in the editor.
+- Tailor through ChatGPT from an application's Resume section: pick a base resume, copy a message that has the resume and the job description in it, paste it into ChatGPT (or any AI chat), and paste the reply back. The tailored resume keeps the base resume's template and design. **Re-tailor** gives a tailored resume another pass the same way. "Tailor for…" on the Resumes page takes you to that application with the resume picked. You can also copy a base resume as it is and edit it by hand, or link a resume to an application in the editor or the paste screen.
 - A tailored resume shows as a tag on its card on the board and in the phone list (click the tag to open it), and in a Resume section on the application's page with **Open** and **Download PDF**.
 - A tailored resume downloads as "[Job title] [Company] resume.pdf", like "Frontend Developer Brightline resume.pdf". Base resumes download as "Your Name - Resume name.pdf".
 - Logging the win from a tailored resume's toast records it against that application.
@@ -289,7 +289,17 @@ Dates are kept as `2022-08` (or `Present`) and shown on the resume as "Aug '22 -
 
 If Format reports a problem, the message names the line of your paste to look at. The quickest fix is usually to ask the AI to "reply again with valid JSON only", or to fix that one line by hand.
 
-**Tailoring for a job.** Open the application from the board and use **Tailor a resume** in its Resume section: pick a base resume, and Onward copies it, links the copy to that application, and opens it. Edit the copy for the job, then download it. To swap in a different resume, open the linked one and set its **Job application** to "None" (or delete it) first, since each application has one.
+**Tailoring for a job.** Open the application from the board, and in its Resume section:
+
+1. Pick the base resume to start from.
+2. If the application has no job description yet, paste it in. Copying the message (step 3) saves it with the application. If that save fails, you'll see why, with **Try again**. The message is copied either way.
+3. Click **Copy message for ChatGPT** and paste the message into ChatGPT (or any AI chat). It has the job, its description, your resume in Onward's format, and the rules: tailor it to the job's wording, keep it to one page, and don't make anything up.
+4. Paste ChatGPT's whole reply into **ChatGPT's reply** and click **Make tailored resume**. Onward saves it as this application's resume, with the base resume's template and design, and opens it. Contact details the reply left blank come from the base resume.
+5. Read it through, since an AI can still stretch the truth, then download the PDF.
+
+To give a tailored resume another pass, click **Re-tailor** in the same section: copy the new message, paste ChatGPT's reply, and click **Replace with this version**. The reply replaces the resume's content, and its title, template and design stay. Rather edit by hand? **Copy it as it is** makes the tailored copy without ChatGPT. To swap in a different resume, open the linked one and set its **Job application** to "None" (or delete it) first, since each application has one.
+
+The message is built in `frontend/src/lib/resume/tailorPrompt.ts`, if you want to change what it asks for.
 
 **Fitting one page.** Click **Design** above the preview to open it, and pick **Tight**, or open **Fine-tune** and nudge the text size or margins. The note under the panel says how much is spilling over, and the preview redraws as you go. Compact is the template that fits the most.
 
@@ -458,7 +468,7 @@ frontend/
   src/pages/          One file per screen
   src/components/     Shared building blocks (buttons, layout, icons)
   src/graphql/        Every query and mutation the app uses
-  src/lib/            Helpers: quotes, celebrations, sounds, confetti, settings, resume dates and the AI prompt
+  src/lib/            Helpers: quotes, celebrations, sounds, confetti, settings, resume dates and the AI prompts
   src/resume-pdf/     Resume templates and PDF code, downloaded only when the resume editor opens
   src/assets/fonts/   Fonts embedded in resume PDFs
   e2e/                End-to-end tests (Playwright)
