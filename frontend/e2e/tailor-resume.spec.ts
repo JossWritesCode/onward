@@ -40,6 +40,7 @@ test('tailors a base resume through ChatGPT, with the job description in the mes
 
   await copy.click();
   await expect(page.getByRole('button', { name: 'Copied' })).toBeVisible();
+  await expect(page.getByText('Job description saved with this application.')).toBeVisible();
   const message = await clipboard(page);
   expect(message).toContain('The job: Frontend Developer at Brightline');
   expect(message).toContain(JOB_DESCRIPTION);
@@ -60,6 +61,47 @@ test('tailors a base resume through ChatGPT, with the job description in the mes
   await page.goto('/applications');
   await openBrightline(page);
   await expect(page.getByText('Frontend v3 – Brightline')).toBeVisible();
+  await expect(page.locator('#job-description')).toHaveValue(JOB_DESCRIPTION);
+});
+
+test("copies the message even when the job description won't save, and saves it on Try again", async ({ page }) => {
+  // First the network fails, then the server turns the description down.
+  let attempt = 0;
+  await page.route('**/graphql', async (route) => {
+    if (route.request().postDataJSON()?.operationName !== 'UpdateJobApplication') return route.continue();
+    attempt += 1;
+    if (attempt === 1) return route.abort('internetdisconnected');
+    return route.fulfill({
+      json: {
+        data: {
+          updateJobApplication: {
+            __typename: 'UpdateJobApplicationPayload',
+            undone: [],
+            jobApplication: null,
+            errors: [{ __typename: 'UserError', field: 'jobDescription', message: 'Job description is too long.' }],
+          },
+        },
+      },
+    });
+  });
+  await openBrightline(page);
+  await page.getByLabel('Paste the job description').fill(JOB_DESCRIPTION);
+
+  await page.getByRole('button', { name: 'Copy message for ChatGPT' }).click();
+  const problem = page.getByRole('alert');
+  await expect(problem).toContainText("We couldn't save the job description: Check your connection.");
+  await expect(problem).toContainText('The message was still copied.');
+  expect(await clipboard(page)).toContain(JOB_DESCRIPTION);
+
+  await problem.getByRole('button', { name: 'Try again' }).click();
+  await expect(problem).toContainText("We couldn't save the job description: Job description is too long.");
+
+  await page.unroute('**/graphql');
+  await problem.getByRole('button', { name: 'Try again' }).click();
+  await expect(page.getByText('Job description saved with this application.')).toBeVisible();
+  await expect(page.getByRole('alert')).toHaveCount(0);
+
+  await page.reload();
   await expect(page.locator('#job-description')).toHaveValue(JOB_DESCRIPTION);
 });
 

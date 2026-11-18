@@ -141,7 +141,7 @@ if user.resumes.none?
   # One tailored for an application, so its card has a resume to show.
   brightline = user.job_applications.find_by(company: "Brightline")
   if brightline
-    tailored = base.tailor_for(brightline)
+    tailored, = base.tailor_for(brightline)
     tailored.update!(content: tailored.content.merge(
       "summary" => "Frontend developer with five years of experience building accessible, fast web apps in React and " \
         "TypeScript. Drawn to Brightline's focus on design systems, and ready to own features from first sketch to production."

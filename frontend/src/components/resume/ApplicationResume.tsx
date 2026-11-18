@@ -286,14 +286,20 @@ function JobDescription({ jobDescription, onChange }: { jobDescription: string; 
     <Field
       label="Paste the job description"
       htmlFor="tailor-job-description"
-      hint="Paste it from the job posting. It's saved with this application when you copy the message."
+      hint="Paste it from the job posting. Copying the message saves it with this application."
     >
       <Textarea id="tailor-job-description" rows={6} value={jobDescription} onChange={(e) => onChange(e.target.value)} />
     </Field>
   );
 }
 
-/** Copies the tailoring message, saving a newly pasted job description first. */
+type SaveState = { status: 'idle' } | { status: 'saving' } | { status: 'saved' } | { status: 'failed'; message: string };
+
+/**
+ * Copies the tailoring message. If the job description in it isn't saved on
+ * the application yet, copying saves it too, and says so, or says why it
+ * couldn't with a way to try again. The copy never waits on the save.
+ */
 function CopyMessage({
   application,
   jobDescription,
@@ -306,15 +312,28 @@ function CopyMessage({
   const [updateApplication] = useMutation(UpdateJobApplicationMutation, { refetchQueries: ['JobApplication'] });
   const [copied, setCopied] = useState(false);
   const [byHand, setByHand] = useState<string | null>(null);
+  const [save, setSave] = useState<SaveState>({ status: 'idle' });
   const missing = jobDescription.trim() === '';
+  const unsaved = jobDescription.trim() !== (application.jobDescription ?? '').trim();
+
+  async function saveJobDescription() {
+    setSave({ status: 'saving' });
+    try {
+      const result = (await updateApplication({ variables: { id: application.id, input: { jobDescription } } })).data
+        ?.updateJobApplication;
+      const problems = result?.errors.map((error) => error.message) ?? [];
+      if (result?.jobApplication && problems.length === 0) setSave({ status: 'saved' });
+      else setSave({ status: 'failed', message: problems.join(' ') || 'Something went wrong.' });
+    } catch {
+      setSave({ status: 'failed', message: 'Check your connection.' });
+    }
+  }
 
   async function copy() {
-    const text = message();
     setByHand(null);
-    if (jobDescription.trim() !== (application.jobDescription ?? '').trim()) {
-      // Best effort: the message works either way, and Save below saves it too.
-      updateApplication({ variables: { id: application.id, input: { jobDescription } } }).catch(() => {});
-    }
+    // Not awaited: the browser only lets a click copy right away.
+    if (unsaved) void saveJobDescription();
+    const text = message();
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
@@ -339,6 +358,31 @@ function CopyMessage({
               : 'It has your resume and the job description in it.'}
         </span>
       </div>
+      {/* Only while it matters: once the description is saved some other way
+          (Save changes below), an old failure no longer applies. */}
+      {save.status === 'failed' && unsaved && (
+        <div
+          role="alert"
+          className="flex flex-wrap items-center gap-3 rounded-xl border-2 border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 dark:border-rose-900 dark:bg-rose-950/50 dark:text-rose-300"
+        >
+          <span className="min-w-0 flex-1">
+            We couldn't save the job description: {save.message} The message was still copied.
+          </span>
+          <Button variant="secondary" onClick={saveJobDescription}>
+            Try again
+          </Button>
+        </div>
+      )}
+      {save.status === 'saving' && (
+        <p className="text-sm text-stone-500 dark:text-stone-400" role="status">
+          Saving the job description…
+        </p>
+      )}
+      {save.status === 'saved' && !unsaved && (
+        <p className="text-sm text-stone-500 dark:text-stone-400" role="status">
+          Job description saved with this application.
+        </p>
+      )}
       {byHand && (
         <div>
           <p className="text-sm text-stone-500 dark:text-stone-400">
