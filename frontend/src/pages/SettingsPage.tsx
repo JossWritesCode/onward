@@ -1,27 +1,140 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { useApolloClient, useMutation, useQuery } from '@apollo/client';
-import { useNavigate } from 'react-router';
-import { CreateInviteMutation, DeleteAccountMutation, DeleteInviteMutation, InvitesQuery, MeQuery } from '../graphql/operations';
+import { useLocation, useNavigate } from 'react-router';
+import {
+  CreateInviteMutation,
+  DeleteAccountMutation,
+  DeleteInviteMutation,
+  EngineeringSettingsQuery,
+  InvitesQuery,
+  MeQuery,
+} from '../graphql/operations';
 import { showToast } from '../lib/celebrate';
 import { formatDay } from '../lib/activities';
-import { CopyIcon, FileTextIcon, PlusIcon, TrashIcon, UsersIcon } from '../components/icons';
+import { useTheme } from '../lib/preferences';
+import type { Theme } from '../lib/theme';
+import { useSignOut } from '../lib/useSignOut';
+import {
+  CopyIcon,
+  FileTextIcon,
+  LogOutIcon,
+  MonitorIcon,
+  MoonIcon,
+  PlusIcon,
+  SunIcon,
+  TrashIcon,
+  UsersIcon,
+} from '../components/icons';
 import { Button, Card, ErrorBanner, Field, Input, PageHeader } from '../components/ui';
 import SaveToOnwardCard from '../components/SaveToOnwardCard';
+import EngineeringSettings from '../components/settings/EngineeringSettings';
 
-export default function AccountPage() {
+/** Appearance, the software engineering track, and your account, behind the gear in the header. */
+export default function SettingsPage() {
   const { data } = useQuery(MeQuery, { fetchPolicy: 'cache-first' });
   const me = data?.me;
+  const [signOut, signingOut] = useSignOut();
+  useScrollToHash();
 
   return (
     <div className="mx-auto max-w-2xl">
-      <PageHeader title="Your account" subtitle={me?.emailAddress} />
-      <div className="space-y-5">
-        <SaveToOnwardCard />
-        {me?.admin && <Invites />}
-        <YourData />
-        <DeleteAccount />
+      <PageHeader title="Settings" />
+      <div className="space-y-10">
+        <Appearance />
+
+        <div id="engineering" className="scroll-mt-24">
+          <EngineeringSettings />
+        </div>
+
+        <section aria-labelledby="account-heading" className="space-y-5">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div className="min-w-0">
+              <h2 id="account-heading" className="text-xl font-black">
+                Your account
+              </h2>
+              {me?.emailAddress && (
+                <p className="text-sm break-all text-stone-500 dark:text-stone-400">{me.emailAddress}</p>
+              )}
+            </div>
+            <Button variant="secondary" onClick={() => void signOut()} disabled={signingOut}>
+              <LogOutIcon /> Sign out
+            </Button>
+          </div>
+          <div id="save-to-onward" className="scroll-mt-24">
+            <SaveToOnwardCard />
+          </div>
+          {me?.admin && <Invites />}
+          <YourData />
+          <DeleteAccount />
+        </section>
       </div>
     </div>
+  );
+}
+
+/**
+ * Links like /settings#engineering open the page at that section. The router
+ * doesn't do this itself. It waits for the engineering settings to load, since
+ * the sections below them move down when they do.
+ */
+function useScrollToHash() {
+  const { hash } = useLocation();
+  const { data } = useQuery(EngineeringSettingsQuery);
+  const loaded = Boolean(data);
+  useEffect(() => {
+    if (!hash || !loaded) return;
+    document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView({ block: 'start' });
+  }, [hash, loaded]);
+}
+
+const THEMES: { value: Theme; label: string; Icon: (props: { className?: string }) => ReactNode }[] = [
+  { value: 'system', label: 'System', Icon: MonitorIcon },
+  { value: 'light', label: 'Light', Icon: SunIcon },
+  { value: 'dark', label: 'Dark', Icon: MoonIcon },
+];
+
+function Appearance() {
+  const [theme, setTheme] = useTheme();
+
+  return (
+    <section aria-labelledby="appearance-heading">
+      <h2 id="appearance-heading" className="text-xl font-black">
+        Appearance
+      </h2>
+      <p className="mb-3 text-sm text-stone-500 dark:text-stone-400">
+        Light, dark, or whatever your computer uses. This browser remembers your pick.
+      </p>
+      <Card className="p-5">
+        <fieldset>
+          <legend className="mb-3 font-bold">Theme</legend>
+          <div className="grid grid-cols-3 gap-2">
+            {THEMES.map(({ value, label, Icon }) => (
+              <label
+                key={value}
+                className={
+                  'flex cursor-pointer flex-col items-center gap-1.5 rounded-xl border-2 px-3 py-3 font-extrabold transition ' +
+                  'has-focus-visible:ring-4 has-focus-visible:ring-brand-500/30 ' +
+                  (theme === value
+                    ? 'border-brand-500 bg-brand-50 text-brand-700 dark:border-brand-400 dark:bg-brand-900/40 dark:text-brand-200'
+                    : 'border-stone-200 text-stone-600 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800')
+                }
+              >
+                <input
+                  type="radio"
+                  name="theme"
+                  value={value}
+                  checked={theme === value}
+                  onChange={() => setTheme(value)}
+                  className="sr-only"
+                />
+                <Icon className="text-xl" />
+                {label}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      </Card>
+    </section>
   );
 }
 
@@ -60,9 +173,9 @@ function Invites() {
 
   return (
     <Card className="p-5">
-      <h2 className="flex items-center gap-2 text-xl font-black">
+      <h3 className="flex items-center gap-2 text-lg font-black">
         <UsersIcon className="text-brand-500" /> Invite friends
-      </h2>
+      </h3>
       <p className="mb-4 text-sm text-stone-500 dark:text-stone-400">
         Each invite link works once. Everyone gets their own private account.
       </p>
@@ -116,9 +229,9 @@ function Invites() {
 function YourData() {
   return (
     <Card className="p-5">
-      <h2 className="flex items-center gap-2 text-xl font-black">
+      <h3 className="flex items-center gap-2 text-lg font-black">
         <FileTextIcon className="text-brand-500" /> Your data
-      </h2>
+      </h3>
       <div className="mt-2 space-y-2 text-sm text-stone-600 dark:text-stone-300">
         <p>
           Onward stores what you put in: your applications, contacts, resumes, activity, goals, prep, and study time, plus your
@@ -160,9 +273,9 @@ function DeleteAccount() {
 
   return (
     <Card className="border-rose-200 p-5 dark:border-rose-900/60">
-      <h2 className="flex items-center gap-2 text-xl font-black">
+      <h3 className="flex items-center gap-2 text-lg font-black">
         <TrashIcon className="text-rose-500" /> Delete my account
-      </h2>
+      </h3>
       <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">
         This deletes your account and everything in it, for good. Download your data first if you want a copy.
       </p>

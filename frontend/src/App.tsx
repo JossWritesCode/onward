@@ -5,7 +5,7 @@ import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-import AccountPage from './pages/AccountPage';
+import SettingsPage from './pages/SettingsPage';
 import ApplicationsPage from './pages/ApplicationsPage';
 import ApplicationFormPage from './pages/ApplicationFormPage';
 import ContactsPage from './pages/ContactsPage';
@@ -52,7 +52,8 @@ export default function App() {
           <Route path="/contacts" element={<ContactsPage />} />
           <Route path="/contacts/new" element={<ContactFormPage />} />
           <Route path="/contacts/:id" element={<ContactFormPage />} />
-          <Route path="/account" element={<AccountPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/account" element={<Navigate to="/settings" replace />} />
         </Route>
       </Route>
 

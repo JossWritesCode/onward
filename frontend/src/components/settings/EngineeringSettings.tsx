@@ -57,7 +57,7 @@ function SettingsForm({ me }: { me: Me }) {
     await save(
       { engineeringTrack: next },
       next ? 'Engineering track on' : 'Engineering track off',
-      next ? 'Add your accounts below. It now has its own link in the header.' : 'You can turn it back on anytime.',
+      next ? 'Add your accounts below. The Engineering page now has its own link in the header.' : 'You can turn it back on anytime.',
     );
   }
 

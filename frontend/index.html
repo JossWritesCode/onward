@@ -12,6 +12,19 @@
       rel="stylesheet"
     />
     <title>Onward</title>
+    <script>
+      // Light or dark before anything draws, so the page doesn't flash the wrong
+      // colors while the app loads. src/lib/theme.ts does the same from then on.
+      (function () {
+        var theme = null;
+        try {
+          theme = localStorage.getItem('onward:theme');
+        } catch (e) {}
+        var dark = theme === 'dark' || (theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

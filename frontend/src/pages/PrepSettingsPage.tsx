@@ -9,7 +9,6 @@ import {
   UpdateQuestionMutation,
 } from '../graphql/operations';
 import { showToast } from '../lib/celebrate';
-import EngineeringSettings from '../components/prep/EngineeringSettings';
 import { ArrowLeftIcon, PlusIcon, TrashIcon, XIcon } from '../components/icons';
 import { Button, Card, ErrorBanner, Input, Spinner } from '../components/ui';
 
@@ -31,7 +30,6 @@ export default function PrepSettingsPage() {
       {loading && !data && <Spinner />}
       {data && (
         <div className="space-y-8">
-          <EngineeringSettings />
           <ChecklistTemplateEditor key={data.checklistTemplate.map((i) => i.id).join()} items={data.checklistTemplate.map((i) => i.text)} />
           <QuestionBank questions={data.questions} />
         </div>

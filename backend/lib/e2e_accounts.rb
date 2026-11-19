@@ -26,6 +26,7 @@ module E2eAccounts
     interview-prep
     undo-move
     tailor-resume
+    settings
   ].freeze
   PASSWORD = "password123"
 
