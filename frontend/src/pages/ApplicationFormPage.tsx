@@ -266,7 +266,7 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
             {!existing && !imported && (
               <>
                 {' '}
-                <Link to="/account" className="font-bold text-brand-600 hover:underline dark:text-brand-300">
+                <Link to="/settings#save-to-onward" className="font-bold text-brand-600 hover:underline dark:text-brand-300">
                   Save jobs from LinkedIn in one click
                 </Link>
               </>

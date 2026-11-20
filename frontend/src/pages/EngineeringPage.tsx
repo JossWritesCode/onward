@@ -7,7 +7,7 @@ import { addDays, formatDay, mondayOf } from '../lib/activities';
 import { celebrateStudy } from '../lib/celebrate';
 import { formatMinutes, hoursDecimal, todayIso } from '../lib/format';
 import CalendarHeatMap from '../components/CalendarHeatMap';
-import { ColumnsIcon, ExternalLinkIcon, FlameIcon, PlusIcon, RefreshIcon, TimerIcon } from '../components/icons';
+import { ExternalLinkIcon, FlameIcon, GearIcon, PlusIcon, RefreshIcon, TimerIcon } from '../components/icons';
 import { Button, ButtonLink, Card, ErrorBanner, Field, Input, PageHeader, Select, Spinner } from '../components/ui';
 
 type Engineering = EngineeringQueryData['engineering'];
@@ -34,7 +34,7 @@ export default function EngineeringPage() {
             The software engineering track adds your LeetCode streak, your GitHub contributions, and your study hours
             to the Prep page.
           </p>
-          <ButtonLink to="/prep/customize">Turn it on</ButtonLink>
+          <ButtonLink to="/settings#engineering">Turn it on</ButtonLink>
         </Card>
       </div>
     );
@@ -52,8 +52,8 @@ export default function EngineeringPage() {
                 <RefreshIcon className={refreshing ? 'animate-spin' : ''} /> {refreshing ? 'Refreshing…' : 'Refresh'}
               </Button>
             )}
-            <ButtonLink to="/prep/customize" variant="ghost">
-              <ColumnsIcon /> Settings
+            <ButtonLink to="/settings#engineering" variant="ghost">
+              <GearIcon /> Settings
             </ButtonLink>
           </div>
         }
@@ -72,8 +72,8 @@ function ConnectPrompt({ service, what }: { service: string; what: string }) {
   return (
     <p className="text-stone-500 dark:text-stone-400">
       Add your {service} username in{' '}
-      <Link to="/prep/customize" className="font-bold text-brand-600 hover:underline dark:text-brand-300">
-        prep settings
+      <Link to="/settings#engineering" className="font-bold text-brand-600 hover:underline dark:text-brand-300">
+        Settings
       </Link>{' '}
       to see {what}.
     </p>

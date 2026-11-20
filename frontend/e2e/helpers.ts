@@ -18,7 +18,8 @@ export type Account =
   | 'follow-up'
   | 'interview-prep'
   | 'undo-move'
-  | 'tailor-resume';
+  | 'tailor-resume'
+  | 'settings';
 
 const ACCOUNTS: readonly Account[] = [
   'auth',
@@ -32,6 +33,7 @@ const ACCOUNTS: readonly Account[] = [
   'interview-prep',
   'undo-move',
   'tailor-resume',
+  'settings',
 ];
 
 /**

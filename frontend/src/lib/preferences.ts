@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { applyScheme, DARK_QUERY, parseTheme, resolveScheme, THEME_KEY, type Theme } from './theme';
 
 // Small settings remembered in this browser. Storage can be unavailable
 // (private windows, blocked site data), so every read and write is guarded.
@@ -44,6 +45,7 @@ const viewSetting = createSetting('onward:view');
 const quoteHiddenSetting = createSetting('onward:quote-hidden-on');
 const quotePickSetting = createSetting('onward:quote-pick');
 const designOpenSetting = createSetting('onward:resume-design-open');
+const themeSetting = createSetting(THEME_KEY);
 
 export function isMuted() {
   return mutedSetting.get() === 'true';
@@ -85,6 +87,25 @@ export function useQuotePick(today: string): [number | null, (index: number) => 
 export function useDesignOpen(): [boolean, (open: boolean) => void] {
   const stored = useSyncExternalStore(designOpenSetting.subscribe, designOpenSetting.get);
   return [stored === 'true', (open) => designOpenSetting.set(open ? 'true' : 'false')];
+}
+
+/** System, light or dark. Picking one recolors the page right away. */
+export function useTheme(): [Theme, (theme: Theme) => void] {
+  const theme = useSyncExternalStore(themeSetting.subscribe, () => parseTheme(themeSetting.get()));
+  return [theme, (next) => themeSetting.set(next === 'system' ? null : next)];
+}
+
+/**
+ * Keeps the page's colors matching your choice: when you pick another theme,
+ * and, while it's on "system", when the computer switches between light and dark.
+ * index.html already set them once before the app loaded.
+ */
+export function watchTheme() {
+  const system = window.matchMedia(DARK_QUERY);
+  const apply = () => applyScheme(resolveScheme(parseTheme(themeSetting.get()), system.matches));
+  apply();
+  themeSetting.subscribe(apply);
+  system.addEventListener('change', apply);
 }
 
 export function prefersReducedMotion() {

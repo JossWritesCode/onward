@@ -125,7 +125,7 @@ function GoalRow({
             <>
               {' · '}
               Paused while the{' '}
-              <Link to="/prep/customize" className="underline">
+              <Link to="/settings#engineering" className="underline">
                 engineering track
               </Link>{' '}
               is off
@@ -347,7 +347,7 @@ function AddGoal({ data, onErrors }: { data: DailyGoalsQuery; onErrors: (errors:
       {!data.me?.engineeringTrack && (
         <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">
           LeetCode and GitHub goals appear when the{' '}
-          <Link to="/prep/customize" className="underline">
+          <Link to="/settings#engineering" className="underline">
             software engineering track
           </Link>{' '}
           is on.

@@ -15,9 +15,9 @@ export default function SaveToOnwardCard() {
 
   return (
     <Card className="p-5">
-      <h2 className="flex items-center gap-2 text-xl font-black">
+      <h3 className="flex items-center gap-2 text-lg font-black">
         <BookmarkIcon className="text-brand-500" /> Save jobs from LinkedIn and Indeed
-      </h2>
+      </h3>
       <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">
         Drag this button to your browser's bookmarks bar. Then, on any job posting, click it and Onward opens with the
         job filled in, ready for you to check and save.
