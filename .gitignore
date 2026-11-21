@@ -31,3 +31,6 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 *.swp
+
+# Notes for Claude Code, kept on this computer only
+CLAUDE.md
