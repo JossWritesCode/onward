@@ -9,6 +9,7 @@ module Types
     field :leetcode_username, String, null: true
     field :github_username, String, null: true
     field :github_connected, Boolean, null: false, description: "Whether a GitHub token is saved. The token itself is never sent back."
+    field :tailor_instructions, String, null: true, description: "Your own instructions for the message that asks ChatGPT to tailor a resume, or null for Onward's default."
     field :admin, Boolean, null: false, description: "Admins can make invite codes."
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
 

@@ -11,7 +11,15 @@ export type TailorJob = {
 
 const ARRANGEMENTS = { ONSITE: 'On-site', HYBRID: 'Hybrid', REMOTE: 'Remote' } as const;
 
-const RULES = `How to tailor it:
+/**
+ * Onward's own instructions at the top of the message. You can change them
+ * before copying, and save your version as your default (it's kept on your
+ * account as `tailorInstructions`). The job and the resume always follow.
+ */
+export const DEFAULT_TAILOR_INSTRUCTIONS = `Tailor my resume for the job below. Reply with only one code block containing the tailored resume as JSON,
+in exactly the same shape as mine (the same keys), and no other text. My job-search app, Onward, reads it.
+
+How to tailor it:
 - Lead with what this job asks for. Reword the "title" and "summary" for this role, and order the
   skills groups, and the skills inside them, so the most relevant come first.
 - Rewrite bullets in the job description's own words wherever they truthfully fit, and put the most
@@ -36,25 +44,36 @@ function jobLines(job: TailorJob) {
   ].join('\n');
 }
 
+/** Your saved instructions, or Onward's when you haven't saved any. */
+export function tailorInstructions(saved: string | null | undefined) {
+  return saved?.trim() ? saved.trim() : DEFAULT_TAILOR_INSTRUCTIONS;
+}
+
+/** What to save for these instructions: null when they're Onward's own, so later changes to the default reach you. */
+export function instructionsToSave(instructions: string) {
+  const trimmed = instructions.trim();
+  return trimmed === '' || trimmed === DEFAULT_TAILOR_INSTRUCTIONS ? null : trimmed;
+}
+
 /**
- * What "Copy message for ChatGPT" copies on an application's page: the job,
- * the base resume as Onward's JSON, and how to tailor one to the other.
+ * What "Copy message for ChatGPT" copies on an application's page: the
+ * instructions, then the job and the base resume as Onward's JSON.
  * ChatGPT's reply goes back into Onward as the tailored resume.
  *
  * With `again`, the resume is the one already tailored for this job, and the
- * reply replaces its content ("Re-tailor").
+ * reply replaces its content ("Re-tailor"), so the message says so first.
  */
-export function tailorMessage(resumeContent: unknown, job: TailorJob, { again = false } = {}) {
+export function tailorMessage(
+  resumeContent: unknown,
+  job: TailorJob,
+  { again = false, instructions = DEFAULT_TAILOR_INSTRUCTIONS }: { again?: boolean; instructions?: string } = {},
+) {
   const resume = JSON.stringify(toResumeContent(resumeContent), null, 2);
-  const opening = again
-    ? `My resume below is already tailored for this job. Tailor it further, then reply with only one code block
-containing the improved resume as JSON, in exactly the same shape as mine (the same keys), and no other text.`
-    : `Tailor my resume for the job below. Reply with only one code block containing the tailored resume as JSON,
-in exactly the same shape as mine (the same keys), and no other text. My job-search app, Onward, reads it.`;
+  const another = again
+    ? 'My resume below is already tailored for this job. Give it another pass to make it fit even better.\n\n'
+    : '';
 
-  return `${opening}
-
-${RULES}
+  return `${another}${tailorInstructions(instructions)}
 
 ${jobLines(job)}
 
