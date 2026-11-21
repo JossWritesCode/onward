@@ -293,7 +293,7 @@ If Format reports a problem, the message names the line of your paste to look at
 
 1. Pick the base resume to start from.
 2. If the application has no job description yet, paste it in. Copying the message (step 3) saves it with the application. If that save fails, you'll see why, with **Try again**. The message is copied either way.
-3. Click **Copy message for ChatGPT** and paste the message into ChatGPT (or any AI chat). It has the job, its description, your resume in Onward's format, and the rules: tailor it to the job's wording, keep it to one page, and don't make anything up.
+3. Click **Copy message for ChatGPT** and paste the message into ChatGPT (or any AI chat). It has the job, its description, your resume in Onward's format, and the rules: use the job's wording where it fits, keep it to one page, and don't make anything up. ChatGPT can rewrite, split, or combine your bullets, and add a skill your resume clearly shows. To give it more to work with, list real skills and experience that aren't on your resume yet under "More about me" at the end of the instructions (see below), and save that as your default.
 4. Paste ChatGPT's whole reply into **ChatGPT's reply** and click **Make tailored resume**. Onward saves it as this application's resume, with the base resume's template and design, and opens it. Contact details the reply left blank come from the base resume.
 5. Read it through, since an AI can still stretch the truth, then download the PDF.
 
