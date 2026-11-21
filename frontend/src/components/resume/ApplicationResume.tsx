@@ -310,7 +310,7 @@ type SaveState = { status: 'idle' } | { status: 'saving' } | { status: 'saved' }
  * the application yet, copying saves it too, and says so, or says why it
  * couldn't with a way to try again. The copy never waits on the save.
  *
- * "Edit message" opens the instructions at the top of the message. Edits go
+ * "Edit instructions" opens the instructions at the top of the message. Edits go
  * into the next copy straight away, and "Save as my default" keeps them for
  * every message after that.
  */
@@ -373,7 +373,7 @@ function CopyMessage({
         </Button>
         {!editing && (
           <Button variant="ghost" onClick={() => setEditing(true)}>
-            <PencilIcon /> Edit message
+            <PencilIcon /> Edit instructions
           </Button>
         )}
         <span className="text-sm text-stone-500 dark:text-stone-400" aria-live="polite">

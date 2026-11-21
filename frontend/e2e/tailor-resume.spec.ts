@@ -154,7 +154,7 @@ test('edits the instructions in the message, and saves them as the default for n
   await openBrightline(page);
   await page.getByLabel('Paste the job description').fill(JOB_DESCRIPTION);
 
-  await page.getByRole('button', { name: 'Edit message' }).click();
+  await page.getByRole('button', { name: 'Edit instructions' }).click();
   const instructions = page.getByLabel('Instructions for ChatGPT');
   await expect(instructions).toHaveValue(/^Tailor my resume for the job below/);
   await instructions.fill('Tailor my resume for this job. Keep it to two bullets per role.');
@@ -172,7 +172,7 @@ test('edits the instructions in the message, and saves them as the default for n
 
   // Next time, the message starts from the saved instructions.
   await page.reload();
-  await page.getByRole('button', { name: 'Edit message' }).click();
+  await page.getByRole('button', { name: 'Edit instructions' }).click();
   await expect(page.getByLabel('Instructions for ChatGPT')).toHaveValue(
     'Tailor my resume for this job. Keep it to two bullets per role.',
   );
