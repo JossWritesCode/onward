@@ -69,7 +69,7 @@ export default function TodayStrip() {
             )}
             {today.perfectStreak > 0 && (
               <span
-                className="inline-flex items-center gap-1 rounded-full bg-gold-100 px-2 py-0.5 text-xs font-semibold text-gold-700 dark:bg-gold-night dark:text-gold-200"
+                className="inline-flex items-center gap-1 rounded-full bg-gold-100 px-2 py-0.5 text-xs font-semibold text-[#805200] dark:bg-gold-night dark:text-gold-200"
                 title="Perfect days in a row: every goal done"
               >
                 <StarIcon className="text-gold-500 dark:text-gold-200" />
