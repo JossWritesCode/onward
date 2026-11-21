@@ -11,7 +11,7 @@ export default function ResumeTag({ resume, className = '' }: { resume: { id: st
     <span
       data-resume-id={resume.id}
       title={`Open resume: ${resume.title}`}
-      className={`inline-flex max-w-full items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-xs font-extrabold text-stone-600 hover:bg-brand-100 hover:text-brand-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-brand-900/50 dark:hover:text-brand-200 ${className}`}
+      className={`inline-flex max-w-full items-center gap-1 rounded-full border border-transparent px-1.5 py-0.5 text-xs font-semibold text-brand-600 hover:bg-brand-50 hover:underline dark:text-brand-300 dark:hover:bg-brand-tint dark:hover:text-brand-250 ${className}`}
     >
       <FileTextIcon className="shrink-0" />
       <span className="truncate">{resume.title}</span>

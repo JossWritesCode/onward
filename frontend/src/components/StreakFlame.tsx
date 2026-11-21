@@ -54,7 +54,7 @@ export default function StreakFlame() {
       className={({ isActive }) =>
         `inline-flex items-center gap-1 rounded-xl px-2 py-1.5 font-black transition sm:px-2.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 ${
           lit
-            ? 'bg-gold-100 text-gold-700 hover:bg-gold-300/50 dark:bg-amber-900/40 dark:text-amber-200'
+            ? 'bg-gold-100 text-gold-700 hover:bg-gold-300/50 dark:bg-gold-night dark:text-gold-200'
             : 'text-stone-400 hover:bg-stone-200/60 hover:text-stone-600 dark:hover:bg-stone-800'
         } ${isActive ? 'ring-2 ring-gold-300 dark:ring-amber-700' : ''}`
       }
