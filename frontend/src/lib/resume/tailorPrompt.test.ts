@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { tailorMessage, wordCount, type TailorJob } from './tailorPrompt';
+import {
+  DEFAULT_TAILOR_INSTRUCTIONS,
+  instructionsToSave,
+  tailorInstructions,
+  tailorMessage,
+  wordCount,
+  type TailorJob,
+} from './tailorPrompt';
 
 const resume = {
   name: 'Dana Whitfield',
@@ -57,7 +64,33 @@ describe('tailorMessage', () => {
   it('asks for another pass when re-tailoring', () => {
     const message = tailorMessage(resume, job, { again: true });
     expect(message).toMatch(/^My resume below is already tailored for this job/);
+    expect(message).toContain(DEFAULT_TAILOR_INSTRUCTIONS);
     expect(resumeIn(message).name).toBe('Dana Whitfield');
+  });
+
+  it('starts with your own instructions, and still has the job and the resume after them', () => {
+    const message = tailorMessage(resume, job, { instructions: '  Keep it to two bullets per role.\n' });
+    expect(message).toMatch(/^Keep it to two bullets per role\.\n\nThe job: Senior Frontend Developer at Brightline/);
+    expect(message).not.toContain('Stay truthful');
+    expect(resumeIn(message).name).toBe('Dana Whitfield');
+  });
+
+  it("falls back to Onward's instructions when yours are empty", () => {
+    expect(tailorMessage(resume, job, { instructions: '   ' })).toMatch(/^Tailor my resume for the job below/);
+  });
+});
+
+describe('tailorInstructions and instructionsToSave', () => {
+  it("uses Onward's instructions until you save your own", () => {
+    expect(tailorInstructions(null)).toBe(DEFAULT_TAILOR_INSTRUCTIONS);
+    expect(tailorInstructions('  ')).toBe(DEFAULT_TAILOR_INSTRUCTIONS);
+    expect(tailorInstructions(' Mine ')).toBe('Mine');
+  });
+
+  it("saves nothing for Onward's own instructions, so a better default reaches you later", () => {
+    expect(instructionsToSave(`${DEFAULT_TAILOR_INSTRUCTIONS}\n`)).toBeNull();
+    expect(instructionsToSave('')).toBeNull();
+    expect(instructionsToSave(' Mine\n')).toBe('Mine');
   });
 });
 

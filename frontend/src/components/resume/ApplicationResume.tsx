@@ -1,16 +1,24 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import { useNavigate, useSearchParams } from 'react-router';
 import type { JobApplicationQuery } from '../../gql/graphql';
 import {
   ResumesQuery,
   RetailorResumeMutation,
+  TailorInstructionsQuery,
   TailorResumeMutation,
   UpdateJobApplicationMutation,
+  UpdateTailorInstructionsMutation,
 } from '../../graphql/operations';
 import { downloadResumePdf } from '../../lib/resume/download';
 import { showRetailoredToast, showTailoredFromReplyToast, showTailoredToast } from '../../lib/resume/newResumeToast';
-import { tailorMessage, wordCount } from '../../lib/resume/tailorPrompt';
+import {
+  DEFAULT_TAILOR_INSTRUCTIONS,
+  instructionsToSave,
+  tailorInstructions,
+  tailorMessage,
+  wordCount,
+} from '../../lib/resume/tailorPrompt';
 import { pdfFileName, toResumeContent } from '../../lib/resume/types';
 import { CheckIcon, CopyIcon, DownloadIcon, FileTextIcon, PencilIcon, RefreshIcon, SparklesIcon } from '../icons';
 import { Button, ButtonLink, Card, ErrorBanner, Field, Select, Textarea } from '../ui';
@@ -152,7 +160,9 @@ function Retailor({
       <CopyMessage
         application={application}
         jobDescription={jobDescription}
-        message={() => tailorMessage(resume.content, { ...application, jobDescription }, { again: true })}
+        message={(instructions) =>
+          tailorMessage(resume.content, { ...application, jobDescription }, { again: true, instructions })
+        }
       />
       <PasteReply
         id="retailor-reply"
@@ -237,7 +247,7 @@ function TailorOne({
       <CopyMessage
         application={application}
         jobDescription={jobDescription}
-        message={() => tailorMessage(base.content, { ...application, jobDescription })}
+        message={(instructions) => tailorMessage(base.content, { ...application, jobDescription }, { instructions })}
       />
       <PasteReply
         id="tailor-reply"
@@ -299,6 +309,10 @@ type SaveState = { status: 'idle' } | { status: 'saving' } | { status: 'saved' }
  * Copies the tailoring message. If the job description in it isn't saved on
  * the application yet, copying saves it too, and says so, or says why it
  * couldn't with a way to try again. The copy never waits on the save.
+ *
+ * "Edit message" opens the instructions at the top of the message. Edits go
+ * into the next copy straight away, and "Save as my default" keeps them for
+ * every message after that.
  */
 function CopyMessage({
   application,
@@ -307,8 +321,15 @@ function CopyMessage({
 }: {
   application: Application;
   jobDescription: string;
-  message: () => string;
+  /** The whole message, with these instructions at the top. */
+  message: (instructions: string) => string;
 }) {
+  const { data: me } = useQuery(TailorInstructionsQuery);
+  const saved = tailorInstructions(me?.me?.tailorInstructions);
+  // Null until you type, so it follows your saved instructions as they load.
+  const [draft, setDraft] = useState<string | null>(null);
+  const instructions = draft ?? saved;
+  const [editing, setEditing] = useState(false);
   const [updateApplication] = useMutation(UpdateJobApplicationMutation, { refetchQueries: ['JobApplication'] });
   const [copied, setCopied] = useState(false);
   const [byHand, setByHand] = useState<string | null>(null);
@@ -333,7 +354,7 @@ function CopyMessage({
     setByHand(null);
     // Not awaited: the browser only lets a click copy right away.
     if (unsaved) void saveJobDescription();
-    const text = message();
+    const text = message(instructions);
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
@@ -350,6 +371,11 @@ function CopyMessage({
           {copied ? <CheckIcon /> : <CopyIcon />}
           {copied ? 'Copied' : 'Copy message for ChatGPT'}
         </Button>
+        {!editing && (
+          <Button variant="ghost" onClick={() => setEditing(true)}>
+            <PencilIcon /> Edit message
+          </Button>
+        )}
         <span className="text-sm text-stone-500 dark:text-stone-400" aria-live="polite">
           {missing
             ? 'Add the job description first.'
@@ -358,6 +384,14 @@ function CopyMessage({
               : 'It has your resume and the job description in it.'}
         </span>
       </div>
+      {editing && (
+        <EditInstructions
+          instructions={instructions}
+          saved={saved}
+          onChange={setDraft}
+          onClose={() => setEditing(false)}
+        />
+      )}
       {/* Only while it matters: once the description is saved some other way
           (Save changes below), an old failure no longer applies. */}
       {save.status === 'failed' && unsaved && (
@@ -398,6 +432,90 @@ function CopyMessage({
           />
         </div>
       )}
+    </div>
+  );
+}
+
+type DefaultState = { status: 'idle' } | { status: 'saving' } | { status: 'saved' } | { status: 'failed'; message: string };
+
+/**
+ * The instructions at the top of the tailoring message, to change before
+ * copying. Your resume and the job always follow them, so they can't be
+ * edited away.
+ */
+function EditInstructions({
+  instructions,
+  saved,
+  onChange,
+  onClose,
+}: {
+  instructions: string;
+  /** Your default: what you saved, or Onward's own. */
+  saved: string;
+  onChange: (instructions: string) => void;
+  onClose: () => void;
+}) {
+  const id = useId();
+  const [updateInstructions] = useMutation(UpdateTailorInstructionsMutation);
+  const [state, setState] = useState<DefaultState>({ status: 'idle' });
+  const unsaved = tailorInstructions(instructions) !== saved;
+  const isOnwards = tailorInstructions(instructions) === DEFAULT_TAILOR_INSTRUCTIONS;
+
+  function change(text: string) {
+    onChange(text);
+    setState({ status: 'idle' });
+  }
+
+  async function saveAsDefault() {
+    setState({ status: 'saving' });
+    try {
+      const result = (await updateInstructions({ variables: { instructions: instructionsToSave(instructions) } })).data
+        ?.updateTailorInstructions;
+      const problems = result?.errors.map((error) => error.message) ?? [];
+      if (result?.user && problems.length === 0) setState({ status: 'saved' });
+      else setState({ status: 'failed', message: problems.join(' ') || 'Something went wrong. Try again.' });
+    } catch {
+      setState({ status: 'failed', message: "We couldn't save them. Check your connection and try again." });
+    }
+  }
+
+  return (
+    <div className="space-y-3 rounded-xl border-2 border-stone-100 p-3 dark:border-stone-800">
+      <Field
+        label="Instructions for ChatGPT"
+        htmlFor={id}
+        hint="The job, its description, and your resume are added after these. Changes go into your next copy."
+      >
+        <Textarea
+          id={id}
+          rows={14}
+          value={instructions}
+          onChange={(event) => change(event.target.value)}
+          className="font-mono text-sm"
+        />
+      </Field>
+      {state.status === 'failed' && <ErrorBanner messages={[state.message]} />}
+      <div className="flex flex-wrap items-center gap-3">
+        <Button variant="secondary" onClick={saveAsDefault} disabled={!unsaved || state.status === 'saving'}>
+          {state.status === 'saved' ? <CheckIcon /> : null}
+          {state.status === 'saving' ? 'Saving…' : state.status === 'saved' ? 'Saved' : 'Save as my default'}
+        </Button>
+        {!isOnwards && (
+          <Button variant="ghost" onClick={() => change(DEFAULT_TAILOR_INSTRUCTIONS)}>
+            <RefreshIcon /> Use Onward's default
+          </Button>
+        )}
+        <Button variant="ghost" onClick={onClose}>
+          Done
+        </Button>
+        <span className="text-sm text-stone-500 dark:text-stone-400" aria-live="polite">
+          {state.status === 'saved'
+            ? 'Every new message starts with these instructions.'
+            : unsaved
+              ? 'Not saved as your default yet.'
+              : ''}
+        </span>
+      </div>
     </div>
   );
 }

@@ -49,6 +49,9 @@ class User < ApplicationRecord
 
   normalizes :leetcode_username, :github_username, with: ->(name) { name.strip.delete_prefix("@").presence }
   normalizes :github_token, with: ->(token) { token.strip.presence }
+  normalizes :tailor_instructions, with: ->(text) { text.strip.presence }
+
+  validates :tailor_instructions, length: { maximum: 10_000 }
 
   # :saved, :none, or :unreadable. A token is unreadable when it was encrypted
   # with different keys than this server has (for example, if backend/.env

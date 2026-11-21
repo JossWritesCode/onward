@@ -50,6 +50,7 @@ module Types
     field :refresh_integrations, mutation: Mutations::RefreshIntegrations
 
     field :import_resume, mutation: Mutations::ImportResume
+    field :update_tailor_instructions, mutation: Mutations::UpdateTailorInstructions
     field :update_resume, mutation: Mutations::UpdateResume
     field :tailor_resume, mutation: Mutations::TailorResume
     field :retailor_resume, mutation: Mutations::RetailorResume

@@ -149,3 +149,39 @@ test('"Tailor for…" on the Resumes page goes to the application with that resu
   await expect(page.getByLabel('Start from')).toHaveValue(new URL(page.url()).searchParams.get('tailor')!);
   await expect(page.getByRole('button', { name: 'Make tailored resume' })).toBeVisible();
 });
+
+test('edits the instructions in the message, and saves them as the default for next time', async ({ page }) => {
+  await openBrightline(page);
+  await page.getByLabel('Paste the job description').fill(JOB_DESCRIPTION);
+
+  await page.getByRole('button', { name: 'Edit message' }).click();
+  const instructions = page.getByLabel('Instructions for ChatGPT');
+  await expect(instructions).toHaveValue(/^Tailor my resume for the job below/);
+  await instructions.fill('Tailor my resume for this job. Keep it to two bullets per role.');
+
+  // The edit goes into this copy, before it's saved as the default.
+  await page.getByRole('button', { name: 'Copy message for ChatGPT' }).click();
+  const message = await clipboard(page);
+  expect(message).toMatch(/^Tailor my resume for this job\. Keep it to two bullets per role\.\n\nThe job: Frontend Developer at Brightline/);
+  expect(message).toContain('"name": "Dana Whitfield"');
+  expect(message).not.toContain('Stay truthful');
+
+  await expect(page.getByText('Not saved as your default yet.')).toBeVisible();
+  await page.getByRole('button', { name: 'Save as my default' }).click();
+  await expect(page.getByText('Every new message starts with these instructions.')).toBeVisible();
+
+  // Next time, the message starts from the saved instructions.
+  await page.reload();
+  await page.getByRole('button', { name: 'Edit message' }).click();
+  await expect(page.getByLabel('Instructions for ChatGPT')).toHaveValue(
+    'Tailor my resume for this job. Keep it to two bullets per role.',
+  );
+
+  // And Onward's own can come back.
+  await page.getByRole('button', { name: "Use Onward's default" }).click();
+  await expect(page.getByLabel('Instructions for ChatGPT')).toHaveValue(/Stay truthful/);
+  await page.getByRole('button', { name: 'Save as my default' }).click();
+  await expect(page.getByText('Every new message starts with these instructions.')).toBeVisible();
+  await page.getByRole('button', { name: 'Copy message for ChatGPT' }).click();
+  expect(await clipboard(page)).toMatch(/^Tailor my resume for the job below/);
+});

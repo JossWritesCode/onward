@@ -9,7 +9,7 @@ class AccountExport
     user = @user
     {
       exported_at: Time.current.iso8601,
-      account: user.as_json(only: %i[email_address time_zone engineering_track leetcode_username github_username created_at]),
+      account: user.as_json(only: %i[email_address time_zone engineering_track leetcode_username github_username tailor_instructions created_at]),
       board_columns: rows(user.stages),
       job_applications: user.job_applications.includes(:contacts, interview_rounds: :checklist_items).map do |application|
         application.as_json(except: %i[user_id recent_moves]).merge(

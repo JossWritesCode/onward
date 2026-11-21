@@ -1393,6 +1393,31 @@ export const RetailorResumeMutation = graphql(`
   }
 `);
 
+// Your own instructions for the tailoring message, or null for Onward's default.
+export const TailorInstructionsQuery = graphql(`
+  query TailorInstructions {
+    me {
+      id
+      tailorInstructions
+    }
+  }
+`);
+
+export const UpdateTailorInstructionsMutation = graphql(`
+  mutation UpdateTailorInstructions($instructions: String) {
+    updateTailorInstructions(instructions: $instructions) {
+      user {
+        id
+        tailorInstructions
+      }
+      errors {
+        field
+        message
+      }
+    }
+  }
+`);
+
 export const DuplicateResumeMutation = graphql(`
   mutation DuplicateResume($id: ID!) {
     duplicateResume(id: $id) {

@@ -543,4 +543,27 @@ class ResumesTest < ActionDispatch::IntegrationTest
     assert_equal "Frontend developer who likes accessible interfaces.", theirs.reload.content["summary"]
   end
 
+  test "saves your own tailoring instructions, and an empty one goes back to Onward's default" do
+    save = <<~GRAPHQL
+      mutation($instructions: String) {
+        updateTailorInstructions(instructions: $instructions) {
+          user { tailorInstructions }
+          errors { field message }
+        }
+      }
+    GRAPHQL
+
+    saved = graphql(save, variables: { instructions: "  Tailor it, and keep it short.\n" }).dig("data", "updateTailorInstructions")
+    assert_equal({ "tailorInstructions" => "Tailor it, and keep it short." }, saved["user"])
+    assert_equal "Tailor it, and keep it short.", graphql("query { me { tailorInstructions } }").dig("data", "me", "tailorInstructions")
+
+    too_long = graphql(save, variables: { instructions: "x" * 10_001 }).dig("data", "updateTailorInstructions", "errors")
+    assert_equal [ "tailorInstructions" ], too_long.map { |e| e["field"] }
+
+    [ "   ", nil ].each do |instructions|
+      @user.update!(tailor_instructions: "Mine")
+      reset = graphql(save, variables: { instructions: }).dig("data", "updateTailorInstructions", "user")
+      assert_nil reset["tailorInstructions"]
+    end
+  end
 end
