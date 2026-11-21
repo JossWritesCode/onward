@@ -45,7 +45,7 @@ export default function Layout() {
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-30 border-b-2 border-stone-200 bg-stone-50/90 backdrop-blur dark:border-stone-800 dark:bg-stone-950/90">
-        <div className="mx-auto flex max-w-[1400px] items-center gap-0 px-3 min-[360px]:gap-0.5 py-3 sm:gap-2 sm:px-4">
+        <div className="mx-auto flex max-w-350 items-center gap-0 px-3 min-[360px]:gap-0.5 py-3 sm:gap-2 sm:px-4">
           <NavLink to="/applications" aria-label="Onward home" className="mr-auto">
             <Logo compact />
           </NavLink>
@@ -141,7 +141,7 @@ export default function Layout() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1400px] px-4 pt-6 pb-16">
+      <main className="mx-auto max-w-350 px-4 pt-6 pb-16">
         <Outlet />
       </main>
 
