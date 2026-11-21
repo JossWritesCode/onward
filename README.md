@@ -8,65 +8,47 @@ A job hunt tracker that makes the search feel rewarding. Track your applications
 
 **Guiding principle: reward effort, not outcomes.** Applying, networking, and prepping are wins on their own.
 
-## What's here so far
+## Contents
 
-Onward is being built in milestones. So far:
+- [Quick start](#quick-start)
+- [What Onward does](#what-onward-does)
+- [Setting up](#setting-up) and [Running Onward](#running-onward)
+- [Updating to a new version](#updating-to-a-new-version)
+- [Connecting LeetCode and GitHub](#connecting-leetcode-and-github)
+- [Accounts, invites, and email](#accounts-invites-and-email)
+- [Saving jobs with the bookmark](#saving-jobs-with-the-bookmark)
+- [Making a resume](#making-a-resume)
+- [Putting Onward online](#putting-onward-online)
+- [Working on Onward](#working-on-onward): tests, changing the API, and the project layout
+- [If something doesn't work](#if-something-doesnt-work)
 
-**Milestone 1**
-- Accounts: sign up, sign in, sign out
-- Job applications with dates, links, salary, location, work arrangement, job description, resume version, and notes
-- Contacts, linked to the applications they're connected to
-- Light and dark mode, and a layout that works on phones
+## Quick start
 
-**The board and encouragement**
+Already have Ruby 3.2, Node.js 22.15, and PostgreSQL running? Then:
+
+```sh
+cd backend && bin/setup && bin/rails db:seed && bin/rails server
+# in a second terminal
+cd frontend && npm install && npm run dev
+```
+
+Open **http://localhost:5173** and sign in as **demo@onward.test** / **password123**, or create your own account. New to any of these tools? Start with [Setting up](#setting-up).
+
+## What Onward does
+
+### The board
+
 - A drag-and-drop board, the main view on computers. Phones get a list view by default, and on the board you press and hold a card to drag it.
-- A **Board** button in the header takes you back to the board from anywhere. The logo does too.
+- Job applications with dates, links, salary, location, work arrangement, job description, resume version, and notes.
 - Customizable columns: add, rename, reorder, and delete them. With a mouse or trackpad, drag a column by the grip in its header to move it. On a phone, reorder from **Add or edit columns**. Each column has a type (saved, applied, interviewing, offer, rejected), so "Phone screen" and "Final round" both count as interviewing.
 - Mistakes don't count. If you drop a card in the wrong column, move it back to an earlier column within a day and Onward takes back what the mistake recorded: the application, interview, offer, or closure (and so your streak, heat map, and goals), the prep checklist it started if you haven't touched it, and the follow-up date it replaced. Moving forward never takes anything back, and after a day a move back is treated as real news, so your history stays.
-- A daily quote at the top of the board. Every quote's wording was checked against its original source.
-- Celebrations that scale: confetti and a chime for applying, more for an interview, a full-screen celebration for an offer, and a kind word when you get a rejection.
-- A sound toggle in the header. Confetti is skipped when your device is set to reduce motion.
-- Add a contact right from an application's form.
+- Celebrations that scale: confetti and a chime for applying, more for an interview, a full-screen celebration for an offer, and a kind word when you get a rejection. Confetti is skipped when your device is set to reduce motion, and the speaker button in the header turns sound off.
+- A daily quote at the top of the board, with a shuffle button. Every quote's wording was checked against its original source.
+- Contacts, linked to the applications they're connected to. You can add one right from an application's form.
+- A **Board** button in the header takes you back to the board from anywhere. The logo does too.
 
-**Milestone 2: streak and progress**
-- A daily streak, shown as a flame in the header. Any activity counts, and the day follows your own time zone.
-- Streak freezes: earn one for every 7 days in a row, hold up to 2, and a missed day uses one automatically.
-- A Progress page with "Log a win" buttons for networking messages, coffee chats, follow-ups, and tailored resumes or cover letters.
-- Applying, interviews, offers, and rejections on the board are logged for you, once per application for each stage type.
-- A GitHub-style heat map of your activity: a year on computers, about four months on phones.
-- A weekly recap you can copy as text or share as an image, with company names left out unless you include them.
-- Celebrations at streak milestones like 7, 30, and 100 days.
+### Follow-up dates
 
-**Milestone 3a: interview prep**
-- A Prep page in the header.
-- A story bank: write your best stories once, in STAR form (situation, task, action, result), with tags.
-- Practice mode: a random question from your question bank, a story to answer with, a 2-minute timer, and a "nailed it" or "needs work" rating. New accounts start with 15 general behavioral questions you can edit or delete.
-- A prep checklist for every interview round, created when a card lands in an interview column. Set the interview's date to see a countdown on the card. Finishing a checklist gets a celebration.
-- An editable checklist template for new rounds.
-- A study timer with 15, 25, and 45 minute presets or a custom length, and your own topics. It keeps running while you use the rest of the app, and sessions of 10 minutes or more count toward your streak.
-
-**Software engineering track** (optional, turned on from Prep → Customize)
-- An Engineering page, linked in the header, with your LeetCode streak, problems solved by difficulty, and a submissions heat map.
-- Days you submit on LeetCode count toward your Onward streak, starting from the day you connect, on your own clock.
-- Your GitHub contribution calendar.
-- Hours studied this week, this month, and all time, by week and by topic, plus "Add time" for studying away from the timer.
-
-**Milestone 3b: daily goals and nudges**
-- Daily goals you pick yourself, like "Apply to 1 job," "Study for 25 min," "Solve 1 LeetCode problem," or "Make 1 GitHub contribution." Each one has a number and can be every day or weekdays only. They check themselves off as you go. New accounts start with "Apply to 1 job."
-- A Today strip above the board with your goals and up to 3 nudges. It shrinks to one line once every goal is done.
-- Perfect days: finishing every goal gets a celebration, a gold square on the heat map, and a perfect-day streak next to your regular streak. Days with no goals (like weekends, for weekday goals) don't break it. Your regular streak still counts any action at all.
-- Custom actions, like "Went to a meetup," logged from "Log a win" and usable as goals. Deleting one keeps it in your history.
-- Nudges for interviews in the next 2 days with an unfinished checklist, follow-ups that are due (see **Follow-up dates** below), applications with no change in 2 weeks (unless they have a follow-up date), and people you haven't talked to in 3 weeks. Act on one right from the strip ("I followed up"), snooze it, or dismiss it. Interview prep comes first, then follow-ups (oldest first), then a mix of quiet applications and people, up to 3 at a time.
-
-**Milestone 4: polish, accounts, and going online**
-- Onward's own dropdown arrows, the pointing-hand cursor on everything clickable, a shuffle button for the daily quote, and a smooth animation when you hide it.
-- An Account page (click your email in the header): download all your data as JSON, delete your account, and read what Onward stores.
-- Invite codes, so friends can join a hosted Onward without opening sign-ups to everyone.
-- "Forgot your password?" with an emailed reset link.
-- A "Save to Onward" bookmark (on the Account page): click it on a LinkedIn, Indeed, or company job posting and Onward opens with the company, title, location, salary, work arrangement, link, and description filled in. It warns you if you've already saved that job.
-- Ready to host on [Render](https://render.com): Rails serves the API and the React app together. See [Putting Onward online](#putting-onward-online).
-
-**Follow-up dates**
 - Cards in applied and interview columns get a date to follow up, shown as a "Follow up Nov 16" tag on the board and in the phone list. It's grey while it's coming up and violet on the day and while it's overdue.
 - Onward picks the dates for you, counting from the day you log each follow-up, on your own clock:
   - Applied: follow up a week after the card lands there, once more a week later, then a week after that it asks "Time to let this one go?"
@@ -77,7 +59,35 @@ Onward is being built in milestones. So far:
 - "Let it go" moves a card that never wrote back to your first rejected column, with a kinder message than a rejection. It counts as closure, like any other move to rejected. "Keep it open" clears the date instead.
 - Applications from before this feature start without a date. They get one the next time they move or you log a follow-up.
 
-**Resumes**
+### Streaks and progress
+
+- A daily streak, shown as a flame in the header. Any activity counts, and the day follows your own time zone.
+- Streak freezes: earn one for every 7 days in a row, hold up to 2, and a missed day uses one automatically.
+- Celebrations at streak milestones like 7, 30, and 100 days.
+- A Progress page with "Log a win" buttons for networking messages, coffee chats, follow-ups, and tailored resumes or cover letters.
+- Applying, interviews, offers, and rejections on the board are logged for you, once per application for each stage type.
+- A GitHub-style heat map of your activity: a year on computers, about four months on phones.
+- A weekly recap you can copy as text or share as an image, with company names left out unless you include them.
+
+### Daily goals and nudges
+
+- Daily goals you pick yourself, like "Apply to 1 job," "Study for 25 min," "Solve 1 LeetCode problem," or "Make 1 GitHub contribution." Each one has a number and can be every day or weekdays only. They check themselves off as you go. New accounts start with "Apply to 1 job."
+- A Today strip above the board with your goals and up to 3 nudges. It shrinks to one line once every goal is done.
+- Perfect days: finishing every goal gets a celebration, a gold square on the heat map, and a perfect-day streak next to your regular streak. Days with no goals (like weekends, for weekday goals) don't break it. Your regular streak still counts any action at all.
+- Custom actions, like "Went to a meetup," logged from "Log a win" and usable as goals. Deleting one keeps it in your history.
+- Nudges for interviews in the next 2 days with an unfinished checklist, follow-ups that are due, applications with no change in 2 weeks (unless they have a follow-up date), and people you haven't talked to in 3 weeks. Act on one right from the strip ("I followed up"), snooze it, or dismiss it. Interview prep comes first, then follow-ups (oldest first), then a mix of quiet applications and people, up to 3 at a time.
+
+### Interview prep
+
+- A Prep page in the header.
+- A story bank: write your best stories once, in STAR form (situation, task, action, result), with tags.
+- Practice mode: a random question from your question bank, a story to answer with, a 2-minute timer, and a "nailed it" or "needs work" rating. New accounts start with 15 general behavioral questions you can edit or delete.
+- A prep checklist for every interview round, created when a card lands in an interview column. Set the interview's date to see a countdown on the card. Finishing a checklist gets a celebration.
+- An editable checklist template for new rounds, under **Customize questions and checklist**.
+- A study timer with 15, 25, and 45 minute presets or a custom length, and your own topics. It keeps running while you use the rest of the app, and sessions of 10 minutes or more count toward your streak.
+
+### Resumes
+
 - A Resumes page in the header. Keep a resume for every kind of role, and duplicate one to tailor it.
 - New resume: copy Onward's prompt into any AI chat along with your resume, paste back the JSON it writes, and press **Format**. Onward forgives the usual slips (code-fence marks, trailing commas, curly quotes, leftover `**`). If it still can't read the JSON, it tells you where it broke, like "Line 12: missing a comma", and saves nothing.
 - Contact details the AI left blank (it's told never to make them up) are filled in from your most recent resume.
@@ -86,14 +96,35 @@ Onward is being built in milestones. So far:
 - Three templates: Classic (centred serif name, thin rules), Compact (small sans-serif headings, fits more on a page), and Modern (left-aligned, with an accent colour you pick). Letter or A4.
 - A Design panel above the preview, closed until you open it (Onward remembers which you prefer): Density (Roomy, Normal, Tight) moves text size, line spacing, margins, and section spacing together, and Fine-tune adjusts each on its own. Each resume keeps its own settings, so a tailored copy can be tightened for one job.
 - The PDF is made in your browser, with real selectable text and the fonts (Neuton and Roboto) embedded. If it runs past one page, a note says how full the last page is, so you know whether you're a bullet away or a section away.
-- After a new resume is saved, a "Log a win: tailored resume" button. It's only logged if you press it.
 - Base and tailored resumes: a resume is a **base** resume until it's linked to a job application, which makes it the resume **tailored** for that job. Each application has at most one.
-- Tailor through ChatGPT from an application's Resume section: pick a base resume, copy a message that has the resume and the job description in it, paste it into ChatGPT (or any AI chat), and paste the reply back. **Edit instructions** lets you change what the message asks ChatGPT to do, and save that as your default. The tailored resume keeps the base resume's template and design. **Re-tailor** gives a tailored resume another pass the same way. "Tailor for…" on the Resumes page takes you to that application with the resume picked. You can also copy a base resume as it is and edit it by hand, or link a resume to an application in the editor or the paste screen.
+- Tailor through ChatGPT (or any AI chat) from an application's Resume section. See [Making a resume](#making-a-resume) for the steps.
 - A tailored resume shows as a tag on its card on the board and in the phone list (click the tag to open it), and in a Resume section on the application's page with **Open** and **Download PDF**.
 - A tailored resume downloads as "[Job title] [Company] resume.pdf", like "Frontend Developer Brightline resume.pdf". Base resumes download as "Your Name - Resume name.pdf".
-- Logging the win from a tailored resume's toast records it against that application.
+- After a resume is saved, a "Log a win: tailored resume" button. It's only logged if you press it, and for a tailored resume it's recorded against that application.
 - Deleting an application keeps its resume, as a base resume. The "Resume version" note on an application stays for resumes kept outside Onward, and is hidden once a resume is linked.
-- Resumes are part of "Download my data" and are deleted with your account.
+
+### Software engineering track
+
+Optional. Turn it on in **Settings → Engineering**.
+
+- An Engineering page, linked in the header, with your LeetCode streak, problems solved by difficulty, and a submissions heat map.
+- Days you submit on LeetCode count toward your Onward streak, starting from the day you connect, on your own clock.
+- Your GitHub contribution calendar.
+- Hours studied this week, this month, and all time, by week and by topic, plus "Add time" for studying away from the timer.
+
+See [Connecting LeetCode and GitHub](#connecting-leetcode-and-github) for setup.
+
+### Settings and accounts
+
+- Accounts: sign up, sign in, sign out, and "Forgot your password?" with an emailed reset link.
+- A Settings page behind the gear in the header:
+  - **Appearance:** System, Light, or Dark. System follows your computer, and this browser remembers your pick.
+  - **Engineering:** turn on the software engineering track and connect LeetCode and GitHub.
+  - **Your account:** sign out (on phones, this is where sign out lives), the "Save to Onward" bookmark, invite links (for the admin), **Download my data** as JSON, what Onward stores, and deleting your account. Resumes are included in the download and deleted with your account.
+- A "Save to Onward" bookmark: click it on a LinkedIn, Indeed, or company job posting and Onward opens with the company, title, location, salary, work arrangement, link, and description filled in. It warns you if you've already saved that job.
+- Invite codes, so friends can join a hosted Onward without opening sign-ups to everyone.
+- A layout that works on phones.
+- Ready to host on [Render](https://render.com): Rails serves the API and the React app together. See [Putting Onward online](#putting-onward-online).
 
 ## Tech stack
 
@@ -111,7 +142,7 @@ The app is two parts that run side by side: the Rails API in `backend/` and the 
 
 You'll need:
 
-- **Ruby 3.2 or newer** (3.3 recommended)
+- **Ruby 3.2 or newer.** The repository's `.ruby-version` asks for 3.2.3, and rbenv installs that one for you below.
 - **Node.js 22.15 or newer** (check with `node --version`)
 - **PostgreSQL 14 or newer**
 
@@ -133,12 +164,11 @@ Pick the steps for your computer, then continue with [Running Onward](#running-o
    export PATH="$(brew --prefix postgresql@16)/bin:$PATH"
    ```
 
-4. Install Ruby and make it your default:
+4. Install Ruby. Run these from the top folder of Onward, so rbenv picks the version in `.ruby-version`:
 
    ```sh
    rbenv init      # follow the instructions it prints, then open a new terminal
-   rbenv install 3.3.6
-   rbenv global 3.3.6
+   rbenv install   # installs the version in .ruby-version
    ```
 
 On macOS, PostgreSQL lets your user connect without a password, so there's nothing else to configure.
@@ -159,13 +189,12 @@ On macOS, PostgreSQL lets your user connect without a password, so there's nothi
    sudo -u postgres createuser --superuser "$USER"
    ```
 
-3. Install Ruby with [rbenv](https://github.com/rbenv/rbenv#installation):
+3. Install Ruby with [rbenv](https://github.com/rbenv/rbenv#installation). Run `rbenv install` from the top folder of Onward, so it picks the version in `.ruby-version`:
 
    ```sh
    curl -fsSL https://github.com/rbenv/rbenv-installer/raw/HEAD/bin/rbenv-installer | bash
    # follow the instructions it prints, then open a new terminal
-   rbenv install 3.3.6
-   rbenv global 3.3.6
+   rbenv install   # installs the version in .ruby-version
    ```
 
 4. Install Node.js with [nvm](https://github.com/nvm-sh/nvm#installing-and-updating):
@@ -238,13 +267,13 @@ bin/setup          # installs any new gems, runs new migrations, rewrites the sc
 bin/rails server
 ```
 
-Then, in a second terminal, start the frontend as usual with `npm run dev` in `frontend/`.
+Then, in a second terminal, run `npm install` and `npm run dev` in `frontend/` as usual.
 
 Migrations update your existing data. For example, the board's migration gives everyone the default columns and puts each existing application in the column that matches its status. Some leave old data as it was: applications from before follow-up dates start without one.
 
 ## Connecting LeetCode and GitHub
 
-Turn on the software engineering track from **Prep → Customize questions and checklist** (once it's on, the Engineering page's **Settings** button goes there too), then add:
+Turn on the software engineering track in **Settings → Engineering** (the Engineering page's **Settings** button goes there too), then add:
 
 - **Your LeetCode username.** Your profile needs to be public. LeetCode has no official API, so Onward reads the same public data its website shows. If LeetCode changes how that works, the LeetCode card shows an error and the rest of the app keeps working.
 - **Your GitHub username and a token.** GitHub only shares the contribution calendar with a token, but the token doesn't need any permissions:
@@ -253,7 +282,7 @@ Turn on the software engineering track from **Prep → Customize questions and c
   3. Leave repository access on "Public repositories" and don't add any permissions.
   4. Generate the token and paste it into Onward.
 
-The token is encrypted in the database with keys that `bin/setup` writes to `backend/.env`. Keep that file private. If you deploy Onward, set `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY`, `ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY`, and `ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT` on your host.
+The token is encrypted in the database with keys that `bin/setup` writes to `backend/.env`. Keep that file private. If you deploy Onward, set `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY`, `ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY`, and `ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT` on your host. (Render makes these for you.)
 
 Onward checks LeetCode and GitHub at most every 30 minutes. The Refresh button on the Engineering page, or **Check now** in the Today strip, checks right away.
 
@@ -266,17 +295,17 @@ Onward checks LeetCode and GitHub at most every 30 minutes. The Refresh button o
 - `open` (the default on your own computer): anyone can create an account.
 - `invite` (the default when hosted): new accounts need an invite code. The owner (`OWNER_EMAIL`), or the very first account if no owner is set, can always sign up, and is the admin.
 
-Admins make invite links on the Account page. Each link works once.
+The admin makes invite links in **Settings → Your account**. Each link works once.
 
 **Password reset emails.** On your own computer, Onward doesn't send real email. It prints each email, including the reset link, in the terminal running `bin/rails server`. To send real email, set the SMTP settings described in [Sending email with Gmail](#sending-email-with-gmail).
 
 ## Saving jobs with the bookmark
 
-On the Account page, drag **Save to Onward** to your browser's bookmarks bar. On a job posting, click it: a new Onward tab opens with the job filled in, and nothing is saved until you click **Add application**.
+In **Settings → Your account**, drag **Save to Onward** to your browser's bookmarks bar. On a job posting, click it: a new Onward tab opens with the job filled in, and nothing is saved until you click **Add application**.
 
 It reads the page in your own browser, so it works on LinkedIn and Indeed while you're signed in to them, and nothing about the page is sent anywhere except into your new Onward tab. On LinkedIn and Indeed it reads what's on screen. Elsewhere it uses the job details many sites include for Google (common on company career pages), and falls back to the page title.
 
-If LinkedIn or Indeed change how their pages are built, some fields may come up empty until the bookmark is updated. The code lives in `frontend/src/lib/bookmarklet.ts`; after an update, drag the button to your bookmarks bar again to replace the old one.
+If LinkedIn or Indeed change how their pages are built, some fields may come up empty until the bookmark is updated. The code lives in `frontend/src/lib/bookmarklet.ts`. After an update, drag the button to your bookmarks bar again to replace the old one.
 
 ## Making a resume
 
@@ -297,7 +326,7 @@ If Format reports a problem, the message names the line of your paste to look at
 4. Paste ChatGPT's whole reply into **ChatGPT's reply** and click **Make tailored resume**. Onward saves it as this application's resume, with the base resume's template and design, and opens it. Contact details the reply left blank come from the base resume.
 5. Read it through, since an AI can still stretch the truth, then download the PDF.
 
-To give a tailored resume another pass, click **Re-tailor** in the same section: copy the new message, paste ChatGPT's reply, and click **Replace with this version**. The reply replaces the resume's content, and its title, template and design stay. Rather edit by hand? **Copy it as it is** makes the tailored copy without ChatGPT. To swap in a different resume, open the linked one and set its **Job application** to "None" (or delete it) first, since each application has one.
+To give a tailored resume another pass, click **Re-tailor** in the same section: copy the new message, paste ChatGPT's reply, and click **Replace with this version**. The reply replaces the resume's content, and its title, template and design stay. Rather edit by hand? **Copy it as it is** makes the tailored copy without ChatGPT. You can also link a resume to an application from the editor or the paste screen, or use "Tailor for…" on the Resumes page to jump to an application with the resume picked. To swap in a different resume, open the linked one and set its **Job application** to "None" (or delete it) first, since each application has one.
 
 To change what the message asks ChatGPT to do, click **Edit instructions** next to **Copy message for ChatGPT**. Your changes go into the next copy, and **Save as my default** keeps them for every message after that. **Use Onward's default** brings back the built-in instructions. Your resume and the job are always added after the instructions. The built-in instructions are in `frontend/src/lib/resume/tailorPrompt.ts`.
 
@@ -326,16 +355,14 @@ npm run build      # type-checks and builds the app into backend/public
 
 Fix anything it reports before going further, because Render runs the same build.
 
-### 2. Let Render's Linux servers install your gems
+### 2. Check that Render's Linux servers can install your gems
 
-Your `Gemfile.lock` was made on a Mac. Add Linux to it, then commit and push:
+Open `backend/Gemfile.lock` and look under `PLATFORMS`. It already lists `x86_64-linux`, so you can skip this step. If it's ever missing (for example after updating gems on a Mac), add it back, then commit and push:
 
 ```sh
 cd backend
 bundle lock --add-platform x86_64-linux
-cd ..
-git add -A
-git commit -m "feat: get ready for Render"
+git commit -am "fix: let render install gems on linux"
 git push
 ```
 
@@ -353,7 +380,7 @@ Render made the secret keys for you, including the ones that encrypt GitHub toke
 
 ### 4. Invite friends
 
-Open **Account** (your email in the header, or **⋯ → Your account** on a phone), click **Make an invite link**, and send the copied link.
+Open **Settings** (the gear in the header), click **Make an invite link** under **Your account**, and send the copied link.
 
 ### Updating the hosted app
 
@@ -373,15 +400,17 @@ For "Forgot your password?" to work on the hosted app, Onward needs a way to sen
 
 Reset emails will come from your Gmail address. Any other email service that offers SMTP (like Brevo, which has a free plan) works the same way with its own address, username, and password, plus `MAIL_FROM` set to the address it lets you send from.
 
-## Running the tests
+## Working on Onward
+
+### Running the tests
 
 Onward has three kinds of tests:
 
 | Tests | What they check | Where they live |
 | --- | --- | --- |
 | Rails tests | Models and the GraphQL API: follow-up dates, streaks, goals, resume import | `backend/test/` |
-| Unit tests | Frontend logic: the "Save to Onward" bookmark, the resume preview's zoom, dates, goals | next to the code, as `*.test.ts` |
-| End-to-end tests | The app in a real browser, against the real Rails server: signing in, dragging cards and columns, the resume preview, importing a resume, logging wins, follow-ups, interview prep | `frontend/e2e/` |
+| Unit tests | Frontend logic: the "Save to Onward" bookmark, the resume preview's zoom, dates, goals, the theme | next to the code, as `*.test.ts` |
+| End-to-end tests | The app in a real browser, against the real Rails server: signing in, dragging cards and columns, taking back a mistaken move, follow-ups, logging wins, interview prep, importing, previewing, and tailoring resumes, and Settings | `frontend/e2e/` |
 
 To run everything, the way CI does on every push, start Postgres and run this from the top folder:
 
@@ -398,7 +427,7 @@ cd frontend && npm run typecheck    # TypeScript, including the tests
 bin/e2e                             # end-to-end tests, from the top folder
 ```
 
-### Setting up the end-to-end tests
+#### Setting up the end-to-end tests
 
 The end-to-end tests drive Chromium, which Playwright downloads once:
 
@@ -407,11 +436,11 @@ The end-to-end tests drive Chromium, which Playwright downloads once:
 
 If the download is blocked (some company networks do this), point the tests at a Chrome you already have with `CHROME_PATH`, like `CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" bin/e2e`.
 
-### How the end-to-end tests run
+#### How the end-to-end tests run
 
 `bin/e2e` empties a database of their own, `onward_e2e`, and fills it with one account per spec file (see `backend/lib/e2e_accounts.rb`), so the tests never touch your own data, and files running side by side never touch each other's cards. Then Playwright starts Rails on port 3001 and the app on port 5174, runs every spec, and stops both. Your development servers on 3000 and 5173 can keep running.
 
-Before each test, the account named for its spec file (`board.spec.ts` signs in as `board@e2e.onward.test`) is rebuilt from scratch. So every test starts from the same three applications, whatever the test before it did, and when CI retries a failed test, the retry starts fresh too. The rebuild goes through `POST /e2e/reset/<account>`, a route that only exists in the test environment and only works on an `_e2e` database. The accounts are described in `backend/lib/e2e_accounts.rb`.
+Before each test, the account named for its spec file (`board.spec.ts` signs in as `board@e2e.onward.test`) is rebuilt from scratch. So every test starts from the same three applications, whatever the test before it did, and when CI retries a failed test, the retry starts fresh too. The rebuild goes through `POST /e2e/reset/<account>`, a route that only exists in the test environment and only works on an `_e2e` database.
 
 When you write a spec:
 
@@ -429,11 +458,11 @@ bin/e2e --headed                    # watch the browser while it runs
 
 When a test fails, Playwright keeps a screenshot and a trace in `frontend/test-results/`. Open a trace with `npx playwright show-trace <path to trace.zip>` from `frontend/` to step through what the browser saw.
 
-### Continuous integration
+#### Continuous integration
 
 `.github/workflows/ci.yml` runs on every push and pull request, in three jobs: the Rails tests (plus a check that `schema.graphql` is up to date), the type check and unit tests, and the end-to-end tests. If the end-to-end job fails, its report and traces are attached to the run on GitHub as `playwright-report`.
 
-## Changing the API
+### Changing the API
 
 The frontend's TypeScript types come from the backend's GraphQL schema. After you change anything in `backend/app/graphql/`:
 
@@ -445,11 +474,11 @@ cd ../frontend
 npm run codegen                 # regenerates the types in src/gql/
 ```
 
-`npm run dev` and `npm run build` run codegen for you, and a backend test (and CI) fails if `schema.graphql` is out of date, so it's hard to forget.
+`npm run dev` and `npm run build` run codegen for you, and a backend test (and CI) fails if `schema.graphql` is out of date, so it's hard to forget. Commit `schema.graphql`. The `src/gql/` folder is made fresh each time, so it isn't committed.
 
 All the queries and mutations the frontend sends live in `frontend/src/graphql/operations.ts`.
 
-## Project layout
+### Project layout
 
 ```
 render.yaml           How Render hosts Onward (see "Putting Onward online")
@@ -460,6 +489,8 @@ backend/
   bin/render-build    What Render runs on each deploy
   app/graphql/        GraphQL schema: types, queries, and mutations
   app/models/         Users, board columns, applications, contacts, activities, streaks, interview prep, resumes
+  app/services/       Talking to LeetCode and GitHub
+  app/mailers/        Password reset emails
   db/migrate/         Database tables
   test/               Model and API tests
   lib/e2e_accounts.rb The end-to-end tests' accounts, and how each test resets its own
@@ -468,7 +499,7 @@ frontend/
   src/pages/          One file per screen
   src/components/     Shared building blocks (buttons, layout, icons)
   src/graphql/        Every query and mutation the app uses
-  src/lib/            Helpers: quotes, celebrations, sounds, confetti, settings, resume dates and the AI prompts
+  src/lib/            Helpers: quotes, celebrations, sounds, confetti, settings, the theme, resume dates and the AI prompts
   src/resume-pdf/     Resume templates and PDF code, downloaded only when the resume editor opens
   src/assets/fonts/   Fonts embedded in resume PDFs
   e2e/                End-to-end tests (Playwright)
@@ -476,17 +507,19 @@ frontend/
 
 Unit tests sit next to the code they test, like `src/lib/format.test.ts` beside `src/lib/format.ts`.
 
-## Troubleshooting
+## If something doesn't work
+
+These are the hiccups people run into most, usually from setup or the hosting plan rather than a bug in Onward. If yours isn't here, please open an issue.
+
+### Setting up
 
 **`npm install` warns about an "Unsupported engine".** Your Node.js is older than 22.15. Check with `node --version`, then update: `brew upgrade node` with Homebrew on macOS, or `nvm install --lts` if you installed Node with nvm (Linux and WSL).
 
+**rbenv says a Ruby version "is not installed".** Run `rbenv install` from the top folder of Onward. It installs the version in `.ruby-version`.
+
 **`bin/setup` or `bin/test` says permission denied.** Some unzip tools drop the "executable" flag. Run `chmod +x bin/* backend/bin/*` from the top folder and try again.
 
-**`bin/e2e` says a port is already in use.** Something is still running on port 3001 or 5174, usually an end-to-end run that was stopped partway. On macOS or Linux, `lsof -ti :3001,5174 | xargs kill` stops it.
-
-**`bin/e2e` says Chromium (or an "executable") doesn't exist.** Playwright's browser isn't downloaded yet. See [Setting up the end-to-end tests](#setting-up-the-end-to-end-tests).
-
-**Installing the `pg` gem fails.** Ruby can't find PostgreSQL's tools. On macOS, check step 3 of the macOS setup. On Linux, make sure `libpq-dev` is installed.
+**Installing the `pg` gem fails.** Ruby can't find PostgreSQL's tools. On macOS, check step 3 of the [macOS setup](#macos). On Linux, make sure `libpq-dev` is installed.
 
 **"Connection refused" or "could not connect to server."** PostgreSQL isn't running. Start it with `brew services start postgresql@16` (macOS) or `sudo service postgresql start` (Linux and WSL).
 
@@ -500,17 +533,27 @@ Unit tests sit next to the code they test, like `src/lib/format.test.ts` beside 
 
 **Saving a GitHub token says Onward can't encrypt it yet.** The encryption keys are missing. Run `bin/setup` in `backend/` (it adds them to `.env`), restart `bin/rails server`, and try again.
 
+### Tests
+
+**`bin/e2e` says a port is already in use.** Something is still running on port 3001 or 5174, usually an end-to-end run that was stopped partway. On macOS or Linux, `lsof -ti :3001,5174 | xargs kill` stops it.
+
+**`bin/e2e` says Chromium (or an "executable") doesn't exist.** Playwright's browser isn't downloaded yet. See [Setting up the end-to-end tests](#setting-up-the-end-to-end-tests).
+
+### Hosting
+
 **The hosted app shows a loading page for about a minute.** The free server was asleep. It wakes up on the first visit after 15 minutes without visitors.
 
-**The Render build fails at `bundle install` with a platform error.** Run `bundle lock --add-platform x86_64-linux` in `backend/`, then commit and push (step 2 of [Putting Onward online](#putting-onward-online)).
+**The Render build fails at `bundle install` with a platform error.** `Gemfile.lock` is missing Linux. See [step 2 of Putting Onward online](#2-check-that-renders-linux-servers-can-install-your-gems).
 
 **"Forgot your password?" doesn't appear on the hosted app.** It shows once email is set up. See [Sending email with Gmail](#sending-email-with-gmail).
+
+### Using the app
 
 **Format says something like "Line 12: missing a comma."** The AI's JSON has a mistake on that line of what you pasted. Fix the line, or ask the AI to reply again with valid JSON only. Nothing is saved until the paste can be read.
 
 **The resume preview is too small to read.** Press **Fit width** or **+** above it, or **Expand** for the whole window. Closing the Design panel gives the page more room.
 
-**The resume preview never appears.** The preview is drawn by pdf.js in a web worker, which some privacy extensions block. Try the page with extensions off; **Download PDF** works either way.
+**The resume preview never appears.** The preview is drawn by pdf.js in a web worker, which some privacy extensions block. Try the page with extensions off. **Download PDF** works either way.
 
 **There's no sound.** Check the speaker button in the header, and that your device isn't muted. Browsers only play sound after you've clicked or tapped something on the page.
 
