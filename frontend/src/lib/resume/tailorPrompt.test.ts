@@ -51,9 +51,11 @@ describe('tailorMessage', () => {
 
   it('asks for JSON only, and for nothing made up', () => {
     const message = tailorMessage(resume, job);
-    expect(message).toMatch(/Reply with only one code block/);
-    expect(message).toMatch(/Stay truthful/);
+    expect(message).toMatch(/Return exactly one fenced code block containing valid JSON/);
+    expect(message).toMatch(/Don't invent responsibilities, achievements, metrics, credentials, or work history/);
     expect(message).toMatch(/Keep my name, contact details/);
+    // Onward adds the job and the resume itself, so the instructions have no placeholders for them.
+    expect(message).not.toContain('[Insert');
   });
 
   it('leaves out the location line when there is no location', () => {
@@ -71,12 +73,12 @@ describe('tailorMessage', () => {
   it('starts with your own instructions, and still has the job and the resume after them', () => {
     const message = tailorMessage(resume, job, { instructions: '  Keep it to two bullets per role.\n' });
     expect(message).toMatch(/^Keep it to two bullets per role\.\n\nThe job: Senior Frontend Developer at Brightline/);
-    expect(message).not.toContain('Stay truthful');
+    expect(message).not.toContain('Preserve the scope');
     expect(resumeIn(message).name).toBe('Dana Whitfield');
   });
 
   it("falls back to Onward's instructions when yours are empty", () => {
-    expect(tailorMessage(resume, job, { instructions: '   ' })).toMatch(/^Tailor my resume for the job below/);
+    expect(tailorMessage(resume, job, { instructions: '   ' })).toMatch(/^Tailor my resume for the job description below/);
   });
 });
 

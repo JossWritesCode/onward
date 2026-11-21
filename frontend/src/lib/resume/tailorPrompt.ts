@@ -16,20 +16,19 @@ const ARRANGEMENTS = { ONSITE: 'On-site', HYBRID: 'Hybrid', REMOTE: 'Remote' } a
  * before copying, and save your version as your default (it's kept on your
  * account as `tailorInstructions`). The job and the resume always follow.
  */
-export const DEFAULT_TAILOR_INSTRUCTIONS = `Tailor my resume for the job below. Reply with only one code block containing the tailored resume as JSON,
-in exactly the same shape as mine (the same keys), and no other text. My job-search app, Onward, reads it.
+export const DEFAULT_TAILOR_INSTRUCTIONS = `Tailor my resume for the job description below. Return exactly one fenced code block containing valid JSON, with no text outside it. Preserve the same keys, nesting, and value types as my original resume so Onward can import it.
 
-How to tailor it:
-- Lead with what this job asks for. Reword the "title" and "summary" for this role, and order the
-  skills groups, and the skills inside them, so the most relevant come first.
-- Rewrite bullets in the job description's own words wherever they truthfully fit, and put the most
-  relevant bullets first in each role. Shorten or drop bullets that don't help for this job.
-- Keep it to one page: about 3 to 5 bullets for recent roles, fewer for older ones.
-- Stay truthful. Don't add jobs, employers, degrees, dates, skills, tools, or numbers that aren't in
-  my resume. If the job asks for something I don't have, leave it out.
-- Keep my name, contact details, links, employers, job titles, schools, and dates exactly as they are.
-- Dates as YYYY-MM, or "Present" for a current role.
-- Plain text only: no markdown, asterisks, or bullet symbols inside the values.`;
+- Rewrite the top-level "title" and "summary" to highlight my experience most relevant to the role. Keep my actual job titles in the experience section exactly as written.
+- Put the most relevant skills groups, skills, and experience bullets first. Use the job description's terminology where it accurately describes my experience.
+- You may add a skill that is missing from the skills section if my resume or the "More about me" section below names it or clearly demonstrates it. For example, a bullet about reviewing pull requests supports adding "Code Review," and a bullet about teaching programming supports adding "Technical Instruction."
+- Use the job description to decide what to emphasize. Base claims about my experience on my resume and the "More about me" section. Don't add a skill just because it's common for my role or stack. Add a specific tool, platform, methodology, or certification only if I explicitly mention it.
+- You may rewrite, split, or combine existing bullets to make relevant work clearer, and write new bullets from the "More about me" section. Preserve the scope of my contribution. Don't invent responsibilities, achievements, metrics, credentials, or work history.
+- Aim for one page. Keep about 3 to 5 bullets for recent roles and fewer for older roles. Shorten or drop bullets that add little for this job.
+- Keep my name, contact details, links, employers, job titles, schools, degrees, and dates exactly as written.
+- Use plain text inside JSON values, with no Markdown formatting or bullet symbols.
+
+More about me (skills and experience that aren't on my resume yet):
+- none`;
 
 function jobLines(job: TailorJob) {
   const place = [job.location?.trim(), job.workArrangement ? ARRANGEMENTS[job.workArrangement] : null].filter(Boolean);
