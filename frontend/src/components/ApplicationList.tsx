@@ -133,7 +133,7 @@ function ApplicationRow({ row, stages }: { row: Row; stages: readonly BoardStage
         }}
         className="min-w-0 flex-1 rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30"
       >
-        <p className="truncate text-lg font-extrabold">{row.company}</p>
+        <p className="truncate text-lg font-semibold">{row.company}</p>
         <p className="truncate text-stone-600 dark:text-stone-300">{row.role}</p>
         {(row.followUpOn || row.resume) && (
           <div className="mt-1.5 flex flex-wrap gap-1.5">

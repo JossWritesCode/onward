@@ -2,8 +2,8 @@ import { formatDay } from '../lib/activities';
 import { ReplyIcon } from './icons';
 
 /**
- * "Follow up Nov 16" on board cards and list rows. Grey while it's coming up,
- * violet on the day and for as long as it's overdue.
+ * "Follow up Nov 16" on board cards and list rows. A quiet grey outline while
+ * it's coming up, filled violet on the day and for as long as it's overdue.
  */
 export default function FollowUpTag({
   on,
@@ -17,12 +17,12 @@ export default function FollowUpTag({
   if (!on) return null;
 
   const colors = due
-    ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-200'
-    : 'bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400';
+    ? 'border-brand-100 bg-brand-50 font-semibold text-brand-700 dark:border-transparent dark:bg-brand-tint dark:text-brand-250'
+    : 'border-stone-200 text-stone-500 dark:border-night-700 dark:text-night-300';
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-extrabold whitespace-nowrap ${colors} ${className}`}
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs whitespace-nowrap ${colors} ${className}`}
       title={due ? 'Time to follow up' : undefined}
     >
       <ReplyIcon className="shrink-0" /> Follow up {formatDay(on)}

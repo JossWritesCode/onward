@@ -12,10 +12,13 @@ import Toaster from './Toaster';
 import { BoardIcon, BookIcon, CodeIcon, FileTextIcon, GearIcon, LogOutIcon, UsersIcon, VolumeIcon, VolumeOffIcon } from './icons';
 
 const headerButton =
-  'inline-flex items-center gap-1.5 rounded-xl px-1.5 py-2 text-sm font-extrabold transition sm:px-2.5 ' +
+  'inline-flex items-center gap-1.5 rounded-xl px-1.5 py-2 text-sm font-semibold transition sm:px-2.5 ' +
   'text-stone-500 hover:bg-stone-200/60 hover:text-stone-800 ' +
-  'dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100 ' +
+  'dark:text-night-300 dark:hover:bg-night-850 dark:hover:text-night-50 ' +
   'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30';
+
+// The page you're on gets a soft violet tint, so it stands out without shouting.
+const activeNav = 'bg-brand-50 text-brand-700 dark:bg-brand-tint dark:text-brand-250';
 
 export default function Layout() {
   // The board's own pages: applications, and the page that edits its columns.
@@ -44,7 +47,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-dvh">
-      <header className="sticky top-0 z-30 border-b-2 border-stone-200 bg-stone-50/90 backdrop-blur dark:border-stone-800 dark:bg-stone-950/90">
+      <header className="sticky top-0 z-30 border-b border-stone-200/70 bg-stone-50/90 backdrop-blur dark:border-night-700/60 dark:bg-night-950/90">
         <div className="mx-auto flex max-w-350 items-center gap-0 px-3 min-[360px]:gap-0.5 py-3 sm:gap-2 sm:px-4">
           <NavLink to="/applications" aria-label="Onward home" className="mr-auto">
             <Logo compact />
@@ -56,7 +59,7 @@ export default function Layout() {
           <NavLink
             to="/applications"
             aria-current={onBoard ? 'page' : undefined}
-            className={`${headerButton} ${onBoard ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-200' : ''}`}
+            className={`${headerButton} ${onBoard ? activeNav : ''}`}
           >
             <BoardIcon className="text-lg" />
             <span className="hidden sm:inline">Board</span>
@@ -66,7 +69,7 @@ export default function Layout() {
           <NavLink
             to="/prep"
             className={({ isActive }) =>
-              `${headerButton} ${isActive ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-200' : ''}`
+              `${headerButton} ${isActive ? activeNav : ''}`
             }
           >
             <BookIcon className="text-lg" />
@@ -77,7 +80,7 @@ export default function Layout() {
           <NavLink
             to="/resumes"
             className={({ isActive }) =>
-              `${headerButton} ${isActive ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-200' : ''}`
+              `${headerButton} ${isActive ? activeNav : ''}`
             }
           >
             <FileTextIcon className="text-lg" />
@@ -89,7 +92,7 @@ export default function Layout() {
             <NavLink
               to="/engineering"
               className={({ isActive }) =>
-                `${headerButton} ${isActive ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-200' : ''}`
+                `${headerButton} ${isActive ? activeNav : ''}`
               }
             >
               <CodeIcon className="text-lg" />
@@ -101,7 +104,7 @@ export default function Layout() {
           <NavLink
             to="/contacts"
             className={({ isActive }) =>
-              `${headerButton} ${isActive ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-200' : ''}`
+              `${headerButton} ${isActive ? activeNav : ''}`
             }
           >
             <UsersIcon className="text-lg" />
@@ -125,7 +128,7 @@ export default function Layout() {
             aria-label="Settings"
             title="Settings"
             className={({ isActive }) =>
-              `${headerButton} ${isActive ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-200' : ''}`
+              `${headerButton} ${isActive ? activeNav : ''}`
             }
           >
             <GearIcon className="text-lg" />

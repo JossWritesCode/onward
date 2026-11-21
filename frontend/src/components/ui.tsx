@@ -7,29 +7,38 @@ import type {
 } from 'react';
 import { Link, type LinkProps } from 'react-router';
 
-type Variant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'ghostDanger';
+type Variant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'ghostDanger' | 'hero' | 'outline';
 
 const base =
-  'inline-flex items-center justify-center gap-2 rounded-2xl font-extrabold transition select-none ' +
+  'inline-flex items-center justify-center gap-2 rounded-2xl transition select-none ' +
   'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 ' +
   'disabled:cursor-not-allowed disabled:opacity-60';
 
 // The chunky "3D" look: a thick bottom border that squashes when pressed.
 const variants: Record<Variant, string> = {
   primary:
-    'bg-brand-500 text-white border-b-4 border-brand-700 hover:bg-brand-600 ' +
+    'font-extrabold bg-brand-500 text-white border-b-4 border-brand-700 hover:bg-brand-600 ' +
     'active:translate-y-0.5 active:border-b-2 px-5 py-2.5',
   secondary:
-    'bg-white text-brand-600 border-2 border-b-4 border-stone-200 hover:bg-brand-50 ' +
+    'font-extrabold bg-white text-brand-600 border-2 border-b-4 border-stone-200 hover:bg-brand-50 ' +
     'active:translate-y-0.5 active:border-b-2 px-5 py-2 ' +
     'dark:bg-stone-900 dark:text-brand-300 dark:border-stone-700 dark:hover:bg-stone-800',
   danger:
-    'bg-rose-500 text-white border-b-4 border-rose-700 hover:bg-rose-600 ' +
+    'font-extrabold bg-rose-500 text-white border-b-4 border-rose-700 hover:bg-rose-600 ' +
     'active:translate-y-0.5 active:border-b-2 px-5 py-2.5',
   ghost:
-    'text-stone-600 hover:bg-stone-200/60 px-3 py-2 dark:text-stone-300 dark:hover:bg-stone-800',
+    'font-extrabold text-stone-600 hover:bg-stone-200/60 px-3 py-2 dark:text-stone-300 dark:hover:bg-stone-800',
   ghostDanger:
-    'text-rose-600 hover:bg-rose-50 px-3 py-2 dark:text-rose-400 dark:hover:bg-rose-950/40',
+    'font-extrabold text-rose-600 hover:bg-rose-50 px-3 py-2 dark:text-rose-400 dark:hover:bg-rose-950/40',
+  // The board's main action: the same pressable button, with a lighter label.
+  hero:
+    'font-semibold bg-brand-500 text-white border-b-4 border-brand-700 hover:bg-brand-600 ' +
+    'active:translate-y-0.5 active:border-b-2 px-5 pt-2.5 pb-2 ' +
+    'dark:bg-brand-action dark:border-brand-800 dark:hover:bg-brand-600',
+  // A lighter action that sits next to a hero button without competing with it.
+  outline:
+    'font-semibold bg-white text-brand-700 border border-brand-200 hover:bg-brand-50 hover:border-brand-300 px-5 py-2.5 ' +
+    'dark:bg-transparent dark:text-brand-250 dark:border-night-700 dark:hover:bg-brand-tint dark:hover:border-brand-800',
 };
 
 export function buttonClasses(variant: Variant = 'primary', extra = '') {
@@ -152,11 +161,21 @@ export function EmptyState({
   );
 }
 
-export function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) {
+export function PageHeader({
+  title,
+  subtitle,
+  action,
+  titleClassName = 'text-3xl',
+}: {
+  title: string;
+  subtitle?: string;
+  action?: ReactNode;
+  titleClassName?: string;
+}) {
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="text-3xl font-black tracking-tight">{title}</h1>
+        <h1 className={`font-black tracking-tight ${titleClassName}`}>{title}</h1>
         {subtitle && <p className="mt-1 text-stone-500 dark:text-stone-400">{subtitle}</p>}
       </div>
       {action}

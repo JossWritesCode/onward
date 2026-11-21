@@ -505,8 +505,8 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
                 aria-label={column.stage.name}
                 className={`flex w-72 shrink-0 flex-col rounded-2xl border-2 p-2 transition-colors ${
                   dragging && drag.overStageId === column.stage.id
-                    ? 'border-brand-300 bg-brand-50 dark:border-brand-700 dark:bg-brand-950/40'
-                    : 'border-transparent bg-stone-100 dark:bg-stone-900/70'
+                    ? 'border-brand-300 bg-brand-50 dark:border-brand-700 dark:bg-brand-tint/60'
+                    : 'border-transparent bg-stone-100 dark:bg-night-900'
                 }`}
               >
                 <header className="flex items-center gap-2 pt-1 pr-2 pb-2">
@@ -514,19 +514,19 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
                     data-column-grip
                     title={`Drag to reorder ${column.stage.name}`}
                     onPointerDown={(e) => handleGripPointerDown(e, column.stage.id)}
-                    className="-mr-1 shrink-0 cursor-grab rounded-lg px-0.5 py-1 text-lg text-stone-400 select-none hover:bg-white hover:text-stone-600 active:cursor-grabbing dark:hover:bg-stone-800 dark:hover:text-stone-200"
+                    className="-mr-1 shrink-0 cursor-grab rounded-lg px-0.5 py-1 text-lg text-stone-400 select-none hover:bg-white hover:text-stone-600 active:cursor-grabbing dark:text-night-300/70 dark:hover:bg-night-850 dark:hover:text-night-50"
                   >
                     <GripIcon />
                   </span>
                   <span className={`size-2.5 shrink-0 rounded-full ${KIND_ACCENTS[column.stage.kind]}`} aria-hidden="true" />
-                  <h2 className="min-w-0 flex-1 truncate font-extrabold">{column.stage.name}</h2>
-                  <span className="rounded-full bg-white px-2 text-sm font-extrabold text-stone-500 dark:bg-stone-800 dark:text-stone-400">
+                  <h2 className="min-w-0 flex-1 truncate text-base/[22px] font-bold">{column.stage.name}</h2>
+                  <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-stone-500 tabular-nums dark:bg-night-850 dark:text-night-300">
                     {column.cards.filter((c) => !(dragging && c.id === drag.card.id)).length}
                   </span>
                   <Link
                     to={`/applications/new?stage=${column.stage.id}`}
                     aria-label={`Add an application to ${column.stage.name}`}
-                    className="rounded-lg p-1 text-lg text-stone-400 hover:bg-white hover:text-brand-600 dark:hover:bg-stone-800 dark:hover:text-brand-300"
+                    className="rounded-lg p-1 text-lg text-stone-400 hover:bg-white hover:text-brand-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 dark:text-night-300/70 dark:hover:bg-night-850 dark:hover:text-brand-250"
                   >
                     <PlusIcon />
                   </Link>
@@ -563,7 +563,7 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
                                 navigate(resumePath);
                               }
                             }}
-                            className="no-callout block cursor-grab touch-manipulation rounded-xl border-2 border-b-4 border-stone-200 bg-white p-3 transition select-none hover:border-brand-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 active:cursor-grabbing dark:border-stone-700 dark:bg-stone-900 dark:hover:border-brand-700"
+                            className="no-callout block cursor-grab touch-manipulation rounded-xl border border-stone-200 bg-white p-3 shadow-xs transition select-none hover:border-brand-300 hover:shadow-sm focus-visible:border-brand-400 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 active:cursor-grabbing dark:border-night-700 dark:bg-night-850 dark:shadow-none dark:hover:border-brand-700"
                           >
                             <CardContent card={card} />
                           </Link>
@@ -575,7 +575,7 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
                     <Placeholder height={drag.height} />
                   )}
                   {column.cards.length === 0 && !(dragging && drag.overStageId === column.stage.id) && (
-                    <li className="rounded-xl border-2 border-dashed border-stone-300 px-3 py-6 text-center text-sm text-stone-400 dark:border-stone-700">
+                    <li className="rounded-xl border border-dashed border-stone-300 px-3 py-6 text-center text-sm text-stone-400 dark:border-night-700 dark:text-night-300/70">
                       Drop a card here
                     </li>
                   )}
@@ -587,7 +587,7 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
 
           <Link
             to="/columns"
-            className="flex w-44 shrink-0 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-stone-300 p-4 text-center font-bold text-stone-500 transition hover:border-brand-300 hover:text-brand-600 dark:border-stone-700 dark:text-stone-400 dark:hover:text-brand-300"
+            className="flex w-44 shrink-0 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-stone-300 p-4 text-center font-semibold text-stone-500 transition hover:border-brand-300 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 dark:border-night-700 dark:text-night-300 dark:hover:border-brand-700 dark:hover:text-brand-250"
           >
             <ColumnsIcon className="text-2xl" />
             Add or edit columns
@@ -598,7 +598,7 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
       {drag && (
         <div
           aria-hidden="true"
-          className="pointer-events-none fixed top-0 left-0 z-40 rotate-2 rounded-xl border-2 border-b-4 border-brand-300 bg-white p-3 shadow-xl shadow-brand-900/15 dark:border-brand-700 dark:bg-stone-900"
+          className="pointer-events-none fixed top-0 left-0 z-40 rotate-2 rounded-xl border border-brand-300 bg-white p-3 shadow-2xl shadow-brand-900/25 dark:border-brand-600 dark:bg-night-850 dark:shadow-black/60"
           style={{
             width: drag.width,
             transform: `translate(${drag.x - drag.offsetX}px, ${drag.y - drag.offsetY}px) rotate(2deg)`,
@@ -611,7 +611,7 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
       {columnDrag && (
         <div
           aria-hidden="true"
-          className="pointer-events-none fixed top-0 left-0 z-40 flex items-center gap-2 rounded-2xl border-2 border-brand-300 bg-stone-100 px-2 py-3 shadow-xl shadow-brand-900/15 dark:border-brand-700 dark:bg-stone-900"
+          className="pointer-events-none fixed top-0 left-0 z-40 flex items-center gap-2 rounded-2xl border border-brand-300 bg-stone-100 px-2 py-3 shadow-2xl shadow-brand-900/25 dark:border-brand-600 dark:bg-night-900 dark:shadow-black/60"
           style={{
             width: columnDrag.width,
             transform: `translate(${columnDrag.x - columnDrag.offsetX}px, ${columnDrag.y - columnDrag.offsetY}px) rotate(1.5deg)`,
@@ -619,8 +619,8 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
         >
           <GripIcon className="shrink-0 text-lg text-stone-500" />
           <span className={`size-2.5 shrink-0 rounded-full ${KIND_ACCENTS[columnDrag.stage.kind]}`} />
-          <span className="min-w-0 flex-1 truncate font-extrabold">{columnDrag.stage.name}</span>
-          <span className="rounded-full bg-white px-2 text-sm font-extrabold text-stone-500 dark:bg-stone-800 dark:text-stone-400">
+          <span className="min-w-0 flex-1 truncate text-base/[22px] font-bold">{columnDrag.stage.name}</span>
+          <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-stone-500 tabular-nums dark:bg-night-850 dark:text-night-300">
             {columnDrag.count}
           </span>
         </div>
@@ -679,12 +679,15 @@ function CardContent({ card }: { card: BoardCard }) {
 
   return (
     <>
-      <p className="truncate font-extrabold">{card.company}</p>
-      <p className="truncate text-sm text-stone-600 dark:text-stone-300">{card.role}</p>
+      {/* Long names get two lines before they're cut, so you can still tell them apart. */}
+      <p className="line-clamp-2 text-base/[22px] font-bold break-words text-stone-900 dark:text-night-50">
+        {card.company}
+      </p>
+      <p className="truncate text-sm text-stone-600 dark:text-night-300">{card.role}</p>
       {(card.nextInterviewAt || card.followUpOn || card.resume) && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {card.nextInterviewAt && (
-            <span className="inline-flex rounded-full bg-gold-100 px-2 py-0.5 text-xs font-extrabold text-gold-700 dark:bg-amber-900/40 dark:text-amber-200">
+            <span className="inline-flex rounded-full bg-gold-100 px-2 py-0.5 text-xs font-bold text-gold-700 dark:bg-gold-night dark:text-gold-200">
               {shortInterviewTime(card.nextInterviewAt)}
             </span>
           )}
@@ -693,7 +696,7 @@ function CardContent({ card }: { card: BoardCard }) {
         </div>
       )}
       {(applied || where || card.contacts.length > 0) && (
-        <div className="mt-2 space-y-0.5 text-xs text-stone-500 dark:text-stone-400">
+        <div className="mt-2 space-y-0.5 text-xs text-stone-500 dark:text-night-300/85">
           {applied && (
             <p className="flex items-center gap-1">
               <CalendarIcon className="shrink-0" /> {applied}
