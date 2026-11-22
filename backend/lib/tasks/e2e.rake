@@ -1,5 +1,5 @@
 namespace :e2e do
-  desc "Load the end-to-end test accounts into an empty _e2e database. bin/e2e runs this; see the README's Testing section"
+  desc "Load the end-to-end test accounts into an empty _e2e database. bin/e2e runs this; see docs/development.md"
   task seed: :environment do
     database = ActiveRecord::Base.connection_db_config.database.to_s
     # A guard, since this fills whatever database it's pointed at.
