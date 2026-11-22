@@ -5,15 +5,21 @@ import { ContactsQuery, CustomActionsQuery, JobApplicationsQuery, LogActivityMut
 import { CATEGORY_LABELS, LOGGABLE } from '../../lib/activities';
 import { celebrateWin } from '../../lib/celebrate';
 import { ChatIcon, CoffeeIcon, FileTextIcon, PencilIcon, PlusIcon, ReplyIcon, StarIcon } from '../icons';
-import { Button, Card, ErrorBanner, Field, Input, Select } from '../ui';
+import { Button, ErrorBanner, Field, Input, Select } from '../ui';
 import { CustomActionForm } from './CustomActionForm';
 
 const ICONS: Partial<Record<ActivityKind, ReactNode>> = {
-  NETWORKING_MESSAGE: <ChatIcon />,
-  COFFEE_CHAT: <CoffeeIcon />,
-  FOLLOW_UP: <ReplyIcon />,
-  TAILORED_MATERIALS: <FileTextIcon />,
+  NETWORKING_MESSAGE: <ChatIcon strokeWidth={1.75} />,
+  COFFEE_CHAT: <CoffeeIcon strokeWidth={1.75} />,
+  FOLLOW_UP: <ReplyIcon strokeWidth={1.75} />,
+  TAILORED_MATERIALS: <FileTextIcon strokeWidth={1.75} />,
 };
+
+// Each action is one row you can click anywhere on: no box until you point at it or tab to it.
+const entry =
+  'flex items-start gap-3 rounded-lg px-3 py-2.5 text-left transition hover:bg-stone-200/50 dark:hover:bg-stone-800 ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-link';
+const entryActive = 'bg-brand-50 hover:bg-brand-50 dark:bg-brand-tint dark:hover:bg-brand-tint';
 
 type Option = {
   key: string;
@@ -49,7 +55,7 @@ export default function LogWin() {
       kind: 'CUSTOM' as const,
       title: action.name,
       hint: CATEGORY_LABELS[action.category],
-      icon: <StarIcon />,
+      icon: <StarIcon strokeWidth={1.75} />,
       customAction: action,
     })),
   ];
@@ -94,13 +100,15 @@ export default function LogWin() {
   }
 
   return (
-    <Card className="p-5">
-      <h2 className="text-xl font-black">Log a win</h2>
-      <p className="mb-4 text-sm text-stone-500 dark:text-stone-400">
+    <section aria-labelledby="log-win-heading">
+      <h2 id="log-win-heading" className="text-[22px]/7 font-semibold">
+        Log a win
+      </h2>
+      <p className="mt-1 mb-4 text-muted">
         The work that doesn't happen on the board counts too. Applications and interviews are logged for you.
       </p>
 
-      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+      <div className="-mx-3 grid gap-x-4 gap-y-1 sm:grid-cols-2">
         {options.map((option) => {
           const active = option.key === chosenKey;
           return (
@@ -109,24 +117,14 @@ export default function LogWin() {
               type="button"
               aria-expanded={active}
               onClick={(e) => choose(option.key, e.currentTarget)}
-              className={`flex flex-col items-start gap-2 rounded-2xl border-2 border-b-4 p-3 text-left transition active:translate-y-0.5 active:border-b-2 ${
-                active
-                  ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/50'
-                  : 'border-stone-200 bg-white hover:border-brand-300 dark:border-stone-700 dark:bg-stone-900'
-              }`}
+              className={`${entry} ${active ? entryActive : ''}`}
             >
-              <span
-                className={`flex size-10 items-center justify-center rounded-xl text-xl ${
-                  option.customAction
-                    ? 'bg-gold-100 text-gold-500 dark:bg-amber-950/60 dark:text-amber-300'
-                    : 'bg-brand-100 text-brand-600 dark:bg-brand-900/60 dark:text-brand-300'
-                }`}
-              >
+              <span className={`mt-0.5 shrink-0 text-xl ${option.customAction ? 'text-achieve' : 'text-link'}`}>
                 {option.icon}
               </span>
               <span className="min-w-0">
-                <span className="block font-extrabold break-words">{option.title}</span>
-                <span className="block text-xs text-stone-500 dark:text-stone-400">{option.hint}</span>
+                <span className="block font-semibold break-words">{option.title}</span>
+                <span className="block text-[13px]/[18px] text-muted">{option.hint}</span>
               </span>
             </button>
           );
@@ -139,18 +137,14 @@ export default function LogWin() {
             setChosenKey(null);
             setErrors([]);
           }}
-          className={`flex flex-col items-start gap-2 rounded-2xl border-2 border-dashed p-3 text-left transition ${
-            creating
-              ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/50'
-              : 'border-stone-300 text-stone-500 hover:border-brand-300 hover:text-stone-700 dark:border-stone-700 dark:text-stone-400'
-          }`}
+          className={`${entry} ${creating ? entryActive : ''}`}
         >
-          <span className="flex size-10 items-center justify-center rounded-xl bg-stone-100 text-xl dark:bg-stone-800">
-            <PlusIcon />
+          <span className="mt-0.5 shrink-0 text-xl text-muted">
+            <PlusIcon strokeWidth={1.75} />
           </span>
-          <span>
-            <span className="block font-extrabold">Your own</span>
-            <span className="block text-xs">Add an action, like a meetup</span>
+          <span className="min-w-0">
+            <span className="block font-semibold">Your own</span>
+            <span className="block text-[13px]/[18px] text-muted">Add an action, like a meetup</span>
           </span>
         </button>
       </div>
@@ -175,9 +169,9 @@ export default function LogWin() {
       )}
 
       {chosen && !editing && (
-        <form onSubmit={handleSubmit} className="mt-4 space-y-3 rounded-2xl bg-stone-100 p-4 dark:bg-stone-800/60" noValidate>
+        <form onSubmit={handleSubmit} className="mt-4 space-y-3 rounded-xl border border-line bg-surface p-5" noValidate>
           <div className="flex items-center gap-2">
-            <p className="min-w-0 flex-1 font-extrabold">{chosen.title}</p>
+            <p className="min-w-0 flex-1 font-semibold">{chosen.title}</p>
             {chosen.customAction && (
               <Button variant="ghost" className="text-sm" onClick={() => setEditing(true)}>
                 <PencilIcon /> Edit action
@@ -228,6 +222,6 @@ export default function LogWin() {
           </div>
         </form>
       )}
-    </Card>
+    </section>
   );
 }

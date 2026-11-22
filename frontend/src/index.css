@@ -7,45 +7,72 @@
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
 @theme {
-  --font-sans: 'Nunito', ui-sans-serif, system-ui, sans-serif;
-  /* A quieter serif, just for the daily quote. */
+  /* DM Sans does the everyday work. Spectral is for a few special moments, and Nunito is just the wordmark. */
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-quote: 'Spectral', Georgia, ui-serif, serif;
+  --font-serif: 'Spectral', Georgia, ui-serif, serif;
+  --font-brand: 'Nunito', ui-rounded, ui-sans-serif, system-ui, sans-serif;
+
+  /*
+   * DM Sans looks heavy above bold, so the app's heaviest weights settle at
+   * a semibold and a bold. Headings stay clear without shouting.
+   */
+  --font-weight-extrabold: 650;
+  --font-weight-black: 700;
 
   /* Electric violet: Onward's main color */
   --color-brand-50: #f5f2ff;
   --color-brand-100: #eee9ff;
   --color-brand-200: #ddd4ff;
-  --color-brand-300: #c2b2ff;
+  --color-brand-300: #c7b6ff;
   --color-brand-400: #9d85fb;
   --color-brand-500: #7350f5;
-  --color-brand-600: #6340e8;
-  --color-brand-700: #5333d1;
-  --color-brand-800: #4329a8;
+  --color-brand-600: #593aa5;
+  --color-brand-700: #4b2f94;
+  --color-brand-800: #3d2780;
   --color-brand-900: #2f1d78;
   --color-brand-950: #1d1150;
   /* Dark mode: the main button, and the soft tint behind selected controls. */
-  --color-brand-action: #6d43e8;
-  --color-brand-250: #c9b8ff;
+  --color-brand-action: #6445c4;
+  --color-brand-250: #c7b6ff;
   --color-brand-tint: #2b2342;
 
+  /*
+   * Warm paper and ink. These replace Tailwind's stone grays so every screen
+   * shares one warm palette: 50 is the light page, 200 a fine line, 500 quiet
+   * text on paper, 300 quiet text at night, 700 a fine line at night,
+   * 900 a raised surface at night and 950 the night page.
+   */
+  --color-stone-50: #f7f3eb;
+  --color-stone-100: #efe9df;
+  --color-stone-200: #d8d0c5;
+  --color-stone-300: #bdb3a6;
+  --color-stone-400: #a0968a;
+  --color-stone-500: #625a50;
+  --color-stone-600: #524a41;
+  --color-stone-700: #403a34;
+  --color-stone-800: #2e2925;
+  --color-stone-900: #221f1c;
+  --color-stone-950: #181614;
+
   /* Warm near-blacks for dark mode: page, columns, cards, lines, then text. */
-  --color-night-950: #151312;
-  --color-night-900: #1b1817;
-  --color-night-850: #24201e;
-  --color-night-700: #3b3430;
-  --color-night-300: #b8ada6;
-  --color-night-50: #f5f0eb;
+  --color-night-950: #181614;
+  --color-night-900: #1d1a18;
+  --color-night-850: #221f1c;
+  --color-night-700: #403a34;
+  --color-night-300: #bdb3a6;
+  --color-night-50: #f5efe5;
 
   /* The daily quote's background in dark mode. */
-  --color-plum-900: #211a2c;
+  --color-plum-900: #241c2e;
 
-  /* Gold: streaks, rewards and level-ups (used from milestone 2) */
+  /* Gold: streaks, rewards and level-ups */
   --color-gold-100: #fff3d1;
-  --color-gold-200: #f3c76c;
+  --color-gold-200: #edbe68;
   --color-gold-300: #fcd57a;
   --color-gold-400: #f5b82e;
   --color-gold-500: #e8a317;
-  --color-gold-700: #a86c00;
+  --color-gold-700: #805514;
   /* Behind gold details in dark mode, like "Interview today". */
   --color-gold-night: #38291a;
 
@@ -85,6 +112,61 @@
   }
 }
 
+/*
+ * Colors that change with the theme. bg-page, bg-surface, border-line,
+ * text-ink and the rest pick the right value for light or dark on their own,
+ * so new styles don't need a dark: twin.
+ */
+@theme inline {
+  --color-page: var(--onward-page);
+  --color-surface: var(--onward-surface);
+  --color-line: var(--onward-line);
+  --color-control: var(--onward-control);
+  --color-ink: var(--onward-ink);
+  --color-muted: var(--onward-muted);
+  --color-action: var(--onward-action);
+  --color-action-hover: var(--onward-action-hover);
+  --color-link: var(--onward-link);
+  --color-achieve: var(--onward-gold);
+  --color-done: var(--onward-green);
+  --color-plum: var(--onward-plum);
+  --color-plum-ink: var(--onward-plum-ink);
+}
+
+:root {
+  --onward-page: #f7f3eb;
+  --onward-surface: #fffcf6;
+  --onward-line: #d8d0c5;
+  /* Form fields need an edge you can find, stronger than a decorative line. */
+  --onward-control: #9b9184;
+  --onward-ink: #241f1c;
+  --onward-muted: #625a50;
+  --onward-action: #5b3bb5;
+  --onward-action-hover: #4b2f99;
+  --onward-link: #593aa5;
+  --onward-gold: #805514;
+  --onward-green: #28684c;
+  /* The practice question's card. */
+  --onward-plum: #efe8f7;
+  --onward-plum-ink: #2a1f3d;
+}
+
+:root[data-theme='dark'] {
+  --onward-page: #181614;
+  --onward-surface: #221f1c;
+  --onward-line: #403a34;
+  --onward-control: #786e63;
+  --onward-ink: #f5efe5;
+  --onward-muted: #bdb3a6;
+  --onward-action: #6445c4;
+  --onward-action-hover: #7255d0;
+  --onward-link: #c7b6ff;
+  --onward-gold: #edbe68;
+  --onward-green: #78caa3;
+  --onward-plum: #2a2133;
+  --onward-plum-ink: #f3ecfb;
+}
+
 @layer base {
   /* The browser's own controls (scrollbars, date pickers) match the theme. */
   html {
@@ -96,7 +178,7 @@
   }
 
   body {
-    @apply bg-stone-50 font-sans text-stone-800 antialiased dark:bg-night-950 dark:text-night-50;
+    @apply bg-page font-sans text-ink antialiased;
   }
 
   /* Tailwind 4 leaves buttons with the default arrow cursor. Anything clickable gets the hand. */
@@ -112,6 +194,12 @@
 
   :disabled {
     cursor: not-allowed;
+  }
+
+  /* A visible focus ring for anything that doesn't draw its own. */
+  :focus-visible {
+    outline: 2px solid var(--onward-link);
+    outline-offset: 2px;
   }
 
   /*

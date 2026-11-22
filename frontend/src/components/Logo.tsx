@@ -13,7 +13,7 @@ export default function Logo({ size = 'md', compact = false }: { size?: 'md' | '
         <ArrowUpRightIcon strokeWidth={3} />
       </span>
       <span
-        className={`font-black tracking-tight text-brand-600 dark:text-brand-300 ${large ? 'text-3xl' : 'text-2xl'} ${compact ? 'hidden sm:inline' : ''}`}
+        className={`font-brand font-black tracking-tight text-brand-600 dark:text-brand-300 ${large ? 'text-3xl' : 'text-2xl'} ${compact ? 'hidden sm:inline' : ''}`}
       >
         Onward
       </span>

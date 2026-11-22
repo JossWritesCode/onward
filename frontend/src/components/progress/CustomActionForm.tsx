@@ -66,8 +66,8 @@ export function CustomActionForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4 space-y-3 rounded-2xl bg-stone-100 p-4 dark:bg-stone-800/60" noValidate>
-      <p className="font-extrabold">{action ? 'Edit your action' : 'Add your own action'}</p>
+    <form onSubmit={handleSubmit} className="mt-4 space-y-3 rounded-xl border border-line bg-surface p-5" noValidate>
+      <p className="font-semibold">{action ? 'Edit your action' : 'Add your own action'}</p>
       <ErrorBanner messages={errors} />
       <div className="grid gap-3 sm:grid-cols-[2fr_1fr]">
         <Field label="What did you do?" htmlFor="custom-action-name">
@@ -91,7 +91,7 @@ export function CustomActionForm({
         </Field>
       </div>
       {!action && (
-        <label className="flex items-center gap-2 text-sm font-bold">
+        <label className="flex items-center gap-2 text-sm font-medium">
           <input type="checkbox" checked={asGoal} onChange={(e) => setAsGoal(e.target.checked)} className="size-4 accent-brand-500" />
           Make it a daily goal too
         </label>

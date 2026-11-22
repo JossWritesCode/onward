@@ -12,13 +12,14 @@ import Toaster from './Toaster';
 import { BoardIcon, BookIcon, CodeIcon, FileTextIcon, GearIcon, LogOutIcon, UsersIcon, VolumeIcon, VolumeOffIcon } from './icons';
 
 const headerButton =
-  'inline-flex items-center gap-1.5 rounded-xl px-1.5 py-2 text-sm font-semibold transition sm:px-2.5 ' +
-  'text-stone-500 hover:bg-stone-200/60 hover:text-stone-800 ' +
-  'dark:text-night-300 dark:hover:bg-night-850 dark:hover:text-night-50 ' +
-  'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30';
+  'relative inline-flex min-h-10 items-center gap-1.5 rounded-lg px-1.5 py-2 text-sm/5 font-medium transition sm:px-2.5 ' +
+  'text-muted hover:bg-stone-200/60 hover:text-ink dark:hover:bg-stone-800 ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-link';
 
-// The page you're on gets a soft violet tint, so it stands out without shouting.
-const activeNav = 'bg-brand-50 text-brand-700 dark:bg-brand-tint dark:text-brand-250';
+// The page you're on gets brighter text and a short violet line under it.
+const activeNav =
+  'text-ink! after:absolute after:bottom-0.5 after:left-1/2 after:h-0.5 after:w-5 after:-translate-x-1/2 ' +
+  'after:rounded-full after:bg-link';
 
 export default function Layout() {
   // The board's own pages: applications, and the page that edits its columns.
@@ -47,7 +48,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-dvh">
-      <header className="sticky top-0 z-30 border-b border-stone-200/70 bg-stone-50/90 backdrop-blur dark:border-night-700/60 dark:bg-night-950/90">
+      <header className="sticky top-0 z-30 border-b border-line bg-page">
         <div className="mx-auto flex max-w-350 items-center gap-0 px-3 min-[360px]:gap-0.5 py-3 sm:gap-2 sm:px-4">
           <NavLink to="/applications" aria-label="Onward home" className="mr-auto">
             <Logo compact />
@@ -111,6 +112,9 @@ export default function Layout() {
             <span className="hidden sm:inline">Contacts</span>
             <span className="sr-only sm:hidden">Contacts</span>
           </NavLink>
+
+          {/* A little room between where you can go and the settings for the app itself. */}
+          <span aria-hidden="true" className="w-1 sm:w-3" />
 
           <button
             type="button"

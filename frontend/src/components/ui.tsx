@@ -10,35 +10,25 @@ import { Link, type LinkProps } from 'react-router';
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'ghostDanger' | 'hero' | 'outline';
 
 const base =
-  'inline-flex items-center justify-center gap-2 rounded-2xl transition select-none ' +
-  'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 ' +
+  'inline-flex min-h-10 items-center justify-center gap-2 rounded-lg text-sm/5 font-semibold transition select-none ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link ' +
   'disabled:cursor-not-allowed disabled:opacity-60';
 
-// The chunky "3D" look: a thick bottom border that squashes when pressed.
+// Flat buttons. One filled violet action per area, with quieter ones beside it.
+const filled = 'bg-action text-white hover:bg-action-hover px-4 py-2.5';
 const variants: Record<Variant, string> = {
-  primary:
-    'font-extrabold bg-brand-500 text-white border-b-4 border-brand-700 hover:bg-brand-600 ' +
-    'active:translate-y-0.5 active:border-b-2 px-5 py-2.5',
+  primary: filled,
   secondary:
-    'font-extrabold bg-white text-brand-600 border-2 border-b-4 border-stone-200 hover:bg-brand-50 ' +
-    'active:translate-y-0.5 active:border-b-2 px-5 py-2 ' +
-    'dark:bg-stone-900 dark:text-brand-300 dark:border-stone-700 dark:hover:bg-stone-800',
-  danger:
-    'font-extrabold bg-rose-500 text-white border-b-4 border-rose-700 hover:bg-rose-600 ' +
-    'active:translate-y-0.5 active:border-b-2 px-5 py-2.5',
-  ghost:
-    'font-extrabold text-stone-600 hover:bg-stone-200/60 px-3 py-2 dark:text-stone-300 dark:hover:bg-stone-800',
+    'bg-surface text-link border border-control hover:bg-stone-100 px-4 py-2 dark:hover:bg-stone-800',
+  danger: 'bg-rose-700 text-white hover:bg-rose-800 px-4 py-2.5 dark:bg-rose-600 dark:hover:bg-rose-500',
+  ghost: 'text-muted hover:bg-stone-200/60 hover:text-ink px-3 py-2 dark:hover:bg-stone-800',
   ghostDanger:
-    'font-extrabold text-rose-600 hover:bg-rose-50 px-3 py-2 dark:text-rose-400 dark:hover:bg-rose-950/40',
-  // The board's main action: the same pressable button, with a lighter label.
-  hero:
-    'font-semibold bg-brand-500 text-white border-b-4 border-brand-700 hover:bg-brand-600 ' +
-    'active:translate-y-0.5 active:border-b-2 px-5 pt-2.5 pb-2 ' +
-    'dark:bg-brand-action dark:border-brand-800 dark:hover:bg-brand-600',
-  // A lighter action that sits next to a hero button without competing with it.
+    'text-rose-700 hover:bg-rose-50 px-3 py-2 dark:text-rose-400 dark:hover:bg-rose-950/40',
+  // The board's main action. It's the same as primary now; the name stays for its callers.
+  hero: filled,
+  // A lighter action that sits next to a filled button without competing with it.
   outline:
-    'font-semibold bg-white text-brand-700 border border-brand-200 hover:bg-brand-50 hover:border-brand-300 px-5 py-2.5 ' +
-    'dark:bg-transparent dark:text-brand-250 dark:border-night-700 dark:hover:bg-brand-tint dark:hover:border-brand-800',
+    'bg-transparent text-link border border-line hover:border-control hover:bg-surface px-4 py-2',
 };
 
 export function buttonClasses(variant: Variant = 'primary', extra = '') {
@@ -58,10 +48,11 @@ export function ButtonLink({ variant = 'primary', className = '', ...props }: Li
   return <Link className={buttonClasses(variant, className)} {...props} />;
 }
 
+// Fields get a firmer edge than the decorative lines around them, so they're easy to find.
 const fieldBase =
-  'w-full rounded-xl border-2 border-stone-200 bg-white px-3 py-2 text-base text-stone-800 ' +
-  'placeholder:text-stone-400 transition focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/15 ' +
-  'dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:placeholder:text-stone-500';
+  'w-full rounded-lg border border-control bg-surface px-3 py-2 text-base text-ink ' +
+  'placeholder:text-stone-400 transition focus:border-link focus:outline-none focus:ring-3 focus:ring-link/20 ' +
+  'dark:placeholder:text-stone-500';
 
 export function Input({ className = '', ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return <input className={`${fieldBase} ${className}`} {...props} />;
@@ -94,12 +85,12 @@ export function Field({
 }) {
   return (
     <div className={className}>
-      <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-bold text-stone-700 dark:text-stone-300">
+      <label htmlFor={htmlFor} className="mb-1.5 block text-sm/5 font-semibold text-ink">
         {label}
         {required && <span className="text-brand-500"> *</span>}
       </label>
       {children}
-      {hint && !error && <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">{hint}</p>}
+      {hint && !error && <p className="mt-1 text-[13px]/[18px] text-muted">{hint}</p>}
       {error && <p className="mt-1 text-sm font-semibold text-rose-600 dark:text-rose-400">{error}</p>}
     </div>
   );
@@ -107,9 +98,7 @@ export function Field({
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div
-      className={`rounded-2xl border-2 border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 ${className}`}
-    >
+    <div className={`rounded-xl border border-line bg-surface ${className}`}>
       {children}
     </div>
   );
@@ -120,7 +109,7 @@ export function ErrorBanner({ messages }: { messages: readonly string[] }) {
   return (
     <div
       role="alert"
-      className="rounded-xl border-2 border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 dark:border-rose-900 dark:bg-rose-950/50 dark:text-rose-300"
+      className="rounded-lg border border-rose-300 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800 dark:border-rose-900 dark:bg-rose-950/50 dark:text-rose-300"
     >
       {messages.map((message) => (
         <p key={message}>{message}</p>
@@ -138,26 +127,32 @@ export function Spinner({ label = 'Loading' }: { label?: string }) {
   );
 }
 
+/**
+ * A short, left-aligned note for a page with nothing on it yet. Pass a small
+ * icon, or a little drawing of your own with `illustration`.
+ */
 export function EmptyState({
   icon,
+  illustration,
   title,
   body,
   action,
 }: {
-  icon: ReactNode;
+  icon?: ReactNode;
+  illustration?: ReactNode;
   title: string;
   body: string;
   action?: ReactNode;
 }) {
   return (
-    <Card className="flex flex-col items-center px-6 py-14 text-center">
-      <div className="mb-4 flex size-16 items-center justify-center rounded-2xl bg-brand-100 text-3xl text-brand-600 dark:bg-brand-900/50 dark:text-brand-300">
-        {icon}
+    <div className="flex max-w-xl flex-col items-start gap-4 py-6">
+      {illustration ?? (icon && <span className="text-3xl text-muted">{icon}</span>)}
+      <div>
+        <h2 className="text-[22px]/7 font-semibold">{title}</h2>
+        <p className="mt-2 text-muted">{body}</p>
       </div>
-      <h2 className="text-xl font-extrabold">{title}</h2>
-      <p className="mt-1 max-w-sm text-stone-500 dark:text-stone-400">{body}</p>
-      {action && <div className="mt-6">{action}</div>}
-    </Card>
+      {action}
+    </div>
   );
 }
 
@@ -165,7 +160,7 @@ export function PageHeader({
   title,
   subtitle,
   action,
-  titleClassName = 'text-3xl',
+  titleClassName = 'text-[32px]/[36px] font-semibold sm:text-[40px]/[44px]',
 }: {
   title: string;
   subtitle?: string;
@@ -173,10 +168,10 @@ export function PageHeader({
   titleClassName?: string;
 }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className={`font-black tracking-tight ${titleClassName}`}>{title}</h1>
-        {subtitle && <p className="mt-1 text-stone-500 dark:text-stone-400">{subtitle}</p>}
+        <h1 className={`tracking-[-0.01em] ${titleClassName}`}>{title}</h1>
+        {subtitle && <p className="mt-2 text-muted">{subtitle}</p>}
       </div>
       {action}
     </div>

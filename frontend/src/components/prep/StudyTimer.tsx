@@ -58,14 +58,14 @@ export default function StudyTimer({ topics }: { topics: readonly string[] }) {
     const percent = Math.min(100, (elapsedMs / (running.minutes * 60_000)) * 100);
     return (
       <Card className="p-5">
-        <p className="text-sm font-extrabold text-brand-600 dark:text-brand-300">Studying {running.topic}</p>
-        <p className="my-2 text-5xl font-black tabular-nums" aria-live="off">
+        <p className="text-sm/5 font-semibold text-link">Studying {running.topic}</p>
+        <p className="my-2 text-[40px]/[44px] font-medium tabular-nums" aria-live="off">
           {formatClock(remainingMs)}
         </p>
-        <div className="mb-4 h-2.5 overflow-hidden rounded-full bg-stone-200 dark:bg-stone-800">
+        <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-stone-200 dark:bg-stone-700">
           <div className="h-full rounded-full bg-brand-500 transition-all" style={{ width: `${percent}%` }} />
         </div>
-        <p className="mb-4 text-sm text-stone-500 dark:text-stone-400">
+        <p className="mb-4 text-sm/5 text-muted">
           The timer keeps running if you leave this page. You'll hear a chime when it's done.
         </p>
         <Button variant="secondary" onClick={stop}>
@@ -78,8 +78,8 @@ export default function StudyTimer({ topics }: { topics: readonly string[] }) {
   return (
     <Card className="p-5">
       <div className="mb-4 flex items-center gap-2">
-        <TimerIcon className="text-2xl text-brand-500" />
-        <h2 className="text-xl font-black">Study timer</h2>
+        <TimerIcon className="text-xl text-muted" />
+        <h2 className="text-lg/6 font-semibold">Study timer</h2>
       </div>
 
       <div className="space-y-4">
@@ -100,7 +100,7 @@ export default function StudyTimer({ topics }: { topics: readonly string[] }) {
         </Field>
 
         <div>
-          <p className="mb-1.5 text-sm font-bold text-stone-700 dark:text-stone-300">How long?</p>
+          <p className="mb-1.5 text-sm/5 font-semibold">How long?</p>
           <div className="flex flex-wrap gap-2">
             {PRESETS.map((preset) => (
               <button
@@ -111,10 +111,10 @@ export default function StudyTimer({ topics }: { topics: readonly string[] }) {
                   setMinutes(preset);
                   setCustom('');
                 }}
-                className={`rounded-xl border-2 px-3.5 py-1.5 font-extrabold transition ${
+                className={`min-h-10 rounded-lg border px-3.5 py-1.5 text-sm/5 font-medium transition ${
                   !custom && minutes === preset
-                    ? 'border-brand-500 bg-brand-500 text-white'
-                    : 'border-stone-200 hover:border-brand-300 dark:border-stone-700'
+                    ? 'border-link bg-brand-50 text-link dark:bg-brand-tint'
+                    : 'border-control hover:bg-stone-200/50 dark:hover:bg-stone-800'
                 }`}
               >
                 {preset} min
@@ -131,16 +131,16 @@ export default function StudyTimer({ topics }: { topics: readonly string[] }) {
               value={custom}
               onChange={(e) => setCustom(e.target.value)}
               placeholder="Custom"
-              className="w-28 py-1.5"
+              className="min-h-10 w-28 py-1.5"
             />
           </div>
           {error && <p className="mt-1 text-sm font-semibold text-rose-600 dark:text-rose-400">{error}</p>}
-          <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">
+          <p className="mt-2 text-[13px]/[18px] text-muted">
             Sessions of 10 minutes or more count toward your streak, even if you stop early.
           </p>
         </div>
 
-        <Button onClick={start}>
+        <Button variant="secondary" onClick={start}>
           <TimerIcon /> Start
         </Button>
       </div>

@@ -98,7 +98,7 @@ export default function ResumesPage() {
 
       {data && resumes.length === 0 && (
         <EmptyState
-          icon={<FileTextIcon />}
+          icon={<FileTextIcon strokeWidth={1.5} />}
           title="Make your first resume"
           body="Onward gives you a prompt for any AI chat. Paste back what it writes, and you get a resume you can edit and download."
           action={newButton}
@@ -106,16 +106,16 @@ export default function ResumesPage() {
       )}
 
       {resumes.length > 0 && (
-        <div className="space-y-8">
+        <div className="space-y-10">
           <section aria-labelledby="base-heading">
-            <h2 id="base-heading" className="text-xl font-black">
+            <h2 id="base-heading" className="text-[22px]/7 font-semibold">
               Base resumes
             </h2>
-            <p className="mb-3 text-sm text-stone-500 dark:text-stone-400">Your starting points. Tailor one to copy it for a job.</p>
+            <p className="mt-1 mb-4 text-muted">Your starting points. Tailor one to copy it for a job.</p>
             {bases.length > 0 ? (
-              <ul className="grid gap-3 sm:grid-cols-2">{bases.map(card)}</ul>
+              <ul className="grid gap-4 sm:grid-cols-2">{bases.map(card)}</ul>
             ) : (
-              <Card className="p-4 text-stone-600 dark:text-stone-300">
+              <Card className="p-5 text-muted">
                 Every resume here is tailored for a job. Duplicate one to keep a general version.
               </Card>
             )}
@@ -123,13 +123,13 @@ export default function ResumesPage() {
 
           {tailored.length > 0 && (
             <section aria-labelledby="tailored-heading">
-              <h2 id="tailored-heading" className="text-xl font-black">
+              <h2 id="tailored-heading" className="text-[22px]/7 font-semibold">
                 Tailored for a job
               </h2>
-              <p className="mb-3 text-sm text-stone-500 dark:text-stone-400">
+              <p className="mt-1 mb-4 text-muted">
                 Each one belongs to an application, and shows on its card.
               </p>
-              <ul className="grid gap-3 sm:grid-cols-2">{tailored.map(card)}</ul>
+              <ul className="grid gap-4 sm:grid-cols-2">{tailored.map(card)}</ul>
             </section>
           )}
         </div>
@@ -156,17 +156,19 @@ function ResumeCard({
   const application = resume.jobApplication;
 
   return (
-    <Card className="flex h-full flex-col p-4 transition hover:border-brand-300 dark:hover:border-brand-700">
-      <Link to={`/resumes/${resume.id}`} className="group flex min-w-0 flex-1 items-start gap-3">
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-xl text-brand-600 dark:bg-brand-900/50 dark:text-brand-300">
-          <FileTextIcon />
-        </span>
+    <Card className="flex h-full flex-col p-5 transition hover:border-control">
+      <Link
+        to={`/resumes/${resume.id}`}
+        className="group -m-1 flex min-w-0 flex-1 items-start gap-3 rounded-lg p-1 focus-visible:outline-2 focus-visible:outline-link"
+      >
+        <FileTextIcon className="mt-0.5 shrink-0 text-[28px] text-muted" strokeWidth={1.5} />
         <span className="min-w-0">
-          <span className="block truncate text-lg font-extrabold group-hover:text-brand-600 dark:group-hover:text-brand-300">
+          {/* Two lines, so similar names like "Frontend, product teams" and "Frontend, design teams" stay apart. */}
+          <span className="line-clamp-2 text-lg/6 font-semibold break-words group-hover:text-link" title={resume.title}>
             {resume.title}
           </span>
-          {who && <span className="block truncate text-stone-600 dark:text-stone-300">{who}</span>}
-          <span className="block text-sm text-stone-500 dark:text-stone-400">
+          {who && <span className="mt-1 block truncate text-muted">{who}</span>}
+          <span className="mt-0.5 block text-[13px]/[18px] text-muted">
             {template} · {resume.pageSize === 'A4' ? 'A4' : 'Letter'} · edited {editedOn(resume.updatedAt)}
           </span>
         </span>
@@ -175,7 +177,7 @@ function ResumeCard({
       {application && (
         <Link
           to={`/applications/${application.id}`}
-          className="mt-3 inline-flex max-w-full items-center gap-1.5 self-start rounded-full bg-stone-100 px-2.5 py-1 text-sm font-bold text-stone-600 hover:bg-brand-100 hover:text-brand-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-brand-900/50 dark:hover:text-brand-200"
+          className="mt-3 inline-flex max-w-full items-center gap-1.5 self-start rounded-md px-1 py-0.5 text-sm/5 font-medium text-link hover:underline focus-visible:outline-2 focus-visible:outline-link"
         >
           <BriefcaseIcon className="shrink-0" />
           <span className="truncate">
@@ -187,7 +189,7 @@ function ResumeCard({
       {picking ? (
         <TailorPicker resume={resume} onClose={() => setPicking(false)} />
       ) : (
-        <div className="mt-3 flex flex-wrap items-center gap-1 border-t-2 border-stone-100 pt-2 dark:border-stone-800">
+        <div className="-mx-2 mt-4 flex flex-wrap items-center gap-1 border-t border-line px-2 pt-3">
           {!application && (
             <Button variant="ghost" disabled={busy} onClick={() => setPicking(true)}>
               <SparklesIcon /> Tailor for…
@@ -196,7 +198,13 @@ function ResumeCard({
           <Button variant="ghost" disabled={busy} onClick={onDuplicate}>
             <CopyIcon /> Duplicate
           </Button>
-          <Button variant="ghostDanger" className="ml-auto" disabled={busy} onClick={onDelete}>
+          {/* Quiet until you point at it or tab to it, then clearly a delete. */}
+          <Button
+            variant="ghost"
+            className="ml-auto hover:bg-rose-50! hover:text-rose-700! focus-visible:bg-rose-50 focus-visible:text-rose-700 focus-visible:outline-rose-600 dark:hover:bg-rose-950/40! dark:hover:text-rose-400! dark:focus-visible:bg-rose-950/40 dark:focus-visible:text-rose-400"
+            disabled={busy}
+            onClick={onDelete}
+          >
             <TrashIcon /> Delete
           </Button>
         </div>
@@ -222,12 +230,12 @@ function TailorPicker({ resume, onClose }: { resume: Resume; onClose: () => void
   }
 
   return (
-    <div className="mt-3 space-y-2 border-t-2 border-stone-100 pt-3 dark:border-stone-800">
-      <label htmlFor={`tailor-${resume.id}`} className="block text-sm font-bold text-stone-700 dark:text-stone-300">
+    <div className="mt-4 space-y-2 border-t border-line pt-3">
+      <label htmlFor={`tailor-${resume.id}`} className="block text-sm/5 font-semibold">
         Tailor a copy for which application?
       </label>
       {!loading && free.length === 0 ? (
-        <p className="text-sm text-stone-500 dark:text-stone-400">
+        <p className="text-sm/5 text-muted">
           {applications.length === 0
             ? 'Add an application to your board first.'
             : 'Every application already has a tailored resume.'}

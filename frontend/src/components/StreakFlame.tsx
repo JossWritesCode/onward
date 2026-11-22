@@ -52,14 +52,15 @@ export default function StreakFlame() {
       aria-label={`${label} View your progress.`}
       title={label}
       className={({ isActive }) =>
-        `inline-flex items-center gap-1 rounded-xl px-2 py-1.5 font-black transition sm:px-2.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 ${
-          lit
-            ? 'bg-gold-100 text-gold-700 hover:bg-gold-300/50 dark:bg-gold-night dark:text-gold-200'
-            : 'text-stone-400 hover:bg-stone-200/60 hover:text-stone-600 dark:hover:bg-stone-800'
-        } ${isActive ? 'ring-2 ring-gold-300 dark:ring-amber-700' : ''}`
+        `relative inline-flex min-h-10 items-center gap-1 rounded-lg px-2 py-1.5 text-sm/5 font-semibold transition sm:px-2.5 ` +
+        `hover:bg-stone-200/60 focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-link dark:hover:bg-stone-800 ` +
+        `${lit ? 'text-ink' : 'text-muted'} ` +
+        `${isActive ? 'after:absolute after:bottom-0.5 after:left-1/2 after:h-0.5 after:w-5 after:-translate-x-1/2 after:rounded-full after:bg-gold-500' : ''}`
       }
     >
-      <FlameIcon className={`text-xl transition-transform ${bump ? 'scale-125 -rotate-6' : ''} ${lit ? 'text-gold-500' : ''}`} />
+      <FlameIcon
+        className={`text-lg transition-transform ${bump ? 'scale-125 -rotate-6' : ''} ${lit ? 'text-gold-500' : 'text-stone-400'}`}
+      />
       <span className="tabular-nums">{current}</span>
     </NavLink>
   );

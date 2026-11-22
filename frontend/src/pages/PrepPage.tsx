@@ -29,46 +29,51 @@ export default function PrepPage() {
         }
       />
 
-      <section className="mb-8" aria-labelledby="upcoming-heading">
-        <h2 id="upcoming-heading" className="mb-3 flex items-center gap-2 text-xl font-black">
-          <CalendarIcon className="text-brand-500" /> Upcoming interviews
+      <section className="mb-10" aria-labelledby="upcoming-heading">
+        <h2 id="upcoming-heading" className="mb-4 flex items-center gap-2 text-[22px]/7 font-semibold">
+          <CalendarIcon className="text-muted" /> Upcoming interviews
         </h2>
         {rounds.length === 0 ? (
-          <Card className="p-5 text-stone-500 dark:text-stone-400">
+          <Card className="p-6 text-muted">
             When you move a card into an interview column on your board, its prep checklist shows up here.
           </Card>
         ) : (
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className={`grid gap-4 ${rounds.length > 1 ? 'md:grid-cols-2' : ''}`}>
             {rounds.map((round) => (
-              <InterviewRoundCard key={round.id} round={round} company={round.jobApplication.company} />
+              <InterviewRoundCard
+                key={round.id}
+                round={round}
+                company={round.jobApplication.company}
+                wide={rounds.length === 1}
+              />
             ))}
           </div>
         )}
       </section>
 
-      <div className="grid gap-5 lg:grid-cols-[1fr_22rem]">
+      <div className="grid items-start gap-8 lg:grid-cols-[1fr_22rem]">
         <section className="min-w-0" aria-labelledby="practice-heading">
-          <h2 id="practice-heading" className="mb-3 text-xl font-black">
+          <h2 id="practice-heading" className="mb-4 text-[22px]/7 font-semibold">
             Practice
           </h2>
           <PracticePanel questions={questions} stories={stories} />
         </section>
 
         <section aria-labelledby="study-heading">
-          <h2 id="study-heading" className="mb-3 text-xl font-black">
+          <h2 id="study-heading" className="mb-4 text-[22px]/7 font-semibold">
             Study
           </h2>
           <StudyTimer topics={studyTopics} />
         </section>
       </div>
 
-      <section className="mt-8" aria-labelledby="stories-heading">
+      <section className="mt-10" aria-labelledby="stories-heading">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 id="stories-heading" className="flex items-center gap-2 text-xl font-black">
-              <BookIcon className="text-brand-500" /> Story bank
+            <h2 id="stories-heading" className="flex items-center gap-2 text-[22px]/7 font-semibold">
+              <BookIcon className="text-muted" /> Story bank
             </h2>
-            <p className="text-sm text-stone-500 dark:text-stone-400">
+            <p className="mt-1 text-muted">
               Write your best stories once, then reuse them for any behavioral question.
             </p>
           </div>
@@ -78,7 +83,7 @@ export default function PrepPage() {
         </div>
 
         {stories.length === 0 ? (
-          <Card className="p-5 text-stone-500 dark:text-stone-400">
+          <Card className="p-6 text-muted">
             Start with 3 to 5 stories: a project you're proud of, a time you handled conflict, a mistake you learned
             from, a time you led something. They'll cover most questions you'll hear.
           </Card>
@@ -88,10 +93,10 @@ export default function PrepPage() {
               <li key={story.id}>
                 <Link
                   to={`/prep/stories/${story.id}`}
-                  className="block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30"
+                  className="block h-full rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
                 >
-                  <Card className="h-full p-4 transition hover:border-brand-300 dark:hover:border-brand-700">
-                    <p className="font-extrabold">{story.title}</p>
+                  <Card className="h-full p-4 transition hover:border-control">
+                    <p className="font-semibold">{story.title}</p>
                     {story.tags.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1">
                         {story.tags.map((tag) => (
@@ -104,7 +109,7 @@ export default function PrepPage() {
                         ))}
                       </div>
                     )}
-                    <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">
+                    <p className="mt-2 text-[13px]/[18px] text-muted">
                       {story.practiceCount === 0
                         ? 'Not practiced yet'
                         : `Practiced ${plural(story.practiceCount, 'time')}${

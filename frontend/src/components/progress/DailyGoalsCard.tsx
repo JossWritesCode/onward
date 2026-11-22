@@ -12,7 +12,7 @@ import {
 } from '../../graphql/operations';
 import { GOAL_KINDS, goalLabel, goalProgress } from '../../lib/goals';
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon, PencilIcon, TrashIcon } from '../icons';
-import { Button, Card, ErrorBanner, Input, Select } from '../ui';
+import { Button, ErrorBanner, Input, Select } from '../ui';
 
 type Goal = DailyGoalsQuery['dailyGoals'][number];
 
@@ -37,16 +37,13 @@ export default function DailyGoalsCard() {
   const progressById = new Map((today?.goals ?? []).map((progress) => [progress.goal.id, progress]));
 
   return (
-    <Card className="scroll-mt-24 p-5">
-      <div id="goals" className="mb-1 flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <h2 className="text-xl font-black">Daily goals</h2>
-          <p className="text-sm text-stone-500 dark:text-stone-400">
-            They check themselves off as you go. Finish them all for a perfect day.
-          </p>
-        </div>
+    <section aria-labelledby="goals-heading" className="scroll-mt-24">
+      <div id="goals" className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+        <h2 id="goals-heading" className="text-[22px]/7 font-semibold">
+          Daily goals
+        </h2>
         {goals.length > 0 && (
-          <Button variant="ghost" onClick={() => setEditing(!editing)} className="text-sm">
+          <Button variant="ghost" onClick={() => setEditing(!editing)} className="-mr-3">
             {editing ? (
               <>
                 <CheckIcon /> Done
@@ -59,18 +56,19 @@ export default function DailyGoalsCard() {
           </Button>
         )}
       </div>
+      <p className="mt-1 text-muted">They check themselves off as you go. Finish them all for a perfect day.</p>
 
       <div className="mt-3">
         <ErrorBanner messages={errors} />
       </div>
 
       {goals.length === 0 && (
-        <p className="mb-3 text-sm text-stone-600 dark:text-stone-300">
+        <p className="mb-3 text-muted">
           No goals yet. Pick one or two you'll really do. Small and steady beats big and rare.
         </p>
       )}
 
-      <ul className="space-y-2">
+      <ul className={editing ? 'space-y-2' : 'divide-y divide-line border-y border-line'}>
         {goals.map((goal, index) =>
           editing ? (
             <EditGoalRow
@@ -94,7 +92,7 @@ export default function DailyGoalsCard() {
       {(editing || goals.length === 0) && goals.length < MAX_GOALS && (
         <AddGoal data={data} onErrors={setErrors} />
       )}
-    </Card>
+    </section>
   );
 }
 
@@ -109,17 +107,17 @@ function GoalRow({
 }) {
   const done = progress?.done ?? false;
   return (
-    <li className="flex items-center gap-3 rounded-xl bg-stone-100 px-3 py-2.5 dark:bg-stone-800/60">
+    <li className="flex items-center gap-4 py-3">
       <span
         className={`flex size-6 shrink-0 items-center justify-center rounded-full text-sm ${
-          done ? 'bg-emerald-500 text-white' : 'border-2 border-stone-300 text-transparent dark:border-stone-600'
+          done ? 'bg-done text-white dark:text-stone-950' : 'border-[1.5px] border-stone-300 text-transparent dark:border-stone-600'
         }`}
       >
         <CheckIcon />
       </span>
       <span className="min-w-0 flex-1">
-        <span className={`block font-extrabold ${goal.available ? '' : 'text-stone-400'}`}>{goalLabel(goal)}</span>
-        <span className="block text-xs text-stone-500 dark:text-stone-400">
+        <span className={`block font-semibold ${goal.available ? '' : 'text-stone-400'}`}>{goalLabel(goal)}</span>
+        <span className="block text-[13px]/[18px] text-muted">
           {goal.weekdaysOnly ? 'Weekdays' : 'Every day'}
           {!goal.available && (
             <>
@@ -133,7 +131,7 @@ function GoalRow({
           )}
         </span>
       </span>
-      <span className="text-sm font-bold text-stone-500 tabular-nums dark:text-stone-400">
+      <span className={`text-sm font-medium tabular-nums ${done ? 'text-done' : 'text-muted'}`}>
         {restDay ? 'Rest day' : progress ? (done ? 'Done' : goalProgress(goal.kind, progress.count, goal.target)) : ''}
       </span>
     </li>
@@ -189,7 +187,7 @@ function EditGoalRow({
   const preview = goalLabel({ ...goal, target: Number(target) || goal.target });
 
   return (
-    <li className="rounded-xl border-2 border-stone-200 p-3 dark:border-stone-700">
+    <li className="rounded-lg border border-line bg-surface p-3">
       <div className="mb-2 flex items-center gap-2">
         <span className="min-w-0 flex-1 font-extrabold">{preview}</span>
         <button
@@ -294,8 +292,8 @@ function AddGoal({ data, onErrors }: { data: DailyGoalsQuery; onErrors: (errors:
   const hint = GOAL_KINDS.find((o) => o.kind === choice)?.hint;
 
   return (
-    <form onSubmit={handleSubmit} className="mt-3 rounded-xl bg-stone-100 p-3 dark:bg-stone-800/60">
-      <p className="mb-2 text-sm font-extrabold">Add a goal</p>
+    <form onSubmit={handleSubmit} className="mt-4 rounded-lg border border-line bg-surface p-4">
+      <p className="mb-2 text-sm font-semibold">Add a goal</p>
       <div className="flex flex-wrap items-center gap-2">
         <Select value={choice} onChange={(e) => choose(e.target.value)} className="w-auto! min-w-0 flex-1 py-1.5!" aria-label="Goal">
           <option value="">Choose one…</option>

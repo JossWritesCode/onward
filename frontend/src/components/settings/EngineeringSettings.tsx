@@ -70,15 +70,15 @@ function SettingsForm({ me }: { me: Me }) {
 
   return (
     <section aria-labelledby="engineering-heading">
-      <h2 id="engineering-heading" className="text-xl font-black">
+      <h2 id="engineering-heading" className="text-[22px]/7 font-semibold">
         Software engineering track
       </h2>
-      <p className="mb-3 text-sm text-stone-500 dark:text-stone-400">
+      <p className="mt-1 mb-5 text-muted">
         Adds an Engineering page, linked in the header, with your LeetCode streak, GitHub contributions, and hours studied.
       </p>
       <Card className="space-y-5 p-5">
         <label className="flex cursor-pointer items-center justify-between gap-4">
-          <span className="font-bold">Show the Engineering page</span>
+          <span className="font-medium">Show the Engineering page</span>
           <input
             type="checkbox"
             role="switch"
@@ -89,12 +89,12 @@ function SettingsForm({ me }: { me: Me }) {
           />
           <span
             aria-hidden="true"
-            className="relative h-7 w-12 shrink-0 rounded-full bg-stone-300 transition peer-checked:bg-brand-500 peer-focus-visible:ring-4 peer-focus-visible:ring-brand-500/30 after:absolute after:top-1 after:left-1 after:size-5 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-5 dark:bg-stone-700"
+            className="relative h-7 w-12 shrink-0 rounded-full bg-stone-400 transition peer-checked:bg-action peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-link after:absolute after:top-1 after:left-1 after:size-5 after:rounded-full after:bg-white after:shadow-sm after:transition peer-checked:after:translate-x-5 dark:bg-stone-600"
           />
         </label>
 
         {enabled && (
-          <form onSubmit={handleSubmit} noValidate className="space-y-4 border-t-2 border-stone-100 pt-5 dark:border-stone-800">
+          <form onSubmit={handleSubmit} noValidate className="space-y-5 border-t border-line pt-5">
             <ErrorBanner messages={generalErrors(errors, ['leetcodeUsername', 'githubUsername', 'githubToken'])} />
             <Field
               label="LeetCode username"
@@ -117,12 +117,12 @@ function SettingsForm({ me }: { me: Me }) {
                 autoComplete="off"
               />
             </Field>
-            <details className="rounded-xl bg-stone-100 px-4 py-3 text-sm dark:bg-stone-800/60">
-              <summary className="cursor-pointer font-bold">How to make a GitHub token</summary>
-              <ol className="mt-2 list-decimal space-y-1 pl-5 text-stone-600 dark:text-stone-300">
+            <details className="rounded-lg border border-line px-4 py-3 text-sm/5">
+              <summary className="cursor-pointer font-semibold">How to make a GitHub token</summary>
+              <ol className="mt-2 list-decimal space-y-1 pl-5 text-muted">
                 <li>
                   Open{' '}
-                  <a href={TOKEN_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-bold text-brand-600 hover:underline dark:text-brand-300">
+                  <a href={TOKEN_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-semibold text-link hover:underline">
                     GitHub's new token page <ExternalLinkIcon />
                   </a>
                   .
@@ -131,7 +131,7 @@ function SettingsForm({ me }: { me: Me }) {
                 <li>Leave repository access on "Public repositories" and don't add any permissions.</li>
                 <li>Generate the token, copy it, and paste it above.</li>
               </ol>
-              <p className="mt-2 text-stone-500 dark:text-stone-400">
+              <p className="mt-2 text-muted">
                 Onward only reads your contribution calendar, and the token is stored encrypted.
               </p>
             </details>
