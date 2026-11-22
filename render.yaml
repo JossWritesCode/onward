@@ -1,5 +1,5 @@
 # Render Blueprint: one web service (Rails serving the API and the React app)
-# and one PostgreSQL database. See "Putting Onward online" in the README.
+# and one PostgreSQL database. See docs/hosting.md.
 #
 # Cost: the free web service ($0, sleeps after 15 minutes without visitors)
 # plus the smallest paid database ($6/month, keeps your data with backups).
@@ -43,7 +43,7 @@ services:
       - key: OWNER_EMAIL
         sync: false
       # Email for password reset links. Leave these empty to skip password
-      # reset for now; see the README for setting up Gmail.
+      # reset for now; see docs/hosting.md for setting up Gmail.
       - key: SMTP_ADDRESS
         sync: false
       - key: SMTP_PORT

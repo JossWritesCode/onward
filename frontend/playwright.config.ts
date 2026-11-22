@@ -3,7 +3,7 @@ import { APP_PORT, RAILS_PORT } from './e2e/ports';
 
 // End-to-end tests: a real browser against the real Rails server and the React
 // app. Run them with `npm run e2e` (or `bin/e2e` from the top folder), which
-// resets their database first. See "Testing" in the README.
+// resets their database first. See docs/development.md.
 
 const CI = Boolean(process.env.CI);
 
