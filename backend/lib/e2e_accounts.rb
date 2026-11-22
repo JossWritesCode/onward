@@ -27,6 +27,7 @@ module E2eAccounts
     undo-move
     tailor-resume
     settings
+    landing
   ].freeze
   PASSWORD = "password123"
 

@@ -121,6 +121,7 @@ See [Connecting LeetCode and GitHub](#connecting-leetcode-and-github) for setup.
 
 ### Settings and accounts
 
+- A front page for visitors that shows what Onward does, using screenshots of the app with made-up sample data. If you're signed in, it takes you straight to your board.
 - Accounts: sign up, sign in, sign out, and "Forgot your password?" with an emailed reset link.
 - A Settings page behind the gear in the header:
   - **Appearance:** System, Light, or Dark. System follows your computer, and this browser remembers your pick.
@@ -505,6 +506,7 @@ frontend/
   src/lib/            Helpers: quotes, feedback and sounds, the weekly recap, settings, the theme, resume dates and the AI prompts
   src/resume-pdf/     Resume templates and PDF code, downloaded only when the resume editor opens
   src/assets/fonts/   Fonts embedded in resume PDFs
+  src/assets/landing/ The front page's screenshots, in light and dark (listed in src/lib/landingShots.ts)
   e2e/                End-to-end tests (Playwright)
 ```
 
