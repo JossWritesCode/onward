@@ -4,6 +4,8 @@
 
 A job hunt tracker that feels like a well-kept notebook. Track your applications on a drag-and-drop board, see a short record of what you did each week, set small daily goals, and watch your effort fill in a GitHub-style heat map, whether or not it pays off right away.
 
+**Try it live at [onward-wzja.onrender.com](https://onward-wzja.onrender.com/).**
+
 ![The job board](docs/screenshot.png)
 
 **Guiding principle: reward effort, not outcomes.** Applying, networking, and prepping are wins on their own.
@@ -343,9 +345,7 @@ To change what the message asks ChatGPT to do, click **Edit instructions** next 
 
 ## Putting Onward online
 
-Onward is set up for [Render](https://render.com) with a free web server and a $6/month database. The file `render.yaml` describes both, so most of this is clicking through Render's screens.
-
-**What to expect from the free server:** it goes to sleep after 15 minutes without visitors. The next visit shows a loading page for about a minute while it wakes up, then it's normal speed. Your data is in the paid database, so sleeping never loses anything. If the wait gets annoying, switch the web service to a paid plan in Render ($7/month).
+Onward is set up for [Render](https://render.com) with a web server and a database. The file `render.yaml` describes both, so most of this is clicking through Render's screens.
 
 ### 1. Check that it builds
 
@@ -543,8 +543,6 @@ These are the hiccups people run into most, usually from setup or the hosting pl
 **`bin/e2e` says Chromium (or an "executable") doesn't exist.** Playwright's browser isn't downloaded yet. See [Setting up the end-to-end tests](#setting-up-the-end-to-end-tests).
 
 ### Hosting
-
-**The hosted app shows a loading page for about a minute.** The free server was asleep. It wakes up on the first visit after 15 minutes without visitors.
 
 **The Render build fails at `bundle install` with a platform error.** `Gemfile.lock` is missing Linux. See [step 2 of Putting Onward online](#2-check-that-renders-linux-servers-can-install-your-gems).
 
