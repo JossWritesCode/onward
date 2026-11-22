@@ -151,10 +151,17 @@ type Move = {
  * acknowledged, so the board can highlight a card that just got an offer.
  */
 export function celebrateMove({ from, to }: Move): 'applied' | 'interview' | 'offer' | 'rejected' | null {
+  // A move that isn't a step forward, like moving a card back, gets a tiny tap
+  // and no toast. A brand new card that isn't a step forward makes no sound.
+  const routine = () => {
+    if (from) playSound('tap');
+    return null;
+  };
+
   if (to.kind === 'REJECTED') {
-    if (from?.kind === 'REJECTED') return null;
+    if (from?.kind === 'REJECTED') return routine();
     const [title, body] = pick(MESSAGES.rejected);
-    acknowledge(null, 'gentle', title, body);
+    acknowledge('settle', 'gentle', title, body);
     return 'rejected';
   }
 
@@ -162,7 +169,7 @@ export function celebrateMove({ from, to }: Move): 'applied' | 'interview' | 'of
   const toRank = RANK[to.kind];
   const laterInterviewRound =
     from?.kind === 'INTERVIEWING' && to.kind === 'INTERVIEWING' && to.position > from.position;
-  if (toRank <= fromRank && !laterInterviewRound) return null;
+  if (toRank <= fromRank && !laterInterviewRound) return routine();
 
   if (to.kind === 'OFFER') {
     const [title, body] = pick(MESSAGES.offer);
@@ -171,7 +178,7 @@ export function celebrateMove({ from, to }: Move): 'applied' | 'interview' | 'of
   }
   if (to.kind === 'INTERVIEWING') {
     const [title, body] = pick(laterInterviewRound ? MESSAGES.nextRound : MESSAGES.interview);
-    acknowledge(null, 'celebrate', title, body);
+    acknowledge('rise', 'celebrate', title, body);
     return 'interview';
   }
   const [title, body] = pick(MESSAGES.applied);
@@ -197,7 +204,7 @@ const LET_GO_MESSAGES = [
 /** Letting go of an application that never wrote back. Kinder than the usual rejection messages. */
 export function celebrateLetGo() {
   const [title, body] = pick(LET_GO_MESSAGES);
-  acknowledge(null, 'gentle', title, body);
+  acknowledge('settle', 'gentle', title, body);
 }
 
 /** After you log effort that doesn't happen on the board, like a follow-up. */
@@ -226,6 +233,11 @@ const PRACTICE_MESSAGES = {
 export function celebratePractice(rating: 'NAILED_IT' | 'NEEDS_WORK') {
   const [title, body] = pick(PRACTICE_MESSAGES[rating]);
   acknowledge(null, 'celebrate', title, body);
+}
+
+/** Starting the study timer: a soft chime to settle in. The running timer is the on-screen sign. */
+export function studyStarted() {
+  playSound('chime');
 }
 
 /**

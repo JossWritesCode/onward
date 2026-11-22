@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   celebrateGoalsComplete,
+  celebrateLetGo,
   celebrateMove,
   celebratePractice,
   celebrateStreakMilestone,
@@ -10,6 +11,7 @@ import {
   noteUndone,
   onToast,
   resetFeedbackForTests,
+  studyStarted,
   type Toast,
 } from './celebrate';
 import { playSound } from './sounds';
@@ -50,31 +52,43 @@ describe('celebrateMove', () => {
   it.each([
     ['a new interview', stage('APPLIED'), stage('INTERVIEWING')],
     ['a later interview round', stage('INTERVIEWING', 2), stage('INTERVIEWING', 3)],
-    ['a rejection', stage('APPLIED'), stage('REJECTED')],
-  ])('shows %s without a sound', (_, from, to) => {
+  ])('plays the rising notes for %s', (_, from, to) => {
     celebrateMove({ from, to });
-    expect(onScreen()).toHaveLength(1);
-    expect(playSound).not.toHaveBeenCalled();
+    expect(onScreen()).toMatchObject([{ tone: 'celebrate' }]);
+    expect(playSound).toHaveBeenCalledExactlyOnceWith('rise');
+  });
+
+  it('plays the quiet settling note for a rejection, with a gentle toast', () => {
+    expect(celebrateMove({ from: stage('APPLIED'), to: stage('REJECTED') })).toBe('rejected');
+    expect(playSound).toHaveBeenCalledExactlyOnceWith('settle');
+    expect(onScreen()).toMatchObject([{ tone: 'gentle' }]);
   });
 
   it.each([
     ['APPLIED', 'SAVED'],
     ['INTERVIEWING', 'APPLIED'],
     ['OFFER', 'INTERVIEWING'],
-  ] as const)('stays quiet moving back from %s to %s', (from, to) => {
+    ['REJECTED', 'REJECTED'],
+  ] as const)('only taps moving back from %s to %s, with no toast', (from, to) => {
     expect(celebrateMove({ from: stage(from), to: stage(to) })).toBeNull();
     expect(toasts).toEqual([]);
-    expect(playSound).not.toHaveBeenCalled();
+    expect(playSound).toHaveBeenCalledExactlyOnceWith('tap');
   });
 
   it.each(['SAVED', 'APPLIED', 'INTERVIEWING', 'OFFER'] as const)(
-    'stays quiet moving out of Rejected to %s: reopening a card is not a new win',
+    'only taps moving out of Rejected to %s: reopening a card is not a new win',
     (to) => {
       celebrateMove({ from: stage('REJECTED'), to: stage(to) });
       expect(toasts).toEqual([]);
-      expect(playSound).not.toHaveBeenCalled();
+      expect(playSound).toHaveBeenCalledExactlyOnceWith('tap');
     },
   );
+
+  it('stays silent for a brand new saved card', () => {
+    expect(celebrateMove({ from: null, to: stage('SAVED') })).toBeNull();
+    expect(toasts).toEqual([]);
+    expect(playSound).not.toHaveBeenCalled();
+  });
 });
 
 describe('one action, one cue', () => {
@@ -116,6 +130,18 @@ describe('other effort', () => {
     celebrateStudy(25, 'System design');
     celebrateStudy(30, 'Algorithms', { timer: false });
     expect(vi.mocked(playSound).mock.calls).toEqual([['bell'], ['note']]);
+  });
+
+  it('plays the soft chime, and nothing else, when a study session starts', () => {
+    studyStarted();
+    expect(playSound).toHaveBeenCalledExactlyOnceWith('chime');
+    expect(toasts).toEqual([]);
+  });
+
+  it('plays the settling note when you let an application go', () => {
+    celebrateLetGo();
+    expect(playSound).toHaveBeenCalledExactlyOnceWith('settle');
+    expect(onScreen()).toMatchObject([{ tone: 'gentle' }]);
   });
 
   it('shows practice ratings without a sound', () => {

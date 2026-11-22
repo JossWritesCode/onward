@@ -44,18 +44,33 @@ afterEach(() => {
 });
 
 describe('the cues', () => {
-  it('keeps each one to its length: a short note, a bell of about a second, a chord under a second', () => {
+  it('keeps each one to its length: short notes for moves, a bell of about a second, a long chime to begin', () => {
     expect(soundLength('note')).toBeGreaterThanOrEqual(0.15);
     expect(soundLength('note')).toBeLessThanOrEqual(0.25);
     expect(soundLength('bell')).toBeGreaterThanOrEqual(1);
     expect(soundLength('bell')).toBeLessThanOrEqual(1.5);
     expect(soundLength('chord')).toBeLessThan(1);
+    expect(soundLength('rise')).toBeLessThan(0.7);
+    expect(soundLength('settle')).toBeLessThan(0.7);
+    expect(soundLength('tap')).toBeLessThanOrEqual(0.15);
+    expect(soundLength('chime')).toBeGreaterThanOrEqual(2);
+    expect(soundLength('chime')).toBeLessThanOrEqual(3);
+  });
+
+  it('keeps the routine tap quieter than the moments worth noticing', () => {
+    for (const name of [ 'note', 'rise', 'settle', 'bell', 'chord' ] as const) {
+      expect(SOUNDS.tap.volume).toBeLessThan(SOUNDS[name].volume);
+    }
+  });
+
+  it('makes the rise go up', () => {
+    const [first, second] = SOUNDS.rise.tones.filter((tone) => tone.gain > 0.5);
+    expect(second.freq).toBeGreaterThan(first.freq);
+    expect(second.at).toBeGreaterThan(first.at);
   });
 
   it('uses soft sine tones with a gentle start, nothing harsh like a square wave', () => {
-    playSound('note');
-    playSound('bell');
-    playSound('chord');
+    for (const name of Object.keys(SOUNDS) as (keyof typeof SOUNDS)[]) playSound(name);
     expect(started.length).toBeGreaterThan(0);
     expect(new Set(started.map((tone) => tone.type))).toEqual(new Set(['sine']));
     for (const sound of Object.values(SOUNDS)) {

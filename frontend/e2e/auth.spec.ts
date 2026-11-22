@@ -6,7 +6,8 @@ test('signs in and out', async ({ page }) => {
   await expect(page).toHaveURL(/\/applications$/);
 
   await page.getByRole('button', { name: 'Sign out' }).click();
-  await expect(page).toHaveURL(/\/login$/);
+  // Signing out lands you back on the landing page.
+  await expect(page).toHaveURL(/\/$/);
 
   // Signed out means signed out: the board sends you back to sign in.
   await page.goto('/applications');
