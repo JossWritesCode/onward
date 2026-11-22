@@ -33,10 +33,16 @@ export default function QuoteBanner() {
 
   return (
     // A thin plum rule on the left, like a note in the margin of a notebook.
-    <figure className="mb-5 flex max-w-3xl items-start gap-3 border-l-2 border-plum-accent/60 py-0.5 pl-3.5">
+    // It gets room above and below so it reads as its own moment, with less on
+    // a phone so the board isn't pushed too far down. The text stops at about
+    // 68 characters, a comfortable line length, and the buttons keep a small
+    // gutter of their own instead of crowding the end of the first line.
+    <figure className="my-4 flex max-w-3xl items-start gap-3 border-l-2 border-plum-accent/60 py-0.5 pl-3.5 sm:my-7 sm:gap-6">
       <div key={index} className="min-w-0 flex-1 animate-quote-in" aria-live="polite">
-        <blockquote className="font-quote text-base/6 text-pretty text-ink italic sm:text-[17px]/6">{quote.text}</blockquote>
-        <figcaption className="mt-0.5 text-[13px]/[18px] text-muted">
+        <blockquote className="max-w-[68ch] font-quote text-base/6 text-pretty text-ink italic sm:text-[17px]/[26px]">
+          {quote.text}
+        </blockquote>
+        <figcaption className="mt-1.5 text-[13px]/[18px] text-muted sm:mt-2">
           <span className="font-semibold text-plum-accent">{quote.author}</span>, {quote.source}
         </figcaption>
       </div>

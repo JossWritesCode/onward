@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { LogStudySessionMutation } from '../../graphql/operations';
-import { celebrateStudy, showToast } from '../../lib/celebrate';
+import { celebrateStudy, showToast, studyStarted } from '../../lib/celebrate';
 import { formatClock, startTimer, stopTimer, useStudyTimer } from '../../lib/studyTimer';
 import { TimerIcon } from '../icons';
 import { Button, Card, Field, Input } from '../ui';
@@ -47,6 +47,7 @@ export default function StudyTimer({ topics }: { topics: readonly string[] }) {
     }
     setError(null);
     startTimer(topic, length);
+    studyStarted();
   }
 
   async function stop() {

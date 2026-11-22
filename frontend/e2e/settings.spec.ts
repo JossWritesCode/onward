@@ -86,5 +86,5 @@ test('on a phone, the header has sound and the gear, and you sign out from Setti
 
   await header(page).getByRole('link', { name: 'Settings' }).click();
   await page.getByRole('main').getByRole('button', { name: 'Sign out' }).click();
-  await expect(page).toHaveURL(/\/login$/);
+  await expect(page).toHaveURL(/\/$/);
 });
