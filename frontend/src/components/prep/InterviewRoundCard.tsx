@@ -24,7 +24,16 @@ export type Round = {
 const refetchQueries = ['Streak', 'Progress', 'Board'];
 
 /** One interview round: when it is, and its prep checklist. */
-export default function InterviewRoundCard({ round, company }: { round: Round; company: string }) {
+export default function InterviewRoundCard({
+  round,
+  company,
+  wide = false,
+}: {
+  round: Round;
+  company: string;
+  /** Spread out across a full row, for when it's the only interview. */
+  wide?: boolean;
+}) {
   const [newItem, setNewItem] = useState('');
   const [setDone] = useMutation(SetChecklistItemDoneMutation, { refetchQueries });
   const [updateRound] = useMutation(UpdateInterviewRoundMutation, { refetchQueries: ['Board', 'Prep'] });
@@ -55,39 +64,35 @@ export default function InterviewRoundCard({ round, company }: { round: Round; c
     }
   }
 
-  return (
-    <Card className="p-4">
+  const details = (
+    <div className="min-w-0">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           {round.jobApplication ? (
             <Link
               to={`/applications/${round.jobApplication.id}`}
-              className="block truncate text-lg font-extrabold hover:text-brand-600 dark:hover:text-brand-300"
+              className="block truncate text-lg/6 font-semibold hover:text-link"
             >
               {round.jobApplication.company}
             </Link>
           ) : null}
-          <p className={round.jobApplication ? 'text-sm text-stone-500 dark:text-stone-400' : 'text-lg font-extrabold'}>
+          <p className={round.jobApplication ? 'mt-0.5 text-sm/5 text-muted' : 'text-lg/6 font-semibold'}>
             {round.name}
             {round.jobApplication && ` · ${round.jobApplication.role}`}
           </p>
         </div>
         {round.prepped ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-extrabold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">
+          <span className="inline-flex items-center gap-1 text-[13px]/[18px] font-semibold text-done">
             <CheckIcon /> Prepped
           </span>
         ) : (
-          soon && (
-            <span className="rounded-full bg-gold-100 px-2.5 py-0.5 text-xs font-extrabold text-gold-700 dark:bg-amber-900/40 dark:text-amber-200">
-              {soon}
-            </span>
-          )
+          soon && <span className="text-[13px]/[18px] font-semibold text-achieve">{soon}</span>
         )}
       </div>
 
-      <label className="mt-3 flex flex-wrap items-center gap-2 text-sm text-stone-600 dark:text-stone-300">
-        <CalendarIcon className="text-stone-400" />
-        <span className="font-bold">When</span>
+      <label className="mt-4 flex flex-wrap items-center gap-2 text-sm/5 text-muted">
+        <CalendarIcon />
+        <span className="font-medium">When</span>
         <input
           type="datetime-local"
           value={toDateTimeLocal(round.scheduledAt)}
@@ -96,13 +101,17 @@ export default function InterviewRoundCard({ round, company }: { round: Round; c
               variables: { id: round.id, scheduledAt: e.target.value ? new Date(e.target.value).toISOString() : null },
             })
           }
-          className="rounded-lg border-2 border-stone-200 bg-white px-2 py-1 text-sm dark:border-stone-700 dark:bg-stone-900"
+          className="min-h-10 rounded-lg border border-control bg-surface px-2.5 py-1.5 text-sm text-ink focus:border-link focus:ring-3 focus:ring-link/20 focus:outline-none"
         />
       </label>
+    </div>
+  );
 
-      <div className="mt-4 flex items-center gap-3">
+  const checklist = (
+    <div className="min-w-0">
+      <div className="flex items-center gap-3">
         <div
-          className="h-2.5 flex-1 overflow-hidden rounded-full bg-stone-200 dark:bg-stone-800"
+          className="h-1.5 flex-1 overflow-hidden rounded-full bg-stone-200 dark:bg-stone-700"
           role="progressbar"
           aria-valuenow={percent}
           aria-valuemin={0}
@@ -110,32 +119,32 @@ export default function InterviewRoundCard({ round, company }: { round: Round; c
           aria-label={`${round.name} prep progress`}
         >
           <div
-            className={`h-full rounded-full transition-all ${percent === 100 ? 'bg-emerald-500' : 'bg-brand-500'}`}
+            className={`h-full rounded-full transition-all ${percent === 100 ? 'bg-done' : 'bg-brand-500'}`}
             style={{ width: `${percent}%` }}
           />
         </div>
-        <span className="text-xs font-extrabold text-stone-500 tabular-nums">
+        <span className="text-[13px]/[18px] font-medium text-muted tabular-nums">
           {doneCount}/{items.length}
         </span>
       </div>
 
-      <ul className="mt-3 space-y-1">
+      <ul className="mt-3 space-y-0.5">
         {items.map((item) => (
           <li key={item.id} className="group flex items-center gap-2">
-            <label className="flex flex-1 cursor-pointer items-center gap-2.5 rounded-lg px-1 py-1 hover:bg-stone-100 dark:hover:bg-stone-800/60">
+            <label className="flex min-h-9 flex-1 cursor-pointer items-center gap-2.5 rounded-lg px-1.5 py-1 hover:bg-stone-200/50 dark:hover:bg-stone-800">
               <input
                 type="checkbox"
                 checked={item.done}
                 onChange={(e) => toggle(item.id, e.target.checked)}
-                className="size-5 shrink-0 accent-brand-500"
+                className="size-[18px] shrink-0 accent-brand-500"
               />
-              <span className={item.done ? 'text-stone-400 line-through' : ''}>{item.text}</span>
+              <span className={item.done ? 'text-muted line-through' : ''}>{item.text}</span>
             </label>
             <button
               type="button"
               aria-label={`Remove "${item.text}"`}
               onClick={() => deleteItem({ variables: { id: item.id } })}
-              className="rounded-md p-1 text-stone-300 opacity-0 group-hover:opacity-100 hover:text-rose-600 focus-visible:opacity-100 dark:text-stone-600"
+              className="rounded-md p-1.5 text-stone-400 opacity-0 group-hover:opacity-100 hover:text-rose-700 focus-visible:opacity-100 dark:hover:text-rose-400"
             >
               <XIcon />
             </button>
@@ -159,11 +168,19 @@ export default function InterviewRoundCard({ round, company }: { round: Round; c
           type="button"
           onClick={add}
           aria-label="Add step"
-          className="rounded-lg p-2 text-brand-600 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-950/40"
+          className="flex size-10 shrink-0 items-center justify-center rounded-lg text-link hover:bg-stone-200/60 dark:hover:bg-stone-800"
         >
           <PlusIcon />
         </button>
       </div>
+    </div>
+  );
+
+  // On its own, an interview gets the whole row: details on the left, checklist on the right.
+  return (
+    <Card className={`p-6 ${wide ? 'lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-10' : ''}`}>
+      {details}
+      <div className={wide ? 'mt-5 lg:mt-0' : 'mt-5'}>{checklist}</div>
     </Card>
   );
 }

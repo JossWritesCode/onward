@@ -64,9 +64,9 @@ export default function PracticePanel({ questions, stories }: { questions: reado
   if (!question) {
     return (
       <Card className="p-5">
-        <p className="text-stone-500 dark:text-stone-400">
+        <p className="text-muted">
           Your question bank is empty.{' '}
-          <Link to="/prep/customize" className="font-bold text-brand-600 hover:underline dark:text-brand-300">
+          <Link to="/prep/customize" className="font-semibold text-link hover:underline">
             Add some questions
           </Link>{' '}
           to start practicing.
@@ -77,14 +77,15 @@ export default function PracticePanel({ questions, stories }: { questions: reado
 
   return (
     <Card className="overflow-hidden">
-      <div className="bg-brand-500 px-5 py-6 text-white">
-        <p className="text-sm font-extrabold text-brand-100">Practice question</p>
-        <p className="mt-1 text-xl leading-snug font-black sm:text-2xl">{question.prompt}</p>
+      {/* The question is what you read first, so it gets the big type and the quiet plum page. */}
+      <div className="bg-plum px-6 py-8 text-plum-ink">
+        <p className="text-[13px]/[18px] font-medium opacity-75">Practice question</p>
+        <p className="mt-2 font-serif text-[24px]/8 font-medium text-pretty sm:text-[28px]/9">{question.prompt}</p>
       </div>
 
-      <div className="space-y-4 p-5">
+      <div className="space-y-5 p-6">
         <div>
-          <label htmlFor="practice-story" className="mb-1.5 block text-sm font-bold text-stone-700 dark:text-stone-300">
+          <label htmlFor="practice-story" className="mb-1.5 block text-sm/5 font-semibold">
             Which story would you tell?
           </label>
           <Select id="practice-story" value={storyId} onChange={(e) => setStoryId(e.target.value)}>
@@ -98,8 +99,8 @@ export default function PracticePanel({ questions, stories }: { questions: reado
         </div>
 
         {story && (story.situation || story.task || story.action || story.result) && (
-          <details className="rounded-xl bg-stone-100 px-4 py-3 text-sm dark:bg-stone-800/60">
-            <summary className="cursor-pointer font-bold">Peek at your notes</summary>
+          <details className="rounded-lg border border-line px-4 py-3 text-sm">
+            <summary className="cursor-pointer font-semibold">Peek at your notes</summary>
             <dl className="mt-2 space-y-1.5">
               {(
                 [
@@ -112,8 +113,8 @@ export default function PracticePanel({ questions, stories }: { questions: reado
                 .filter(([, text]) => text)
                 .map(([label, text]) => (
                   <div key={label}>
-                    <dt className="font-extrabold text-brand-700 dark:text-brand-300">{label}</dt>
-                    <dd className="whitespace-pre-line text-stone-600 dark:text-stone-300">{text}</dd>
+                    <dt className="font-semibold text-link">{label}</dt>
+                    <dd className="whitespace-pre-line text-muted">{text}</dd>
                   </div>
                 ))}
             </dl>
@@ -123,6 +124,7 @@ export default function PracticePanel({ questions, stories }: { questions: reado
         <div className="flex flex-wrap items-center gap-3">
           {startedAt === null ? (
             <Button
+              variant="secondary"
               onClick={() => {
                 setStartedAt(Date.now());
                 setNow(Date.now());
@@ -132,15 +134,13 @@ export default function PracticePanel({ questions, stories }: { questions: reado
             </Button>
           ) : (
             <span
-              className={`rounded-xl px-4 py-2 text-2xl font-black tabular-nums ${
-                overtime ? 'bg-gold-100 text-gold-700 dark:bg-amber-900/40 dark:text-amber-200' : 'bg-brand-50 text-brand-700 dark:bg-brand-950/50 dark:text-brand-200'
-              }`}
+              className={`min-w-16 text-xl/7 font-medium tabular-nums ${overtime ? 'text-achieve' : 'text-ink'}`}
               aria-live="off"
             >
               {overtime ? `+${formatClock((elapsedSeconds - ANSWER_SECONDS) * 1000)}` : formatClock(remainingMs)}
             </span>
           )}
-          <p className="text-sm text-stone-500 dark:text-stone-400">
+          <p className="text-sm/5 text-muted">
             {startedAt === null
               ? 'Say your answer out loud. Aim for about 2 minutes.'
               : overtime
@@ -149,8 +149,8 @@ export default function PracticePanel({ questions, stories }: { questions: reado
           </p>
         </div>
 
-        <div className="border-t-2 border-stone-100 pt-4 dark:border-stone-800">
-          <p className="mb-2 text-sm font-bold text-stone-700 dark:text-stone-300">How did it go?</p>
+        <div className="border-t border-line pt-5">
+          <p className="mb-2 text-sm/5 font-semibold">How did it go?</p>
           <div className="flex flex-wrap gap-2">
             <Button onClick={() => rate('NAILED_IT')} disabled={loading}>
               Nailed it

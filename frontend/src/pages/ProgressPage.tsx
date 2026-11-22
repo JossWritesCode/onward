@@ -22,11 +22,15 @@ export default function ProgressPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <PageHeader title="Your progress" subtitle="Every step counts, whether or not it pays off right away." />
+      <PageHeader
+        title="Your progress"
+        titleClassName="font-serif text-[32px]/[36px] font-medium sm:text-[40px]/[44px]"
+        subtitle="Every step counts, whether or not it pays off right away."
+      />
 
-      <div className="space-y-5">
-        <div className="grid gap-5 lg:grid-cols-[1fr_22rem]">
-          <div className="min-w-0 space-y-5">
+      <div className="space-y-10">
+        <div className="grid items-start gap-10 lg:grid-cols-[1fr_22rem] lg:gap-12">
+          <div className="min-w-0 space-y-10">
             <StreakCard
               current={streak.current}
               longest={streak.longest}
@@ -41,8 +45,8 @@ export default function ProgressPage() {
           <WeeklyRecap activities={activities} today={today} streak={streak.current} perfectDays={perfectDays} />
         </div>
 
-        <Card className="p-5">
-          <h2 className="mb-3 text-xl font-black">Your activity</h2>
+        <Card className="p-6">
+          <h2 className="mb-4 text-[22px]/7 font-semibold">Your activity</h2>
           <HeatMap activities={activities} today={today} frozenDates={streak.frozenDates} perfectDates={perfectDays} />
         </Card>
 
@@ -74,46 +78,46 @@ function StreakCard({
       : 'Do one thing today to start a streak. Any step counts.';
 
   return (
-    <Card
-      className={`flex flex-wrap items-center gap-5 p-5 ${
-        activeToday ? 'border-gold-300 bg-gold-100/60 dark:border-amber-800 dark:bg-amber-950/30' : ''
-      }`}
-    >
-      <span
-        className={`flex size-16 shrink-0 items-center justify-center rounded-2xl text-4xl ${
-          activeToday ? 'bg-gold-400 text-white' : 'bg-stone-200 text-stone-400 dark:bg-stone-800'
-        }`}
-      >
-        <FlameIcon />
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-3xl font-black tabular-nums">{plural(current, 'day')}</p>
-        <p className="text-stone-600 dark:text-stone-300">{message}</p>
-        <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">Longest streak: {plural(longest, 'day')}</p>
+    <section aria-labelledby="streak-heading" className="border-b border-line pb-8">
+      <h2 id="streak-heading" className="sr-only">
+        Your streak
+      </h2>
+      <p className="flex items-baseline gap-2">
+        <span className="font-serif text-[56px]/[58px] font-medium tracking-tight tabular-nums lining-nums">
+          {current}
+        </span>
+        <span className="font-serif text-[22px]/7 text-muted">{current === 1 ? 'day' : 'days'}</span>
+        <FlameIcon
+          className={`shrink-0 self-center text-2xl ${activeToday ? 'text-gold-500' : 'text-stone-400'}`}
+          strokeWidth={2}
+        />
+      </p>
+      <p className="mt-3 text-lg/7">{message}</p>
+
+      <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-[13px]/[18px] text-muted">
+        <li>Longest streak: {plural(longest, 'day')}</li>
         {(perfectStreak > 0 || perfectToday) && (
-          <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-gold-100 px-3 py-1 text-sm font-extrabold text-gold-700 dark:bg-amber-950/50 dark:text-amber-200">
+          <li className="inline-flex items-center gap-1.5">
             <StarIcon className="text-gold-500" />
             {perfectStreak === 1 ? '1 perfect day' : `${perfectStreak} perfect days in a row`}
             {perfectToday && ', including today'}
-          </p>
+          </li>
         )}
-      </div>
-      <div
-        className="flex w-full items-center gap-2 sm:block sm:w-auto sm:text-center"
-        title="A freeze covers a missed day. You earn one every 7 days in a row, up to 2."
-      >
-        <div className="flex justify-center gap-1 text-2xl">
-          {[0, 1].map((slot) => (
-            <SnowflakeIcon
-              key={slot}
-              className={slot < freezes ? 'text-sky-500' : 'text-stone-300 dark:text-stone-700'}
-            />
-          ))}
-        </div>
-        <p className="text-xs font-bold text-stone-500 sm:mt-1 dark:text-stone-400">
+        <li
+          className="inline-flex items-center gap-1.5"
+          title="A freeze covers a missed day. You earn one every 7 days in a row, up to 2."
+        >
+          <span className="inline-flex gap-0.5" aria-hidden="true">
+            {[0, 1].map((slot) => (
+              <SnowflakeIcon
+                key={slot}
+                className={slot < freezes ? 'text-sky-600 dark:text-sky-400' : 'text-stone-300 dark:text-stone-600'}
+              />
+            ))}
+          </span>
           {freezes === 0 ? 'No freezes yet' : `${plural(freezes, 'freeze')} ready`}
-        </p>
-      </div>
-    </Card>
+        </li>
+      </ul>
+    </section>
   );
 }

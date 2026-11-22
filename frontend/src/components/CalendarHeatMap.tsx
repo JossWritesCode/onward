@@ -23,7 +23,8 @@ const SCALES: Record<Scale, string[]> = {
     'bg-gold-100 dark:bg-amber-900',
     'bg-gold-300 dark:bg-amber-700',
     'bg-gold-400 dark:bg-amber-500',
-    'bg-gold-700 dark:bg-amber-300',
+    // The chart's own darkest gold, kept apart from the gold used for text.
+    'bg-[#a86c00] dark:bg-amber-300',
   ],
 };
 
@@ -95,7 +96,7 @@ export default function CalendarHeatMap({
             const month = parseIso(dates[0]).getUTCMonth();
             const previousMonth = week > 0 ? parseIso(columns[week - 1][0]).getUTCMonth() : -1;
             return [
-              <span key={`m${week}`} className="h-4 text-[10px] whitespace-nowrap text-stone-400">
+              <span key={`m${week}`} className="h-4 text-[11px] whitespace-nowrap text-muted">
                 {month !== previousMonth ? formatDay(dates[0], { month: 'short' }) : ''}
               </span>,
               ...dates.map((date) => {
@@ -115,8 +116,8 @@ export default function CalendarHeatMap({
           })}
         </div>
       </div>
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-stone-500 dark:text-stone-400">
-        <span>
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[13px]/[18px] text-muted">
+        <span className="tabular-nums">
           {plural(total, unit)} in the last {weeks === 53 ? 'year' : '4 months'}
         </span>
         <span className="flex items-center gap-1.5">

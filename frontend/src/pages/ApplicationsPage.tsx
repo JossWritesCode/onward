@@ -41,7 +41,7 @@ export default function ApplicationsPage() {
 
       <PageHeader
         title="Your job hunt"
-        titleClassName="text-[32px]/[38px]"
+        titleClassName="text-[32px]/[38px] font-semibold"
         subtitle={
           total > 0
             ? `${total} ${total === 1 ? 'application' : 'applications'} tracked, ${interviewing} interviewing`

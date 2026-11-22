@@ -15,10 +15,10 @@ export default function SaveToOnwardCard() {
 
   return (
     <Card className="p-5">
-      <h3 className="flex items-center gap-2 text-lg font-black">
-        <BookmarkIcon className="text-brand-500" /> Save jobs from LinkedIn and Indeed
+      <h3 className="flex items-center gap-2 text-lg/6 font-semibold">
+        <BookmarkIcon className="text-muted" /> Save jobs from LinkedIn and Indeed
       </h3>
-      <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">
+      <p className="mt-1 text-sm/5 text-muted">
         Drag this button to your browser's bookmarks bar. Then, on any job posting, click it and Onward opens with the
         job filled in, ready for you to check and save.
       </p>
@@ -30,22 +30,22 @@ export default function SaveToOnwardCard() {
             event.preventDefault();
             setClicked(true);
           }}
-          className="inline-flex cursor-grab items-center gap-2 rounded-2xl border-b-4 border-brand-700 bg-brand-500 px-5 py-2.5 font-extrabold text-white shadow-sm active:cursor-grabbing"
+          className="inline-flex min-h-10 cursor-grab items-center gap-2 rounded-lg bg-action px-4 py-2.5 text-sm/5 font-semibold text-white shadow-sm active:cursor-grabbing"
           title="Drag me to your bookmarks bar"
         >
           <BookmarkIcon /> Save to Onward
         </a>
-        <span className="text-sm font-bold text-stone-500 dark:text-stone-400">← drag to your bookmarks bar</span>
+        <span className="text-sm/5 font-medium text-muted">← drag to your bookmarks bar</span>
       </div>
 
       {clicked && (
-        <p className="mt-3 rounded-xl bg-brand-50 px-3 py-2 text-sm font-bold text-brand-800 dark:bg-brand-950/50 dark:text-brand-200">
+        <p className="mt-3 rounded-lg bg-brand-50 px-3 py-2 text-sm font-bold text-brand-800 dark:bg-brand-950/50 dark:text-brand-200">
           Drag it instead of clicking: hold the button, move it up to your bookmarks bar, and let go.
         </p>
       )}
 
-      <details className="mt-4 text-sm text-stone-600 dark:text-stone-300">
-        <summary className="font-bold text-stone-700 dark:text-stone-200">Don't see a bookmarks bar?</summary>
+      <details className="mt-4 text-sm/5 text-muted">
+        <summary className="font-semibold text-ink">Don't see a bookmarks bar?</summary>
         <ul className="mt-2 list-disc space-y-1 pl-5">
           <li>
             <strong>Chrome or Edge:</strong> press <kbd>⌘</kbd> <kbd>Shift</kbd> <kbd>B</kbd> on a Mac, or{' '}

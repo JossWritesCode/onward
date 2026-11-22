@@ -25,7 +25,7 @@ import {
   TrashIcon,
   UsersIcon,
 } from '../components/icons';
-import { Button, Card, ErrorBanner, Field, Input, PageHeader } from '../components/ui';
+import { Button, Card, ErrorBanner, Field, Input, PageHeader, buttonClasses } from '../components/ui';
 import SaveToOnwardCard from '../components/SaveToOnwardCard';
 import EngineeringSettings from '../components/settings/EngineeringSettings';
 
@@ -39,7 +39,8 @@ export default function SettingsPage() {
   return (
     <div className="mx-auto max-w-2xl">
       <PageHeader title="Settings" />
-      <div className="space-y-10">
+      {/* Fine rules between the big groups, so related settings read together. */}
+      <div className="divide-y divide-line [&>*]:py-10 [&>*:first-child]:pt-0">
         <Appearance />
 
         <div id="engineering" className="scroll-mt-24">
@@ -49,11 +50,11 @@ export default function SettingsPage() {
         <section aria-labelledby="account-heading" className="space-y-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="min-w-0">
-              <h2 id="account-heading" className="text-xl font-black">
+              <h2 id="account-heading" className="text-[22px]/7 font-semibold">
                 Your account
               </h2>
               {me?.emailAddress && (
-                <p className="text-sm break-all text-stone-500 dark:text-stone-400">{me.emailAddress}</p>
+                <p className="mt-1 text-sm/5 break-all text-muted">{me.emailAddress}</p>
               )}
             </div>
             <Button variant="secondary" onClick={() => void signOut()} disabled={signingOut}>
@@ -98,27 +99,23 @@ function Appearance() {
 
   return (
     <section aria-labelledby="appearance-heading">
-      <h2 id="appearance-heading" className="text-xl font-black">
+      <h2 id="appearance-heading" className="text-[22px]/7 font-semibold">
         Appearance
       </h2>
-      <p className="mb-3 text-sm text-stone-500 dark:text-stone-400">
-        Light, dark, or whatever your computer uses. This browser remembers your pick.
-      </p>
-      <Card className="p-5">
-        <fieldset>
-          <legend className="mb-3 font-bold">Theme</legend>
-          <div className="grid grid-cols-3 gap-2">
-            {THEMES.map(({ value, label, Icon }) => (
-              <label
-                key={value}
-                className={
-                  'flex cursor-pointer flex-col items-center gap-1.5 rounded-xl border-2 px-3 py-3 font-extrabold transition ' +
-                  'has-focus-visible:ring-4 has-focus-visible:ring-brand-500/30 ' +
-                  (theme === value
-                    ? 'border-brand-500 bg-brand-50 text-brand-700 dark:border-brand-400 dark:bg-brand-900/40 dark:text-brand-200'
-                    : 'border-stone-200 text-stone-600 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800')
-                }
-              >
+      <p className="mt-1 mb-5 text-muted">Light, dark, or whatever your computer uses. This browser remembers your pick.</p>
+      <fieldset>
+        <legend className="mb-2 text-sm/5 font-semibold">Theme</legend>
+        {/* One control with three parts. The one you picked is filled in violet. */}
+        <div className="grid grid-cols-3 gap-1 rounded-lg border border-control bg-surface p-1 sm:inline-grid sm:min-w-96">
+          {THEMES.map(({ value, label, Icon }) => (
+            <label
+              key={value}
+              className={
+                'flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-md px-3 py-2 text-sm/5 font-medium transition ' +
+                'has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-link ' +
+                (theme === value ? 'bg-action text-white' : 'text-muted hover:bg-stone-200/60 hover:text-ink dark:hover:bg-stone-800')
+              }
+            >
                 <input
                   type="radio"
                   name="theme"
@@ -127,13 +124,12 @@ function Appearance() {
                   onChange={() => setTheme(value)}
                   className="sr-only"
                 />
-                <Icon className="text-xl" />
-                {label}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-      </Card>
+              <Icon className="text-lg" />
+              {label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
     </section>
   );
 }
@@ -173,10 +169,10 @@ function Invites() {
 
   return (
     <Card className="p-5">
-      <h3 className="flex items-center gap-2 text-lg font-black">
-        <UsersIcon className="text-brand-500" /> Invite friends
+      <h3 className="flex items-center gap-2 text-lg/6 font-semibold">
+        <UsersIcon className="text-muted" /> Invite friends
       </h3>
-      <p className="mb-4 text-sm text-stone-500 dark:text-stone-400">
+      <p className="mt-1 mb-4 text-sm/5 text-muted">
         Each invite link works once. Everyone gets their own private account.
       </p>
       <ErrorBanner messages={errors} />
@@ -190,7 +186,7 @@ function Invites() {
       </form>
 
       {invites.length > 0 && (
-        <ul className="mt-4 divide-y-2 divide-stone-100 dark:divide-stone-800">
+        <ul className="mt-4 divide-y divide-line">
           {invites.map((invite) => (
             <li key={invite.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2.5">
               <code className="rounded-lg bg-stone-100 px-2 py-1 font-mono text-sm font-bold dark:bg-stone-800">{invite.code}</code>
@@ -229,10 +225,10 @@ function Invites() {
 function YourData() {
   return (
     <Card className="p-5">
-      <h3 className="flex items-center gap-2 text-lg font-black">
-        <FileTextIcon className="text-brand-500" /> Your data
+      <h3 className="flex items-center gap-2 text-lg/6 font-semibold">
+        <FileTextIcon className="text-muted" /> Your data
       </h3>
-      <div className="mt-2 space-y-2 text-sm text-stone-600 dark:text-stone-300">
+      <div className="mt-2 space-y-2 text-sm/5 text-muted">
         <p>
           Onward stores what you put in: your applications, contacts, resumes, activity, goals, prep, and study time, plus your
           email and a scrambled (hashed) version of your password. A GitHub token, if you add one, is encrypted.
@@ -243,10 +239,10 @@ function YourData() {
         </p>
         <p>LeetCode and GitHub are only contacted if you connect them, to read your public activity.</p>
       </div>
-      <a href="/account/export" download className="mt-4 inline-flex items-center gap-2 rounded-2xl border-2 border-b-4 border-stone-200 bg-white px-5 py-2 font-extrabold text-brand-600 transition hover:bg-brand-50 active:translate-y-0.5 active:border-b-2 dark:border-stone-700 dark:bg-stone-900 dark:text-brand-300 dark:hover:bg-stone-800">
+      <a href="/account/export" download className={buttonClasses('secondary', 'mt-4')}>
         Download my data
       </a>
-      <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">One JSON file with everything, readable by any program.</p>
+      <p className="mt-2 text-[13px]/[18px] text-muted">One JSON file with everything, readable by any program.</p>
     </Card>
   );
 }
@@ -272,11 +268,11 @@ function DeleteAccount() {
   }
 
   return (
-    <Card className="border-rose-200 p-5 dark:border-rose-900/60">
-      <h3 className="flex items-center gap-2 text-lg font-black">
-        <TrashIcon className="text-rose-500" /> Delete my account
+    <Card className="border-rose-300! p-5 dark:border-rose-900!">
+      <h3 className="flex items-center gap-2 text-lg/6 font-semibold">
+        <TrashIcon className="text-rose-600 dark:text-rose-400" /> Delete my account
       </h3>
-      <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">
+      <p className="mt-1 text-sm/5 text-muted">
         This deletes your account and everything in it, for good. Download your data first if you want a copy.
       </p>
       {!open ? (

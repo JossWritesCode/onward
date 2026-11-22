@@ -3,7 +3,7 @@ import type { ProgressQuery } from '../../gql/graphql';
 import { addDays, formatDay, mondayOf, plural } from '../../lib/activities';
 import { showToast } from '../../lib/celebrate';
 import { drawRecapImage, type RecapStat } from '../../lib/recapImage';
-import { ChevronLeftIcon, ChevronRightIcon, CopyIcon, FlameIcon, ShareIcon } from '../icons';
+import { ArrowUpRightIcon, ChevronLeftIcon, ChevronRightIcon, CopyIcon, FlameIcon, ShareIcon } from '../icons';
 import { Button, Card } from '../ui';
 
 type Activity = ProgressQuery['progress']['activities'][number];
@@ -128,19 +128,24 @@ export default function WeeklyRecap({
     }
   }
 
+  const heading = isThisWeek ? 'This week' : weeksBack === 1 ? 'Last week' : `Week of ${formatDay(start)}`;
+  const weekButton =
+    'flex size-10 items-center justify-center rounded-lg text-lg text-muted hover:bg-stone-200/60 hover:text-ink ' +
+    'disabled:opacity-30 disabled:hover:bg-transparent dark:hover:bg-stone-800';
+
   return (
-    <Card className="p-5">
-      <div className="mb-4 flex items-center justify-between gap-2">
+    <Card className="p-6">
+      <div className="flex items-start justify-between gap-2 border-b border-line pb-4">
         <div>
-          <h2 className="text-xl font-black">{isThisWeek ? 'This week' : weeksBack === 1 ? 'Last week' : `Week of ${formatDay(start)}`}</h2>
-          <p className="text-sm text-stone-500 dark:text-stone-400">{dateRange}</p>
+          <h2 className="font-serif text-[28px]/9 font-medium">{heading}</h2>
+          <p className="mt-0.5 text-[13px]/[18px] text-muted tabular-nums">{dateRange}</p>
         </div>
-        <div className="flex gap-1">
+        <div className="-mr-2 flex">
           <button
             type="button"
             aria-label="Previous week"
             onClick={() => setWeeksBack((n) => Math.min(n + 1, 51))}
-            className="rounded-lg p-2 text-lg text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800"
+            className={weekButton}
           >
             <ChevronLeftIcon />
           </button>
@@ -149,45 +154,46 @@ export default function WeeklyRecap({
             aria-label="Next week"
             onClick={() => setWeeksBack((n) => Math.max(n - 1, 0))}
             disabled={isThisWeek}
-            className="rounded-lg p-2 text-lg text-stone-500 hover:bg-stone-100 disabled:opacity-30 dark:hover:bg-stone-800"
+            className={weekButton}
           >
             <ChevronRightIcon />
           </button>
         </div>
       </div>
 
-      <dl className="grid grid-cols-2 gap-2">
+      {/* Numbers first, then what they count, so they line up down the page like a ledger. */}
+      <dl className={`mt-5 grid gap-x-6 gap-y-5 ${shownStats.length > 1 ? 'grid-cols-2' : ''}`}>
         {shownStats.map((stat) => (
-          <div key={stat.label} className="rounded-xl bg-brand-50 px-4 py-3 dark:bg-brand-950/50">
-            <dt className="sr-only">{stat.label}</dt>
-            <dd className="text-3xl font-black text-brand-600 tabular-nums dark:text-brand-300">{stat.value}</dd>
-            <dd className="text-sm font-bold text-stone-600 dark:text-stone-300">{stat.label}</dd>
+          <div key={stat.label} className="flex flex-col">
+            <dt className="order-2 text-sm/5 text-muted">{stat.label}</dt>
+            <dd className="order-1 font-serif text-[40px]/[44px] font-medium tabular-nums lining-nums">{stat.value}</dd>
           </div>
         ))}
       </dl>
 
+      <div className="mt-6 flex items-center text-link" aria-hidden="true">
+        <span className="h-px w-16 bg-current" />
+        <ArrowUpRightIcon className="-ml-0.5 text-base" strokeWidth={2} />
+      </div>
+
       {(showStreak || recap.closures > 0) && (
-        <div className="mt-3 flex flex-wrap gap-2 text-sm font-bold">
+        <ul className="mt-4 space-y-1 text-sm/5">
           {showStreak && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-gold-100 px-3 py-1 text-gold-700 dark:bg-amber-900/40 dark:text-amber-200">
-              <FlameIcon /> {streak}-day streak
-            </span>
+            <li className="inline-flex items-center gap-1.5 font-medium">
+              <FlameIcon className="text-gold-500" /> {streak}-day streak
+            </li>
           )}
-          {recap.closures > 0 && (
-            <span className="rounded-full bg-rose-50 px-3 py-1 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300">
-              {plural(recap.closures, 'door')} closed, which is progress too
-            </span>
-          )}
-        </div>
+          {recap.closures > 0 && <li className="text-muted">{plural(recap.closures, 'door')} closed, which is progress too</li>}
+        </ul>
       )}
 
       {recap.total === 0 && (
-        <p className="mt-3 text-sm text-stone-500 dark:text-stone-400">
+        <p className="mt-4 text-sm/5 text-muted">
           {isThisWeek ? 'Your week is just getting started.' : 'A quiet week. Rest counts too.'}
         </p>
       )}
 
-      <label className="mt-4 flex cursor-pointer items-center gap-2 text-sm text-stone-600 dark:text-stone-300">
+      <label className="mt-5 flex cursor-pointer items-center gap-2 text-sm/5 text-muted">
         <input
           type="checkbox"
           checked={includeCompanies}

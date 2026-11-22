@@ -18,7 +18,7 @@ export default function RecentActivity({ activities, today }: { activities: read
 
   return (
     <Card className="p-5">
-      <h2 className="mb-3 text-xl font-black">Recent activity</h2>
+      <h2 className="mb-4 text-[22px]/7 font-semibold">Recent activity</h2>
       {activities.length === 0 ? (
         <p className="text-sm text-stone-500 dark:text-stone-400">
           Nothing yet. Move a card on your board or log a win, and it'll show up here.
