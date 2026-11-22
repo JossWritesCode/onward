@@ -9,7 +9,7 @@ import {
 } from '../../graphql/operations';
 import { celebratePrepped } from '../../lib/celebrate';
 import { describeInterviewTime, toDateTimeLocal } from '../../lib/countdown';
-import { CalendarIcon, CheckIcon, PlusIcon, XIcon } from '../icons';
+import { CalendarIcon, CheckIcon, ClockIcon, PlusIcon, XIcon } from '../icons';
 import { Card, Input } from '../ui';
 
 export type Round = {
@@ -28,11 +28,14 @@ export default function InterviewRoundCard({
   round,
   company,
   wide = false,
+  next = false,
 }: {
   round: Round;
   company: string;
   /** Spread out across a full row, for when it's the only interview. */
   wide?: boolean;
+  /** The soonest scheduled interview, marked so it's easy to spot. */
+  next?: boolean;
 }) {
   const [newItem, setNewItem] = useState('');
   const [setDone] = useMutation(SetChecklistItemDoneMutation, { refetchQueries });
@@ -44,6 +47,7 @@ export default function InterviewRoundCard({
   const doneCount = items.filter((item) => item.done).length;
   const percent = items.length === 0 ? 0 : Math.round((doneCount / items.length) * 100);
   const soon = round.scheduledAt ? describeInterviewTime(round.scheduledAt) : null;
+  const stepsLabel = `${doneCount} of ${items.length} ${items.length === 1 ? 'step' : 'steps'} complete`;
 
   async function toggle(id: string, done: boolean) {
     const { data } = await setDone({ variables: { id, done } });
@@ -66,6 +70,9 @@ export default function InterviewRoundCard({
 
   const details = (
     <div className="min-w-0">
+      {next && (
+        <p className="mb-2 text-[13px]/[18px] font-semibold tracking-wide text-accent uppercase">Next interview</p>
+      )}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           {round.jobApplication ? (
@@ -86,7 +93,11 @@ export default function InterviewRoundCard({
             <CheckIcon /> Prepped
           </span>
         ) : (
-          soon && <span className="text-[13px]/[18px] font-semibold text-achieve">{soon}</span>
+          soon && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-accent-tint px-2.5 py-0.5 text-[13px]/[18px] font-semibold text-accent">
+              <ClockIcon className="shrink-0" /> {soon}
+            </span>
+          )
         )}
       </div>
 
@@ -101,7 +112,7 @@ export default function InterviewRoundCard({
               variables: { id: round.id, scheduledAt: e.target.value ? new Date(e.target.value).toISOString() : null },
             })
           }
-          className="min-h-10 rounded-lg border border-control bg-surface px-2.5 py-1.5 text-sm text-ink focus:border-link focus:ring-3 focus:ring-link/20 focus:outline-none"
+          className="min-h-10 rounded-lg border border-control bg-surface px-2.5 py-1.5 text-sm text-ink focus:border-focus focus:ring-3 focus:ring-focus/25 focus:outline-none"
         />
       </label>
     </div>
@@ -117,15 +128,14 @@ export default function InterviewRoundCard({
           aria-valuemin={0}
           aria-valuemax={100}
           aria-label={`${round.name} prep progress`}
+          aria-valuetext={stepsLabel}
         >
           <div
-            className={`h-full rounded-full transition-all ${percent === 100 ? 'bg-done' : 'bg-brand-500'}`}
+            className={`h-full rounded-full transition-all ${percent === 100 ? 'bg-done' : 'bg-link'}`}
             style={{ width: `${percent}%` }}
           />
         </div>
-        <span className="text-[13px]/[18px] font-medium text-muted tabular-nums">
-          {doneCount}/{items.length}
-        </span>
+        <span className="text-[13px]/[18px] font-medium text-muted tabular-nums">{stepsLabel}</span>
       </div>
 
       <ul className="mt-3 space-y-0.5">
@@ -136,7 +146,7 @@ export default function InterviewRoundCard({
                 type="checkbox"
                 checked={item.done}
                 onChange={(e) => toggle(item.id, e.target.checked)}
-                className="size-[18px] shrink-0 accent-brand-500"
+                className="size-[18px] shrink-0 accent-action"
               />
               <span className={item.done ? 'text-muted line-through' : ''}>{item.text}</span>
             </label>
@@ -178,7 +188,7 @@ export default function InterviewRoundCard({
 
   // On its own, an interview gets the whole row: details on the left, checklist on the right.
   return (
-    <Card className={`p-6 ${wide ? 'lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-10' : ''}`}>
+    <Card className={`p-6 ${next ? 'border-l-4 border-l-accent' : ''} ${wide ? 'lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-10' : ''}`}>
       {details}
       <div className={wide ? 'mt-5 lg:mt-0' : 'mt-5'}>{checklist}</div>
     </Card>

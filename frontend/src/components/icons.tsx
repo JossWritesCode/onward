@@ -1,4 +1,5 @@
 import type { ReactNode, SVGProps } from 'react';
+import { ONWARD_MARK_PATHS } from '../lib/mark';
 
 type IconProps = SVGProps<SVGSVGElement>;
 
@@ -36,6 +37,30 @@ export const ArrowLeftIcon = (props: IconProps) => (
 export const ArrowUpRightIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="M7 17 17 7M9 7h8v8" />
+  </Icon>
+);
+
+/** Onward's mark, from lib/mark.ts. */
+export const OnwardMarkIcon = (props: IconProps) => (
+  <Icon {...props}>
+    {ONWARD_MARK_PATHS.map((d) => (
+      <path key={d} d={d} />
+    ))}
+  </Icon>
+);
+
+/** A small rising line, for the Progress link. */
+export const ProgressIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4 19.5h16" />
+    <path d="m5.5 15 4-4 3 2.5 6-6.5" />
+  </Icon>
+);
+
+export const AlertIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7.5v5M12 16.5h.01" />
   </Icon>
 );
 

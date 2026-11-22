@@ -25,7 +25,7 @@ export function useFinishStudySession() {
         );
       }
     } catch {
-      showToast('gentle', "That session didn't save", 'Check that the Onward server is running.');
+      showToast('error', "That session didn't save", 'Check that the Onward server is running.');
     }
   };
 }
@@ -63,10 +63,10 @@ export default function StudyTimer({ topics }: { topics: readonly string[] }) {
           {formatClock(remainingMs)}
         </p>
         <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-stone-200 dark:bg-stone-700">
-          <div className="h-full rounded-full bg-brand-500 transition-all" style={{ width: `${percent}%` }} />
+          <div className="h-full rounded-full bg-link transition-all" style={{ width: `${percent}%` }} />
         </div>
         <p className="mb-4 text-sm/5 text-muted">
-          The timer keeps running if you leave this page. You'll hear a chime when it's done.
+          The timer keeps running if you leave this page. When it's done, a soft bell rings if sounds are on.
         </p>
         <Button variant="secondary" onClick={stop}>
           Stop early
@@ -113,7 +113,7 @@ export default function StudyTimer({ topics }: { topics: readonly string[] }) {
                 }}
                 className={`min-h-10 rounded-lg border px-3.5 py-1.5 text-sm/5 font-medium transition ${
                   !custom && minutes === preset
-                    ? 'border-link bg-brand-50 text-link dark:bg-brand-tint'
+                    ? 'border-link bg-tint text-link'
                     : 'border-control hover:bg-stone-200/50 dark:hover:bg-stone-800'
                 }`}
               >

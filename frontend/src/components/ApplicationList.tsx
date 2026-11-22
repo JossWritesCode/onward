@@ -98,24 +98,24 @@ function ApplicationRow({ row, stages }: { row: Row; stages: readonly BoardStage
     .filter(Boolean)
     .join(' · ');
 
-  async function handleChange(stageId: string, select: HTMLSelectElement) {
+  async function handleChange(stageId: string) {
     const target = stages.find((stage) => stage.id === stageId);
     if (!target) return;
-    const rect = select.getBoundingClientRect();
-    celebrateMove({
-      from: { kind: row.stage.kind, position: row.stage.position },
-      to: { kind: target.kind, position: target.position },
-      origin: { x: rect.left + rect.width / 2, y: rect.top },
-    });
     try {
       const result = await moveApplication({
         variables: { id: row.id, stageId, position: 0 },
         // Shows the row under its new column right away, not after the refetch.
         update: (cache, { data }) => placeMovedCard(cache, row.id, data?.moveJobApplication?.jobApplication?.stage.id, 0),
       });
-      noteUndone(result.data?.moveJobApplication?.undone);
+      if (!result.data?.moveJobApplication?.jobApplication) throw new Error('Not moved');
+      // Feedback waits until the change has saved.
+      celebrateMove({
+        from: { kind: row.stage.kind, position: row.stage.position },
+        to: { kind: target.kind, position: target.position },
+      });
+      noteUndone(result.data.moveJobApplication.undone);
     } catch {
-      showToast('gentle', "That change didn't save", 'Check that the Onward server is running, then try again.');
+      showToast('error', "That change didn't save", 'Check that the Onward server is running, then try again.');
     }
   }
 
@@ -131,7 +131,7 @@ function ApplicationRow({ row, stages }: { row: Row; stages: readonly BoardStage
             navigate(resumePath);
           }
         }}
-        className="min-w-0 flex-1 rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30"
+        className="min-w-0 flex-1 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
       >
         <p className="truncate text-lg font-semibold">{row.company}</p>
         <p className="truncate text-stone-600 dark:text-stone-300">{row.role}</p>
@@ -167,7 +167,7 @@ function ApplicationRow({ row, stages }: { row: Row; stages: readonly BoardStage
         id={`stage-${row.id}`}
         value={row.stage.id}
         disabled={loading}
-        onChange={(e) => handleChange(e.target.value, e.target)}
+        onChange={(e) => handleChange(e.target.value)}
         className={`w-full cursor-pointer rounded-xl border-0 py-2 pr-9 pl-3 font-extrabold sm:w-44 ${STATUS_STYLES[row.stage.kind]}`}
       >
         {stages.map((stage) => (

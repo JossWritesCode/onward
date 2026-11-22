@@ -18,7 +18,7 @@ type Props = {
 };
 
 const choice =
-  'flex-1 rounded-xl border-2 px-3 py-2 text-left transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30';
+  'flex-1 rounded-xl border-2 px-3 py-2 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus';
 const chosen = 'border-brand-500 bg-brand-50 text-brand-800 dark:bg-brand-950/60 dark:text-brand-100';
 const unchosen =
   'border-stone-200 bg-white hover:border-stone-300 dark:border-stone-700 dark:bg-stone-900 dark:hover:border-stone-600';
@@ -94,7 +94,7 @@ export default function DesignPanel({ template, style, onChange }: Props) {
           aria-expanded={tuning}
           aria-controls={`${id}-tuning`}
           onClick={() => setTuning((open) => !open)}
-          className="inline-flex items-center gap-1 text-sm font-bold text-stone-600 hover:text-brand-600 dark:text-stone-300 dark:hover:text-brand-300"
+          className="inline-flex items-center gap-1 text-sm font-bold text-stone-600 hover:text-link dark:text-stone-300 dark:hover:text-brand-300"
         >
           <ChevronDownIcon className={`transition-transform ${tuning ? '' : '-rotate-90'}`} />
           Fine-tune
@@ -122,7 +122,7 @@ export default function DesignPanel({ template, style, onChange }: Props) {
                     step={slider.step}
                     value={value}
                     onChange={(event) => onChange({ style: { ...style, [slider.key]: Number(event.target.value) } })}
-                    className="w-full accent-brand-600"
+                    className="w-full accent-action"
                   />
                 </div>
               );
@@ -145,7 +145,7 @@ export default function DesignPanel({ template, style, onChange }: Props) {
                   aria-label={accent.name}
                   aria-pressed={active}
                   onClick={() => onChange({ style: { ...style, accent: accent.hex } })}
-                  className={`size-8 rounded-full border-2 transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 ${
+                  className={`size-8 rounded-full border-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
                     active ? 'scale-110 border-stone-900 dark:border-white' : 'border-transparent hover:scale-105'
                   }`}
                   style={{ backgroundColor: accent.hex }}

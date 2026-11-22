@@ -1,5 +1,6 @@
-import { useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
+import { Link } from 'react-router';
 import type { ActivityCategory, ActivityKind } from '../../gql/graphql';
 import { ContactsQuery, CustomActionsQuery, JobApplicationsQuery, LogActivityMutation } from '../../graphql/operations';
 import { CATEGORY_LABELS, LOGGABLE } from '../../lib/activities';
@@ -18,8 +19,8 @@ const ICONS: Partial<Record<ActivityKind, ReactNode>> = {
 // Each action is one row you can click anywhere on: no box until you point at it or tab to it.
 const entry =
   'flex items-start gap-3 rounded-lg px-3 py-2.5 text-left transition hover:bg-stone-200/50 dark:hover:bg-stone-800 ' +
-  'focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-link';
-const entryActive = 'bg-brand-50 hover:bg-brand-50 dark:bg-brand-tint dark:hover:bg-brand-tint';
+  'focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-focus';
+const entryActive = 'bg-tint hover:bg-tint';
 
 type Option = {
   key: string;
@@ -39,7 +40,6 @@ export default function LogWin() {
   const [contactId, setContactId] = useState('');
   const [note, setNote] = useState('');
   const [errors, setErrors] = useState<string[]>([]);
-  const lastButton = useRef<HTMLElement | null>(null);
 
   const { data: applicationsData } = useQuery(JobApplicationsQuery);
   const { data: contactsData } = useQuery(ContactsQuery);
@@ -62,8 +62,7 @@ export default function LogWin() {
   const chosen = options.find((option) => option.key === chosenKey);
   const kind = chosen?.kind ?? null;
 
-  function choose(next: string, button: HTMLElement) {
-    lastButton.current = button;
+  function choose(next: string) {
     setChosenKey(next === chosenKey ? null : next);
     setCreating(false);
     setEditing(false);
@@ -88,8 +87,7 @@ export default function LogWin() {
         setErrors(result?.errors.map((error) => error.message) ?? ['Something went wrong. Try again.']);
         return;
       }
-      const rect = lastButton.current?.getBoundingClientRect();
-      celebrateWin(chosen.kind, rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 } : undefined);
+      celebrateWin(chosen.kind);
       setChosenKey(null);
       setJobApplicationId('');
       setContactId('');
@@ -101,14 +99,18 @@ export default function LogWin() {
 
   return (
     <section aria-labelledby="log-win-heading">
-      <h2 id="log-win-heading" className="text-[22px]/7 font-semibold">
+      <h2 id="log-win-heading" className="font-serif text-[26px]/8 font-medium">
         Log a win
       </h2>
       <p className="mt-1 mb-4 text-muted">
-        The work that doesn't happen on the board counts too. Applications and interviews are logged for you.
+        The work that doesn't happen on the board counts too. Applications, interviews and{' '}
+        <Link to="/prep" className="font-medium text-link underline-offset-2 hover:underline">
+          interview prep
+        </Link>{' '}
+        are logged for you.
       </p>
 
-      <div className="-mx-3 grid gap-x-4 gap-y-1 sm:grid-cols-2">
+      <div className="-mx-3 grid gap-x-4 gap-y-1 sm:grid-cols-2 lg:grid-cols-1">
         {options.map((option) => {
           const active = option.key === chosenKey;
           return (
@@ -116,7 +118,7 @@ export default function LogWin() {
               key={option.key}
               type="button"
               aria-expanded={active}
-              onClick={(e) => choose(option.key, e.currentTarget)}
+              onClick={() => choose(option.key)}
               className={`${entry} ${active ? entryActive : ''}`}
             >
               <span className={`mt-0.5 shrink-0 text-xl ${option.customAction ? 'text-achieve' : 'text-link'}`}>

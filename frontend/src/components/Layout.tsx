@@ -6,7 +6,7 @@ import { useMuted } from '../lib/preferences';
 import { playSound } from '../lib/sounds';
 import { useSignOut } from '../lib/useSignOut';
 import Logo from './Logo';
-import StreakFlame from './StreakFlame';
+import ProgressLink from './ProgressLink';
 import TimerPill from './prep/TimerPill';
 import Toaster from './Toaster';
 import { BoardIcon, BookIcon, CodeIcon, FileTextIcon, GearIcon, LogOutIcon, UsersIcon, VolumeIcon, VolumeOffIcon } from './icons';
@@ -14,9 +14,11 @@ import { BoardIcon, BookIcon, CodeIcon, FileTextIcon, GearIcon, LogOutIcon, User
 const headerButton =
   'relative inline-flex min-h-10 items-center gap-1.5 rounded-lg px-1.5 py-2 text-sm/5 font-medium transition sm:px-2.5 ' +
   'text-muted hover:bg-stone-200/60 hover:text-ink dark:hover:bg-stone-800 ' +
-  'focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-link';
+  'focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-focus';
 
-// The page you're on gets brighter text and a short violet line under it.
+const navClass = (isActive: boolean) => `${headerButton} ${isActive ? activeNav : ''}`;
+
+// The page you're on gets ink-dark text and a short evergreen line under it.
 const activeNav =
   'text-ink! after:absolute after:bottom-0.5 after:left-1/2 after:h-0.5 after:w-5 after:-translate-x-1/2 ' +
   'after:rounded-full after:bg-link';
@@ -42,8 +44,8 @@ export default function Layout() {
 
   function toggleSound() {
     setMuted(!muted);
-    // Unmuting plays a little pop, so you know it worked.
-    if (muted) setTimeout(() => playSound('pop'), 0);
+    // Unmuting plays the soft note, so you know sound is back on.
+    if (muted) setTimeout(() => playSound('note'), 0);
   }
 
   return (
@@ -55,7 +57,6 @@ export default function Layout() {
           </NavLink>
 
           <TimerPill />
-          <StreakFlame />
 
           <NavLink
             to="/applications"
@@ -67,11 +68,11 @@ export default function Layout() {
             <span className="sr-only sm:hidden">Board</span>
           </NavLink>
 
+          <ProgressLink className={navClass} />
+
           <NavLink
             to="/prep"
-            className={({ isActive }) =>
-              `${headerButton} ${isActive ? activeNav : ''}`
-            }
+            className={({ isActive }) => navClass(isActive)}
           >
             <BookIcon className="text-lg" />
             <span className="hidden sm:inline">Prep</span>
@@ -80,9 +81,7 @@ export default function Layout() {
 
           <NavLink
             to="/resumes"
-            className={({ isActive }) =>
-              `${headerButton} ${isActive ? activeNav : ''}`
-            }
+            className={({ isActive }) => navClass(isActive)}
           >
             <FileTextIcon className="text-lg" />
             <span className="hidden sm:inline">Resumes</span>
@@ -104,9 +103,7 @@ export default function Layout() {
 
           <NavLink
             to="/contacts"
-            className={({ isActive }) =>
-              `${headerButton} ${isActive ? activeNav : ''}`
-            }
+            className={({ isActive }) => navClass(isActive)}
           >
             <UsersIcon className="text-lg" />
             <span className="hidden sm:inline">Contacts</span>
@@ -131,9 +128,7 @@ export default function Layout() {
             to="/settings"
             aria-label="Settings"
             title="Settings"
-            className={({ isActive }) =>
-              `${headerButton} ${isActive ? activeNav : ''}`
-            }
+            className={({ isActive }) => navClass(isActive)}
           >
             <GearIcon className="text-lg" />
           </NavLink>

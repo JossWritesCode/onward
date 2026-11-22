@@ -48,7 +48,7 @@ export default function ResumeEditorPage() {
 }
 
 const tab =
-  'flex-1 rounded-xl px-3 py-1.5 text-center font-extrabold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30';
+  'flex-1 rounded-xl px-3 py-1.5 text-center font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus';
 
 function ResumeEditor({ resume }: { resume: Existing }) {
   const [saved, setSaved] = useState<Draft>(() => toDraft(resume));
@@ -241,12 +241,12 @@ function ResumeEditor({ resume }: { resume: Existing }) {
         {(application || resume.basedOn) && (
           <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-bold">
             {application && (
-              <Link to={`/applications/${application.id}`} className="text-brand-600 hover:underline dark:text-brand-300">
+              <Link to={`/applications/${application.id}`} className="text-link hover:underline">
                 Open the {application.company} card
               </Link>
             )}
             {resume.basedOn && (
-              <Link to={`/resumes/${resume.basedOn.id}`} className="text-stone-500 hover:text-brand-600 dark:text-stone-400">
+              <Link to={`/resumes/${resume.basedOn.id}`} className="text-stone-500 hover:text-link dark:text-stone-400">
                 Tailored from {resume.basedOn.title}
               </Link>
             )}
@@ -282,7 +282,7 @@ function ResumeEditor({ resume }: { resume: Existing }) {
   const backLink = (
     <Link
       to="/resumes"
-      className={`inline-flex items-center gap-1.5 font-bold text-stone-500 hover:text-brand-600 dark:text-stone-400 ${wide ? '' : 'mb-4'}`}
+      className={`inline-flex items-center gap-1.5 font-bold text-stone-500 hover:text-link dark:text-stone-400 ${wide ? '' : 'mb-4'}`}
     >
       <ArrowLeftIcon /> Resumes
     </Link>

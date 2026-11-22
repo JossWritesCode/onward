@@ -6,7 +6,7 @@ test('moving a card to an interview column starts a prep checklist, and finishin
 
   await drag(page, card(page, 'Brightline'), await pointIn(column(page, 'Phone screen'), 0.5, 0.3));
   await expect(column(page, 'Phone screen').locator(card(page, 'Brightline'))).toBeVisible();
-  await expect(toast(page, /You landed an interview|Interview stage unlocked/)).toBeVisible();
+  await expect(toast(page, 'Interview recorded')).toBeVisible();
 
   await card(page, 'Brightline').getByRole('link').first().click();
   await expect(page).toHaveURL(/\/applications\/\d+$/);
@@ -23,5 +23,5 @@ test('moving a card to an interview column starts a prep checklist, and finishin
   }
 
   await expect(progress).toHaveAttribute('aria-valuenow', '100');
-  await expect(toast(page, "You're ready")).toBeVisible();
+  await expect(toast(page, 'Prep checklist complete')).toBeVisible();
 });

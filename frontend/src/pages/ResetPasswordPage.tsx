@@ -42,7 +42,7 @@ export default function ResetPasswordPage() {
       title="Choose a new password"
       subtitle="Then you're right back to it."
       footer={
-        <Link to="/login" className="font-extrabold text-brand-600 hover:underline dark:text-brand-300">
+        <Link to="/login" className="font-extrabold text-link hover:underline">
           Back to sign in
         </Link>
       }
@@ -50,7 +50,7 @@ export default function ResetPasswordPage() {
       {!token || expired ? (
         <div className="space-y-4">
           <ErrorBanner messages={[expired ?? "This link is missing its code. Use the link from the email exactly as it arrived."]} />
-          <Link to="/forgot-password" className="font-extrabold text-brand-600 hover:underline dark:text-brand-300">
+          <Link to="/forgot-password" className="font-extrabold text-link hover:underline">
             Send a new link
           </Link>
         </div>

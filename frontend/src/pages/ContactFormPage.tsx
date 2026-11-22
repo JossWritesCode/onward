@@ -134,7 +134,7 @@ function ContactForm({ existing }: { existing?: ExistingContact }) {
     <div className="mx-auto max-w-3xl">
       <Link
         to="/contacts"
-        className="mb-4 inline-flex items-center gap-1.5 font-bold text-stone-500 hover:text-brand-600 dark:text-stone-400"
+        className="mb-4 inline-flex items-center gap-1.5 font-bold text-stone-500 hover:text-link dark:text-stone-400"
       >
         <ArrowLeftIcon /> All contacts
       </Link>

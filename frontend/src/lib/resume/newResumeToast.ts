@@ -36,10 +36,10 @@ function showResumeToast(title: string, body: string, application?: { id: string
         })
         .then(({ data }) => {
           const errors = data?.logActivity.errors ?? [];
-          if (errors.length > 0) showToast('gentle', "That didn't log", errors[0].message);
+          if (errors.length > 0) showToast('error', "That didn't log", errors[0].message);
           else celebrateWin('TAILORED_MATERIALS');
         })
-        .catch(() => showToast('gentle', "That didn't log", 'You can log it from the Progress page instead.'));
+        .catch(() => showToast('error', "That didn't log", 'You can log it from the Progress page instead.'));
     },
   });
 }

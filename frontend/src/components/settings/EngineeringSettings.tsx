@@ -70,7 +70,7 @@ function SettingsForm({ me }: { me: Me }) {
 
   return (
     <section aria-labelledby="engineering-heading">
-      <h2 id="engineering-heading" className="text-[22px]/7 font-semibold">
+      <h2 id="engineering-heading" className="font-serif text-[26px]/8 font-medium">
         Software engineering track
       </h2>
       <p className="mt-1 mb-5 text-muted">
@@ -89,7 +89,7 @@ function SettingsForm({ me }: { me: Me }) {
           />
           <span
             aria-hidden="true"
-            className="relative h-7 w-12 shrink-0 rounded-full bg-stone-400 transition peer-checked:bg-action peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-link after:absolute after:top-1 after:left-1 after:size-5 after:rounded-full after:bg-white after:shadow-sm after:transition peer-checked:after:translate-x-5 dark:bg-stone-600"
+            className="relative h-7 w-12 shrink-0 rounded-full bg-stone-400 transition peer-checked:bg-action peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus after:absolute after:top-1 after:left-1 after:size-5 after:rounded-full after:bg-white after:shadow-sm after:transition peer-checked:after:translate-x-5 dark:bg-stone-600"
           />
         </label>
 

@@ -5,7 +5,7 @@ import { formatDay, plural } from '../lib/activities';
 import InterviewRoundCard from '../components/prep/InterviewRoundCard';
 import PracticePanel from '../components/prep/PracticePanel';
 import StudyTimer from '../components/prep/StudyTimer';
-import { BookIcon, CalendarIcon, ColumnsIcon, PlusIcon } from '../components/icons';
+import { ColumnsIcon, PlusIcon } from '../components/icons';
 import { ButtonLink, Card, ErrorBanner, PageHeader, Spinner } from '../components/ui';
 
 export default function PrepPage() {
@@ -16,6 +16,11 @@ export default function PrepPage() {
   if (!data) return null;
 
   const { upcomingInterviewRounds: rounds, stories, questions, studyTopics } = data;
+  // The soonest interview that has a date, so it stands out from the rest.
+  const now = new Date().toISOString();
+  const nextId = rounds
+    .filter((round) => round.scheduledAt && round.scheduledAt >= now)
+    .sort((a, b) => (a.scheduledAt! < b.scheduledAt! ? -1 : 1))[0]?.id;
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -30,8 +35,8 @@ export default function PrepPage() {
       />
 
       <section className="mb-10" aria-labelledby="upcoming-heading">
-        <h2 id="upcoming-heading" className="mb-4 flex items-center gap-2 text-[22px]/7 font-semibold">
-          <CalendarIcon className="text-muted" /> Upcoming interviews
+        <h2 id="upcoming-heading" className="mb-4 font-serif text-[26px]/8 font-medium">
+          Upcoming interviews
         </h2>
         {rounds.length === 0 ? (
           <Card className="p-6 text-muted">
@@ -45,6 +50,7 @@ export default function PrepPage() {
                 round={round}
                 company={round.jobApplication.company}
                 wide={rounds.length === 1}
+                next={round.id === nextId && rounds.length > 1}
               />
             ))}
           </div>
@@ -53,14 +59,14 @@ export default function PrepPage() {
 
       <div className="grid items-start gap-8 lg:grid-cols-[1fr_22rem]">
         <section className="min-w-0" aria-labelledby="practice-heading">
-          <h2 id="practice-heading" className="mb-4 text-[22px]/7 font-semibold">
+          <h2 id="practice-heading" className="mb-4 font-serif text-[26px]/8 font-medium">
             Practice
           </h2>
           <PracticePanel questions={questions} stories={stories} />
         </section>
 
         <section aria-labelledby="study-heading">
-          <h2 id="study-heading" className="mb-4 text-[22px]/7 font-semibold">
+          <h2 id="study-heading" className="mb-4 font-serif text-[26px]/8 font-medium">
             Study
           </h2>
           <StudyTimer topics={studyTopics} />
@@ -70,8 +76,8 @@ export default function PrepPage() {
       <section className="mt-10" aria-labelledby="stories-heading">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 id="stories-heading" className="flex items-center gap-2 text-[22px]/7 font-semibold">
-              <BookIcon className="text-muted" /> Story bank
+            <h2 id="stories-heading" className="font-serif text-[26px]/8 font-medium">
+              Story bank
             </h2>
             <p className="mt-1 text-muted">
               Write your best stories once, then reuse them for any behavioral question.
@@ -93,7 +99,7 @@ export default function PrepPage() {
               <li key={story.id}>
                 <Link
                   to={`/prep/stories/${story.id}`}
-                  className="block h-full rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+                  className="block h-full rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                 >
                   <Card className="h-full p-4 transition hover:border-control">
                     <p className="font-semibold">{story.title}</p>
@@ -102,7 +108,7 @@ export default function PrepPage() {
                         {story.tags.map((tag) => (
                           <span
                             key={tag}
-                            className="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-bold text-brand-700 dark:bg-brand-900/60 dark:text-brand-200"
+                            className="rounded-full bg-tint px-2 py-0.5 text-xs font-semibold text-tint-ink"
                           >
                             {tag}
                           </span>

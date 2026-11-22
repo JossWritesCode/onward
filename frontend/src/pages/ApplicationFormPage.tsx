@@ -249,7 +249,7 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
     <div className="mx-auto max-w-3xl">
       <Link
         to="/applications"
-        className="mb-4 inline-flex items-center gap-1.5 font-bold text-stone-500 hover:text-brand-600 dark:text-stone-400"
+        className="mb-4 inline-flex items-center gap-1.5 font-bold text-stone-500 hover:text-link dark:text-stone-400"
       >
         <ArrowLeftIcon /> All applications
       </Link>
@@ -266,7 +266,7 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
             {!existing && !imported && (
               <>
                 {' '}
-                <Link to="/settings#save-to-onward" className="font-bold text-brand-600 hover:underline dark:text-brand-300">
+                <Link to="/settings#save-to-onward" className="font-bold text-link hover:underline">
                   Save jobs from LinkedIn in one click
                 </Link>
               </>
@@ -278,7 +278,7 @@ function ApplicationForm({ existing }: { existing?: ExistingApplication }) {
             href={existing.postingUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 font-bold text-brand-600 hover:underline dark:text-brand-300"
+            className="inline-flex items-center gap-1.5 font-bold text-link hover:underline"
           >
             View posting <ExternalLinkIcon />
           </a>
@@ -540,7 +540,7 @@ function ImportBanner({
         <p className="font-extrabold">You've already saved this job.</p>
         <p className="text-sm text-stone-600 dark:text-stone-300">
           {duplicate.role} at {duplicate.company} is on your board.{' '}
-          <Link to={`/applications/${duplicate.id}`} className="font-extrabold text-brand-600 hover:underline dark:text-brand-300">
+          <Link to={`/applications/${duplicate.id}`} className="font-extrabold text-link hover:underline">
             Open it
           </Link>{' '}
           or save this one anyway.
@@ -565,7 +565,7 @@ function ImportBanner({
           type="checkbox"
           checked={applied}
           onChange={(e) => onAppliedChange(e.target.checked)}
-          className="size-4 accent-brand-500"
+          className="size-4 accent-action"
         />
         I already applied
       </label>

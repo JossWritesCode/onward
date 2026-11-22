@@ -59,7 +59,7 @@ export default function ResumeNewPage() {
     <div className="mx-auto max-w-3xl">
       <Link
         to="/resumes"
-        className="mb-4 inline-flex items-center gap-1.5 font-bold text-stone-500 hover:text-brand-600 dark:text-stone-400"
+        className="mb-4 inline-flex items-center gap-1.5 font-bold text-stone-500 hover:text-link dark:text-stone-400"
       >
         <ArrowLeftIcon /> Resumes
       </Link>
@@ -85,7 +85,7 @@ export default function ResumeNewPage() {
             {copied ? 'Copied' : 'Copy prompt'}
           </Button>
           <details className="min-w-0 basis-full text-sm">
-            <summary className="font-bold text-stone-500 hover:text-brand-600 dark:text-stone-400">See the prompt</summary>
+            <summary className="font-bold text-stone-500 hover:text-link dark:text-stone-400">See the prompt</summary>
             <pre className="mt-2 max-h-72 overflow-auto rounded-xl bg-stone-100 p-3 text-xs whitespace-pre-wrap text-stone-700 dark:bg-stone-800 dark:text-stone-200">
               {RESUME_PROMPT}
             </pre>

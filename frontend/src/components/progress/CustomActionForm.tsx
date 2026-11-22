@@ -92,7 +92,7 @@ export function CustomActionForm({
       </div>
       {!action && (
         <label className="flex items-center gap-2 text-sm font-medium">
-          <input type="checkbox" checked={asGoal} onChange={(e) => setAsGoal(e.target.checked)} className="size-4 accent-brand-500" />
+          <input type="checkbox" checked={asGoal} onChange={(e) => setAsGoal(e.target.checked)} className="size-4 accent-action" />
           Make it a daily goal too
         </label>
       )}

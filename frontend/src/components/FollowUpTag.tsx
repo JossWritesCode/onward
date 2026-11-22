@@ -3,7 +3,7 @@ import { ReplyIcon } from './icons';
 
 /**
  * "Follow up Nov 16" on board cards and list rows. A quiet grey outline while
- * it's coming up, filled violet on the day and for as long as it's overdue.
+ * it's coming up, and the warm accent on the day and for as long as it's overdue.
  */
 export default function FollowUpTag({
   on,
@@ -17,8 +17,8 @@ export default function FollowUpTag({
   if (!on) return null;
 
   const colors = due
-    ? 'border-brand-100 bg-brand-50 font-semibold text-brand-700 dark:border-transparent dark:bg-brand-tint dark:text-brand-250'
-    : 'border-stone-200 text-stone-500 dark:border-night-700 dark:text-night-300';
+    ? 'border-transparent bg-accent-tint font-semibold text-accent'
+    : 'border-line text-muted';
 
   return (
     <span

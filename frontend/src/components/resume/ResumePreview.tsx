@@ -64,7 +64,7 @@ const toolButton =
   'border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:text-stone-900 ' +
   'dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:border-stone-600 dark:hover:text-stone-100 ' +
   'disabled:opacity-40 disabled:hover:border-stone-200 dark:disabled:hover:border-stone-700 ' +
-  'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30';
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus';
 const toolButtonOn =
   'border-brand-500! bg-brand-50! text-brand-800! dark:bg-brand-950/60! dark:text-brand-100!';
 

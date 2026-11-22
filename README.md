@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/JossWritesCode/onward/actions/workflows/ci.yml/badge.svg)](https://github.com/JossWritesCode/onward/actions/workflows/ci.yml)
 
-A job hunt tracker that makes the search feel rewarding. Track your applications on a drag-and-drop board, get a little celebration every time you move forward, keep a daily streak, and watch your effort fill in a GitHub-style heat map, whether or not it pays off right away.
+A job hunt tracker that feels like a well-kept notebook. Track your applications on a drag-and-drop board, see a short record of what you did each week, set small daily goals, and watch your effort fill in a GitHub-style heat map, whether or not it pays off right away.
 
 ![The job board](docs/screenshot.png)
 
@@ -42,14 +42,16 @@ Open **http://localhost:5173** and sign in as **demo@onward.test** / **password1
 - Job applications with dates, links, salary, location, work arrangement, job description, resume version, and notes.
 - Customizable columns: add, rename, reorder, and delete them. With a mouse or trackpad, drag a column by the grip in its header to move it. On a phone, reorder from **Add or edit columns**. Each column has a type (saved, applied, interviewing, offer, rejected), so "Phone screen" and "Final round" both count as interviewing.
 - Mistakes don't count. If you drop a card in the wrong column, move it back to an earlier column within a day and Onward takes back what the mistake recorded: the application, interview, offer, or closure (and so your streak, heat map, and goals), the prep checklist it started if you haven't touched it, and the follow-up date it replaced. Moving forward never takes anything back, and after a day a move back is treated as real news, so your history stays.
-- Celebrations that scale: confetti and a chime for applying, more for an interview, a full-screen celebration for an offer, and a kind word when you get a rejection. Confetti is skipped when your device is set to reduce motion, and the speaker button in the header turns sound off.
-- A daily quote at the top of the board, with a shuffle button. Every quote's wording was checked against its original source.
+- Gentle feedback that matches what you did. Sending an application or logging effort plays one quiet felt-piano note. A finished study session rings a soft bell, and an offer plays a warm two-note chord, with a soft glow on its card. Interviews, rejections, practice ratings, checklist ticks, and routine card moves are shown on screen without a sound.
+- One action gets one cue. If sending an application also finishes today's goals or reaches a streak milestone, that's added to the same toast as a short line, with no second sound.
+- Every sound has a matching message on screen, so Onward makes sense with sound off. The speaker button in the header turns sound off and on, and your choice is remembered. Animations stay brief, and shorter still when your device is set to reduce motion.
+- A daily quote under the board's heading, small enough to stay out of the way, with buttons to shuffle it or hide it until tomorrow. Every quote's wording was checked against its original source.
 - Contacts, linked to the applications they're connected to. You can add one right from an application's form.
-- A **Board** button in the header takes you back to the board from anywhere. The logo does too.
+- A **Board** button in the header takes you back to the board from anywhere. The Onward wordmark does too, and **Progress** is right next to it.
 
 ### Follow-up dates
 
-- Cards in applied and interview columns get a date to follow up, shown as a "Follow up Nov 16" tag on the board and in the phone list. It's grey while it's coming up and violet on the day and while it's overdue.
+- Cards in applied and interview columns get a date to follow up, shown as a "Follow up Nov 16" tag on the board and in the phone list. It's grey while it's coming up and a warm clay color on the day and while it's overdue.
 - Onward picks the dates for you, counting from the day you log each follow-up, on your own clock:
   - Applied: follow up a week after the card lands there, once more a week later, then a week after that it asks "Time to let this one go?"
   - Interviewing: a thank-you note tomorrow (or the day after the interview, once that round has a date), a check-in a week later and another a week after that, then "Send a last gracious note?", then "Time to let this one go?"
@@ -61,7 +63,8 @@ Open **http://localhost:5173** and sign in as **demo@onward.test** / **password1
 
 ### Streaks and progress
 
-- A daily streak, shown as a flame in the header. Any activity counts, and the day follows your own time zone.
+- The Progress page leads with **This week**: the numbers for what you did, then each step you took. Your daily goals and **Log a win** sit right beside it.
+- A daily streak, kept as a quiet note on the Progress page (and in the tooltip on the header's Progress link). Any activity counts, and the day follows your own time zone.
 - Streak freezes: earn one for every 7 days in a row, hold up to 2, and a missed day uses one automatically.
 - Celebrations at streak milestones like 7, 30, and 100 days.
 - A Progress page with "Log a win" buttons for networking messages, coffee chats, follow-ups, and tailored resumes or cover letters.
@@ -73,7 +76,7 @@ Open **http://localhost:5173** and sign in as **demo@onward.test** / **password1
 
 - Daily goals you pick yourself, like "Apply to 1 job," "Study for 25 min," "Solve 1 LeetCode problem," or "Make 1 GitHub contribution." Each one has a number and can be every day or weekdays only. They check themselves off as you go. New accounts start with "Apply to 1 job."
 - A Today strip above the board with your goals and up to 3 nudges. It shrinks to one line once every goal is done.
-- Perfect days: finishing every goal gets a celebration, a gold square on the heat map, and a perfect-day streak next to your regular streak. Days with no goals (like weekends, for weekday goals) don't break it. Your regular streak still counts any action at all.
+- Finishing every goal says "Today's goals are complete", marks the day in gold on the heat map, and counts toward a goals-completed streak next to your regular streak. Days with no goals (like weekends, for weekday goals) don't break it. Your regular streak still counts any action at all.
 - Custom actions, like "Went to a meetup," logged from "Log a win" and usable as goals. Deleting one keeps it in your history.
 - Nudges for interviews in the next 2 days with an unfinished checklist, follow-ups that are due, applications with no change in 2 weeks (unless they have a follow-up date), and people you haven't talked to in 3 weeks. Act on one right from the strip ("I followed up"), snooze it, or dismiss it. Interview prep comes first, then follow-ups (oldest first), then a mix of quiet applications and people, up to 3 at a time.
 
@@ -499,7 +502,7 @@ frontend/
   src/pages/          One file per screen
   src/components/     Shared building blocks (buttons, layout, icons)
   src/graphql/        Every query and mutation the app uses
-  src/lib/            Helpers: quotes, celebrations, sounds, confetti, settings, the theme, resume dates and the AI prompts
+  src/lib/            Helpers: quotes, feedback and sounds, the weekly recap, settings, the theme, resume dates and the AI prompts
   src/resume-pdf/     Resume templates and PDF code, downloaded only when the resume editor opens
   src/assets/fonts/   Fonts embedded in resume PDFs
   e2e/                End-to-end tests (Playwright)

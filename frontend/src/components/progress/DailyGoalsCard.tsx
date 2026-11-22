@@ -39,7 +39,7 @@ export default function DailyGoalsCard() {
   return (
     <section aria-labelledby="goals-heading" className="scroll-mt-24">
       <div id="goals" className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-        <h2 id="goals-heading" className="text-[22px]/7 font-semibold">
+        <h2 id="goals-heading" className="font-serif text-[26px]/8 font-medium">
           Daily goals
         </h2>
         {goals.length > 0 && (
@@ -56,7 +56,7 @@ export default function DailyGoalsCard() {
           </Button>
         )}
       </div>
-      <p className="mt-1 text-muted">They check themselves off as you go. Finish them all for a perfect day.</p>
+      <p className="mt-1 text-muted">They check themselves off as you go. Finish them all and today's goals are complete.</p>
 
       <div className="mt-3">
         <ErrorBanner messages={errors} />
@@ -110,13 +110,13 @@ function GoalRow({
     <li className="flex items-center gap-4 py-3">
       <span
         className={`flex size-6 shrink-0 items-center justify-center rounded-full text-sm ${
-          done ? 'bg-done text-white dark:text-stone-950' : 'border-[1.5px] border-stone-300 text-transparent dark:border-stone-600'
+          done ? 'bg-done text-surface' : 'border-[1.5px] border-control text-transparent'
         }`}
       >
         <CheckIcon />
       </span>
       <span className="min-w-0 flex-1">
-        <span className={`block font-semibold ${goal.available ? '' : 'text-stone-400'}`}>{goalLabel(goal)}</span>
+        <span className={`block font-semibold ${goal.available ? '' : 'text-muted'}`}>{goalLabel(goal)}</span>
         <span className="block text-[13px]/[18px] text-muted">
           {goal.weekdaysOnly ? 'Weekdays' : 'Every day'}
           {!goal.available && (

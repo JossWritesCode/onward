@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { ContactsQuery } from '../graphql/operations';
 import { formatDate } from '../lib/format';
 import { BriefcaseIcon, CalendarIcon, MailIcon, PlusIcon } from '../components/icons';
+import SprigAndCards from '../components/illustrations/SprigAndCards';
 import { ButtonLink, Card, EmptyState, ErrorBanner, PageHeader, Spinner } from '../components/ui';
 
 function initials(name: string) {
@@ -42,7 +43,7 @@ export default function ContactsPage() {
 
       {data && contacts.length === 0 && (
         <EmptyState
-          illustration={<AddressCards />}
+          illustration={<SprigAndCards />}
           title="Add your first contact"
           body="Keep track of the people you meet. A friendly check-in is often what turns an application into an interview."
           action={addButton}
@@ -58,7 +59,7 @@ export default function ContactsPage() {
               <li key={contact.id}>
                 <Link
                   to={`/contacts/${contact.id}`}
-                  className="block h-full rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+                  className="block h-full rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                 >
                   <Card className="flex h-full gap-4 p-5 transition hover:border-control">
                     <span className="flex size-11 shrink-0 items-center justify-center rounded-full border border-line text-sm font-semibold text-link">
@@ -96,15 +97,3 @@ export default function ContactsPage() {
   );
 }
 
-/** Two address cards, one tucked behind the other, each with a line for a name. Only for this page's empty state. */
-function AddressCards() {
-  return (
-    <svg width="104" height="72" viewBox="0 0 104 72" fill="none" aria-hidden="true" className="text-muted">
-      <rect x="28" y="4" width="72" height="44" rx="6" className="fill-page" stroke="currentColor" strokeWidth="1.5" />
-      <rect x="4" y="22" width="72" height="44" rx="6" className="fill-surface" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="20" cy="40" r="6" className="stroke-link" strokeWidth="1.5" />
-      <path d="M32 37h30" className="stroke-link" strokeWidth="2" strokeLinecap="round" />
-      <path d="M32 45h20M14 55h48" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}

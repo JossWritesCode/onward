@@ -4,18 +4,19 @@ import { useMutation, useQuery } from '@apollo/client';
 import type { TodayQuery } from '../../gql/graphql';
 import { RefreshIntegrationsMutation, TodayQuery as TodayDocument } from '../../graphql/operations';
 import { goalLabel, goalLink, goalProgress, isSyncedGoal } from '../../lib/goals';
-import { CheckIcon, ChevronDownIcon, ChevronUpIcon, PencilIcon, RefreshIcon, StarIcon, TargetIcon } from '../icons';
+import { goalsStreakLabel } from '../../lib/celebrate';
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon, PencilIcon, RefreshIcon, TargetIcon } from '../icons';
 import NudgeList from './NudgeList';
 
 type Today = TodayQuery['today'];
 type GoalProgress = Today['goals'][number];
 
 // A plain, quiet surface, so the board below stays the main thing on the page.
-const surface = 'mb-5 rounded-2xl border border-stone-200 bg-white dark:border-night-700 dark:bg-night-900';
+const surface = 'mb-5 rounded-xl border border-line bg-surface';
 const quietButton =
-  'inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm font-semibold text-stone-500 transition ' +
-  'hover:bg-stone-100 hover:text-stone-800 dark:text-night-300 dark:hover:bg-night-850 dark:hover:text-night-50 ' +
-  'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30';
+  'inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm font-semibold text-muted transition ' +
+  'hover:bg-stone-100 hover:text-ink dark:hover:bg-night-900 ' +
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus';
 
 /** Today's goals and nudges, in one compact strip above the board. */
 export default function TodayStrip() {
@@ -31,14 +32,14 @@ export default function TodayStrip() {
   if (today.perfect && !expanded) {
     return (
       <div className={`${surface} flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2`}>
-        <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-gold-100 text-gold-500 dark:bg-gold-night dark:text-gold-200">
-          <StarIcon />
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-tint text-tint-ink">
+          <CheckIcon />
         </span>
         <p className="min-w-48 flex-1 text-sm">
-          <span className="font-bold">Perfect day!</span>{' '}
-          <span className="text-stone-500 dark:text-night-300">
+          <span className="font-bold">Today's goals are complete.</span>{' '}
+          <span className="text-muted">
             {today.goals.length === 1 ? 'Your goal is done.' : `All ${today.goals.length} goals done.`}
-            {today.perfectStreak > 1 && ` ${today.perfectStreak} perfect days in a row.`}
+            {today.perfectStreak > 1 && ` ${goalsStreakLabel(today.perfectStreak)}.`}
           </span>
         </p>
         <button
@@ -59,21 +60,17 @@ export default function TodayStrip() {
         <section aria-labelledby="today-goals" className="min-w-0">
           <div className="mb-2.5 flex flex-wrap items-center gap-x-2 gap-y-1">
             <h2 id="today-goals" className="flex items-center gap-1.5 text-base/[22px] font-bold">
-              <TargetIcon className="text-brand-500" />
+              <TargetIcon className="text-link" />
               Today's goals
             </h2>
             {today.goals.length > 0 && (
-              <span className="text-sm text-stone-500 dark:text-night-300">
+              <span className="text-sm text-muted">
                 {done} of {today.goals.length} done
               </span>
             )}
             {today.perfectStreak > 0 && (
-              <span
-                className="inline-flex items-center gap-1 rounded-full bg-gold-100 px-2 py-0.5 text-xs font-semibold text-[#805200] dark:bg-gold-night dark:text-gold-200"
-                title="Perfect days in a row: every goal done"
-              >
-                <StarIcon className="text-gold-500 dark:text-gold-200" />
-                {today.perfectStreak}-day perfect streak
+              <span className="text-sm text-muted" title="Days in a row with every goal done">
+                · {goalsStreakLabel(today.perfectStreak)}
               </span>
             )}
             <span className="ml-auto flex items-center gap-1">
@@ -100,14 +97,14 @@ export default function TodayStrip() {
           </div>
 
           {!today.hasGoals ? (
-            <p className="text-sm text-stone-600 dark:text-night-300">
+            <p className="text-sm text-muted">
               Give each day a finish line.{' '}
-              <Link to="/progress#goals" className="font-semibold text-brand-600 hover:underline dark:text-brand-250">
+              <Link to="/progress#goals" className="font-semibold text-link hover:underline">
                 Set a daily goal
               </Link>
             </p>
           ) : today.restDay ? (
-            <p className="text-sm text-stone-600 dark:text-night-300">
+            <p className="text-sm text-muted">
               No goals today. Your goals are for weekdays, so enjoy the rest.
             </p>
           ) : (
@@ -124,7 +121,7 @@ export default function TodayStrip() {
         {today.nudges.length > 0 && (
           <section
             aria-labelledby="today-nudges"
-            className="min-w-0 border-t border-stone-200 pt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-4 dark:border-night-700"
+            className="min-w-0 border-t border-line pt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-4"
           >
             <h2 id="today-nudges" className="mb-2 text-base/[22px] font-bold">
               Worth a look
@@ -142,10 +139,10 @@ function GoalChip({ goal }: { goal: GoalProgress }) {
   const link = goalLink(kind);
   const label = goalLabel(goal.goal);
   const progress = goalProgress(kind, goal.count, target);
-  const className = `group inline-flex items-center gap-2 rounded-xl border py-1.5 pr-3 pl-1.5 text-sm transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 ${
+  const className = `group inline-flex items-center gap-2 rounded-xl border py-1.5 pr-3 pl-1.5 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
     goal.done
-      ? 'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100'
-      : 'border-stone-200 bg-white hover:border-brand-300 dark:border-night-700 dark:bg-night-850 dark:hover:border-brand-700'
+      ? 'border-transparent bg-tint text-tint-ink'
+      : 'border-line bg-surface hover:border-brand-300 dark:hover:border-brand-700'
   }`;
 
   const content = (
@@ -153,14 +150,14 @@ function GoalChip({ goal }: { goal: GoalProgress }) {
       <span
         className={`flex size-6 shrink-0 items-center justify-center rounded-full text-sm ${
           goal.done
-            ? 'animate-pop-in bg-emerald-500 text-white'
-            : 'border-2 border-stone-300 text-transparent group-hover:border-brand-400 dark:border-night-700'
+            ? 'animate-pop-in bg-done text-surface'
+            : 'border-[1.5px] border-control text-transparent group-hover:border-link'
         }`}
       >
         <CheckIcon />
       </span>
       <span className="font-semibold">{label}</span>
-      <span className={`tabular-nums ${goal.done ? 'text-emerald-700 dark:text-emerald-300' : 'text-stone-500 dark:text-night-300'}`}>
+      <span className={`tabular-nums ${goal.done ? 'text-done' : 'text-muted'}`}>
         {progress}
       </span>
     </>

@@ -15,7 +15,7 @@ test('"I followed up" logs it and sets the next follow-up a week out', async ({ 
   await expect(nudge).toBeVisible();
   await page.getByRole('button', { name: 'I followed up' }).click();
 
-  await expect(toast(page, /Follow-up sent|Nicely done/)).toBeVisible();
+  await expect(toast(page, 'Follow-up logged')).toBeVisible();
   await expect(nudge).toBeHidden();
   await expect(card(page, 'Brightline')).toContainText(`Follow up ${shortDay(addDays(today, 7))}`);
 
