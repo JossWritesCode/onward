@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useQuery } from '@apollo/client';
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { MeQuery } from '../graphql/operations';
@@ -27,6 +28,22 @@ export function RedirectIfSignedIn() {
   if (data?.me) return <Navigate to="/applications" replace />;
 
   return <Outlet />;
+}
+
+/**
+ * The front page. Visitors see the landing page, and signed-in people go
+ * straight to their board. Until we know which, it shows the spinner, so
+ * someone who's signed in never sees the landing page flash by.
+ */
+export function PublicHome({ children }: { children: ReactNode }) {
+  const { data, loading } = useQuery(MeQuery, { fetchPolicy: 'cache-first' });
+
+  if (loading && !data) return <Spinner />;
+  if (data?.me) return <Navigate to="/applications" replace />;
+
+  // Signed out, or the server couldn't say. The landing page doesn't need it,
+  // so it still shows, and the sign-in page explains any problem itself.
+  return children;
 }
 
 function ServerProblem({ message }: { message: string }) {
