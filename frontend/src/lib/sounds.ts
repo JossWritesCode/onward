@@ -9,8 +9,16 @@ import { isMuted } from './preferences';
 export type SoundName =
   /** One quiet felt-piano note: an application sent, or effort logged. */
   | 'note'
+  /** Two felt notes stepping up: an interview, or a later round. */
+  | 'rise'
+  /** One low, quiet note that settles: a rejection, or letting an application go. */
+  | 'settle'
+  /** A tiny, very quiet note: any other move to a different column. */
+  | 'tap'
   /** A mellow bell that rings out: a study session finished. */
   | 'bell'
+  /** A low singing bowl, struck softly, that rings a long time: a study session starting. */
+  | 'chime'
   /** A warm two-note chord: an offer. */
   | 'chord';
 
@@ -29,9 +37,13 @@ export type Tone = {
 };
 
 // Pitches, rounded. All sit in the warm middle of the keyboard.
+const C4 = 261.63;
+const D4 = 293.66;
+const E4 = 329.63;
 const F4 = 349.23;
 const G4 = 392;
 const A4 = 440;
+const D5 = 587.33;
 
 /** A felt-piano strike: the main pitch with a couple of quiet overtones that fade first. */
 function feltNote(freq: number, at: number, decay: number, gain = 1): Tone[] {
@@ -45,6 +57,14 @@ function feltNote(freq: number, at: number, decay: number, gain = 1): Tone[] {
 export const SOUNDS: Record<SoundName, { tones: Tone[]; volume: number; brightness: number }> = {
   // About 220 ms: a single G, muffled like a piano with felt on the strings.
   note: { tones: feltNote(G4, 0, 0.21), volume: 0.2, brightness: 1400 },
+  // About 0.55 s: G, then the D above it, like a small step forward.
+  rise: { tones: [...feltNote(G4, 0, 0.32, 0.8), ...feltNote(D5, 0.09, 0.42, 0.7)], volume: 0.16, brightness: 1600 },
+  // About 0.5 s: a low C, quieter and darker than the others. It's a calm
+  // full stop, not a sad sound, so no falling notes or minor chords.
+  settle: { tones: feltNote(C4, 0, 0.48, 0.85), volume: 0.14, brightness: 1000 },
+  // About 0.13 s: a soft E, barely there, so routine moves feel settled
+  // without sounding like a win.
+  tap: { tones: feltNote(E4, 0, 0.12, 0.7), volume: 0.1, brightness: 1200 },
   // About 1.4 s: a singing-bowl style bell. The uneven overtone (2.76 times the
   // pitch) is what makes a bell sound like a bell, and the twin tone a hair
   // higher gives it a slow, calm shimmer as it fades.
@@ -57,6 +77,19 @@ export const SOUNDS: Record<SoundName, { tones: Tone[]; volume: number; brightne
     ],
     volume: 0.16,
     brightness: 2600,
+  },
+  // About 2.6 s: a lower bowl than the finishing bell, with a slower start and
+  // a slow shimmer, like the chime that opens a meditation. It's quiet, since
+  // it plays right as you settle in to focus.
+  chime: {
+    tones: [
+      { freq: D4, at: 0, gain: 1, attack: 0.05, decay: 2.55 },
+      { freq: D4 + 0.9, at: 0, gain: 0.5, attack: 0.05, decay: 2.4 },
+      { freq: D4 * 2.76, at: 0, gain: 0.18, attack: 0.03, decay: 1.4 },
+      { freq: D4 * 5.4, at: 0, gain: 0.04, attack: 0.02, decay: 0.5 },
+    ],
+    volume: 0.13,
+    brightness: 2200,
   },
   // About 0.85 s: F and A together, the A just after, like a gently rolled chord.
   chord: {
