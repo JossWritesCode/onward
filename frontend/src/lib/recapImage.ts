@@ -4,7 +4,7 @@
 // short line that ends in Onward's mark. Plain canvas drawing, so it needs no
 // libraries. The stats and their words come from recap.ts.
 
-import { ONWARD_MARK_PATHS } from './mark';
+import { ONWARD_MARK_PATHS, onwardMarkWithRule } from './mark';
 import type { RecapStat } from './recap';
 
 export type { RecapStat };
@@ -154,9 +154,11 @@ export async function drawRecapImage({
 
   // The short rule that ends in Onward's mark.
   let y = top + Math.ceil(shown.length / columns) * rowHeight + 18;
-  ctx.fillStyle = EVERGREEN;
-  ctx.fillRect(MARGIN, y - 1.5, 140, 3);
-  drawIcon(ctx, ONWARD_MARK_PATHS, MARGIN + 128, y - 30, 44, EVERGREEN);
+  // One stroke, so the rule and the mark always meet. The rule sits at y and starts at MARGIN.
+  const markSize = 44;
+  const unit = markSize / 24;
+  const rule = 76;
+  drawIcon(ctx, onwardMarkWithRule(rule), MARGIN + (rule - 5) * unit, y - 19 * unit, markSize, EVERGREEN);
   y += 80;
 
   if (streak > 0) {
