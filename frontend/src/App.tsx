@@ -1,7 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router';
-import { PublicHome, RedirectIfSignedIn, RequireAuth } from './components/AuthGates';
+import { RedirectIfSignedIn, RequireAuth } from './components/AuthGates';
 import Layout from './components/Layout';
-import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
@@ -25,14 +24,6 @@ import NotFoundPage from './pages/NotFoundPage';
 export default function App() {
   return (
     <Routes>
-      <Route
-        path="/"
-        element={
-          <PublicHome>
-            <LandingPage />
-          </PublicHome>
-        }
-      />
       <Route element={<RedirectIfSignedIn />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
@@ -43,6 +34,7 @@ export default function App() {
 
       <Route element={<RequireAuth />}>
         <Route element={<Layout />}>
+          <Route path="/" element={<Navigate to="/applications" replace />} />
           <Route path="/applications" element={<ApplicationsPage />} />
           <Route path="/applications/new" element={<ApplicationFormPage />} />
           <Route path="/applications/:id" element={<ApplicationFormPage />} />

@@ -1,6 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { applyScheme, DARK_QUERY, parseTheme, resolveScheme, THEME_KEY, type Scheme, type Theme } from './theme';
-import { useMediaQuery } from './useMediaQuery';
+import { applyScheme, DARK_QUERY, parseTheme, resolveScheme, THEME_KEY, type Theme } from './theme';
 
 // Small settings remembered in this browser. Storage can be unavailable
 // (private windows, blocked site data), so every read and write is guarded.
@@ -94,13 +93,6 @@ export function useDesignOpen(): [boolean, (open: boolean) => void] {
 export function useTheme(): [Theme, (theme: Theme) => void] {
   const theme = useSyncExternalStore(themeSetting.subscribe, () => parseTheme(themeSetting.get()));
   return [theme, (next) => themeSetting.set(next === 'system' ? null : next)];
-}
-
-/** Light or dark right now: your choice, or the computer's while it's on "system". */
-export function useScheme(): Scheme {
-  const [theme] = useTheme();
-  const systemDark = useMediaQuery(DARK_QUERY);
-  return resolveScheme(theme, systemDark);
 }
 
 /**
