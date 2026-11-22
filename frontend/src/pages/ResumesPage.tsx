@@ -108,7 +108,7 @@ export default function ResumesPage() {
       {resumes.length > 0 && (
         <div className="space-y-10">
           <section aria-labelledby="base-heading">
-            <h2 id="base-heading" className="text-[22px]/7 font-semibold">
+            <h2 id="base-heading" className="font-serif text-[26px]/8 font-medium">
               Base resumes
             </h2>
             <p className="mt-1 mb-4 text-muted">Your starting points. Tailor one to copy it for a job.</p>
@@ -123,7 +123,7 @@ export default function ResumesPage() {
 
           {tailored.length > 0 && (
             <section aria-labelledby="tailored-heading">
-              <h2 id="tailored-heading" className="text-[22px]/7 font-semibold">
+              <h2 id="tailored-heading" className="font-serif text-[26px]/8 font-medium">
                 Tailored for a job
               </h2>
               <p className="mt-1 mb-4 text-muted">
@@ -159,7 +159,7 @@ function ResumeCard({
     <Card className="flex h-full flex-col p-5 transition hover:border-control">
       <Link
         to={`/resumes/${resume.id}`}
-        className="group -m-1 flex min-w-0 flex-1 items-start gap-3 rounded-lg p-1 focus-visible:outline-2 focus-visible:outline-link"
+        className="group -m-1 flex min-w-0 flex-1 items-start gap-3 rounded-lg p-1 focus-visible:outline-2 focus-visible:outline-focus"
       >
         <FileTextIcon className="mt-0.5 shrink-0 text-[28px] text-muted" strokeWidth={1.5} />
         <span className="min-w-0">
@@ -177,7 +177,7 @@ function ResumeCard({
       {application && (
         <Link
           to={`/applications/${application.id}`}
-          className="mt-3 inline-flex max-w-full items-center gap-1.5 self-start rounded-md px-1 py-0.5 text-sm/5 font-medium text-link hover:underline focus-visible:outline-2 focus-visible:outline-link"
+          className="mt-3 inline-flex max-w-full items-center gap-1.5 self-start rounded-md px-1 py-0.5 text-sm/5 font-medium text-link hover:underline focus-visible:outline-2 focus-visible:outline-focus"
         >
           <BriefcaseIcon className="shrink-0" />
           <span className="truncate">

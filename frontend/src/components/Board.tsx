@@ -7,11 +7,10 @@ import { placeMovedCard } from '../lib/boardCache';
 import { celebrateMove, noteUndone, showToast } from '../lib/celebrate';
 import { shortInterviewTime } from '../lib/countdown';
 import { formatDate } from '../lib/format';
-import { playSound } from '../lib/sounds';
 import { KIND_ACCENTS, WORK_ARRANGEMENT_LABELS } from '../lib/status';
 import FollowUpTag from './FollowUpTag';
 import ResumeTag, { resumePathFromClick } from './resume/ResumeTag';
-import { CalendarIcon, ColumnsIcon, GripIcon, MapPinIcon, PlusIcon, UsersIcon } from './icons';
+import { CalendarIcon, ClockIcon, ColumnsIcon, GripIcon, MapPinIcon, PlusIcon, UsersIcon } from './icons';
 
 type BoardStage = BoardQuery['stages'][number];
 type BoardCard = BoardStage['jobApplications'][number];
@@ -92,6 +91,15 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
   const navigate = useNavigate();
   const [moveApplication] = useMutation(MoveJobApplicationMutation);
   const [columnDrag, setColumnDrag] = useState<ColumnDrag | null>(null);
+  // A card that just got an offer glows softly for a moment.
+  const [highlighted, setHighlighted] = useState<string | null>(null);
+  const highlightTimer = useRef(0);
+  function highlight(id: string) {
+    window.clearTimeout(highlightTimer.current);
+    setHighlighted(id);
+    highlightTimer.current = window.setTimeout(() => setHighlighted(null), 2600);
+  }
+  useEffect(() => () => window.clearTimeout(highlightTimer.current), []);
   const [reorderStages] = useMutation(ReorderStagesMutation);
 
   // Window listeners outlive a render, so they read the latest state through refs.
@@ -314,16 +322,6 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
       }),
     );
 
-    if (overStageId === fromStageId) {
-      playSound('pop');
-    } else {
-      celebrateMove({
-        from: { kind: fromColumn.stage.kind, position: fromColumn.stage.position },
-        to: { kind: toColumn.stage.kind, position: toColumn.stage.position },
-        origin: { x: finished.x, y: finished.y },
-      });
-    }
-
     moveApplication({
       variables: { id: card.id, stageId: overStageId, position: overIndex },
       // Keeps the card in its new column until the refetch arrives.
@@ -331,10 +329,22 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
         placeMovedCard(cache, card.id, data?.moveJobApplication?.jobApplication?.stage.id, overIndex),
       refetchQueries: ['Board', 'Streak', 'Progress', 'Today'],
     })
-      // Moving a card back from a mistaken move takes back what it recorded.
-      .then((result) => noteUndone(result.data?.moveJobApplication?.undone))
+      .then((result) => {
+        if (!result.data?.moveJobApplication?.jobApplication) throw new Error('Not moved');
+        // Feedback waits until the move has saved. Reordering within a column
+        // is routine, so the card settling into place is all you see.
+        if (overStageId !== fromStageId) {
+          const moment = celebrateMove({
+            from: { kind: fromColumn.stage.kind, position: fromColumn.stage.position },
+            to: { kind: toColumn.stage.kind, position: toColumn.stage.position },
+          });
+          if (moment === 'offer') highlight(card.id);
+        }
+        // Moving a card back from a mistaken move takes back what it recorded.
+        noteUndone(result.data.moveJobApplication.undone);
+      })
       .catch(() => {
-        showToast('gentle', "That move didn't save", 'Check that the Onward server is running, then try again.');
+        showToast('error', "That move didn't save", 'Check that the Onward server is running, then try again.');
         setColumns(toColumns(stages));
       });
   }
@@ -479,13 +489,12 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
 
     // Update the board right away; the server catches up in the background.
     setColumns(reordered.map((column, position) => ({ ...column, stage: { ...column.stage, position } })));
-    playSound('pop');
 
     reorderStages({
       variables: { ids: reordered.map((column) => column.stage.id) },
       refetchQueries: ['Board', 'Stages'],
     }).catch(() => {
-      showToast('gentle', "That move didn't save", 'Check that the Onward server is running, then try again.');
+      showToast('error', "That move didn't save", 'Check that the Onward server is running, then try again.');
       setColumns(toColumns(stages));
     });
   }
@@ -514,19 +523,19 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
                     data-column-grip
                     title={`Drag to reorder ${column.stage.name}`}
                     onPointerDown={(e) => handleGripPointerDown(e, column.stage.id)}
-                    className="-mr-1 shrink-0 cursor-grab rounded-lg px-0.5 py-1 text-lg text-stone-400 select-none hover:bg-white hover:text-stone-600 active:cursor-grabbing dark:text-night-300/70 dark:hover:bg-night-850 dark:hover:text-night-50"
+                    className="-mr-1 shrink-0 cursor-grab rounded-lg px-0.5 py-1 text-lg text-stone-400 select-none hover:bg-surface hover:text-ink active:cursor-grabbing dark:text-night-300/70"
                   >
                     <GripIcon />
                   </span>
                   <span className={`size-2.5 shrink-0 rounded-full ${KIND_ACCENTS[column.stage.kind]}`} aria-hidden="true" />
                   <h2 className="min-w-0 flex-1 truncate text-base/[22px] font-bold">{column.stage.name}</h2>
-                  <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-stone-500 tabular-nums dark:bg-night-850 dark:text-night-300">
+                  <span className="rounded-full bg-surface px-2 py-0.5 text-xs font-semibold text-muted tabular-nums">
                     {column.cards.filter((c) => !(dragging && c.id === drag.card.id)).length}
                   </span>
                   <Link
                     to={`/applications/new?stage=${column.stage.id}`}
                     aria-label={`Add an application to ${column.stage.name}`}
-                    className="rounded-lg p-1 text-lg text-stone-400 hover:bg-white hover:text-brand-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 dark:text-night-300/70 dark:hover:bg-night-850 dark:hover:text-brand-250"
+                    className="rounded-lg p-1 text-lg text-stone-400 hover:bg-surface hover:text-link focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus dark:text-night-300/70"
                   >
                     <PlusIcon />
                   </Link>
@@ -563,7 +572,9 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
                                 navigate(resumePath);
                               }
                             }}
-                            className="no-callout block cursor-grab touch-manipulation rounded-xl border border-stone-200 bg-white p-3 shadow-xs transition select-none hover:border-brand-300 hover:shadow-sm focus-visible:border-brand-400 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 active:cursor-grabbing dark:border-night-700 dark:bg-night-850 dark:shadow-none dark:hover:border-brand-700"
+                            className={`no-callout block cursor-grab touch-manipulation rounded-xl border border-line bg-surface p-3 shadow-xs shadow-stone-900/5 transition select-none hover:border-brand-300 hover:shadow-sm focus-visible:border-focus focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus active:cursor-grabbing dark:shadow-none dark:hover:border-brand-700 ${
+                              highlighted === card.id ? 'animate-highlight motion-reduce:ring-3 motion-reduce:ring-gold-400' : ''
+                            }`}
                           >
                             <CardContent card={card} />
                           </Link>
@@ -587,7 +598,7 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
 
           <Link
             to="/columns"
-            className="flex w-44 shrink-0 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-stone-300 p-4 text-center font-semibold text-stone-500 transition hover:border-brand-300 hover:text-brand-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 dark:border-night-700 dark:text-night-300 dark:hover:border-brand-700 dark:hover:text-brand-250"
+            className="flex w-44 shrink-0 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-stone-300 p-4 text-center font-semibold text-muted transition hover:border-brand-300 hover:text-link focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus dark:border-night-700 dark:hover:border-brand-700"
           >
             <ColumnsIcon className="text-2xl" />
             Add or edit columns
@@ -598,7 +609,7 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
       {drag && (
         <div
           aria-hidden="true"
-          className="pointer-events-none fixed top-0 left-0 z-40 rotate-2 rounded-xl border border-brand-300 bg-white p-3 shadow-2xl shadow-brand-900/25 dark:border-brand-600 dark:bg-night-850 dark:shadow-black/60"
+          className="pointer-events-none fixed top-0 left-0 z-40 rotate-2 rounded-xl border border-brand-300 bg-surface p-3 shadow-2xl shadow-stone-900/20 dark:border-brand-600 dark:shadow-black/60"
           style={{
             width: drag.width,
             transform: `translate(${drag.x - drag.offsetX}px, ${drag.y - drag.offsetY}px) rotate(2deg)`,
@@ -611,7 +622,7 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
       {columnDrag && (
         <div
           aria-hidden="true"
-          className="pointer-events-none fixed top-0 left-0 z-40 flex items-center gap-2 rounded-2xl border border-brand-300 bg-stone-100 px-2 py-3 shadow-2xl shadow-brand-900/25 dark:border-brand-600 dark:bg-night-900 dark:shadow-black/60"
+          className="pointer-events-none fixed top-0 left-0 z-40 flex items-center gap-2 rounded-2xl border border-brand-300 bg-stone-100 px-2 py-3 shadow-2xl shadow-stone-900/20 dark:border-brand-600 dark:bg-night-900 dark:shadow-black/60"
           style={{
             width: columnDrag.width,
             transform: `translate(${columnDrag.x - columnDrag.offsetX}px, ${columnDrag.y - columnDrag.offsetY}px) rotate(1.5deg)`,
@@ -620,7 +631,7 @@ export default function Board({ stages }: { stages: readonly BoardStage[] }) {
           <GripIcon className="shrink-0 text-lg text-stone-500" />
           <span className={`size-2.5 shrink-0 rounded-full ${KIND_ACCENTS[columnDrag.stage.kind]}`} />
           <span className="min-w-0 flex-1 truncate text-base/[22px] font-bold">{columnDrag.stage.name}</span>
-          <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-stone-500 tabular-nums dark:bg-night-850 dark:text-night-300">
+          <span className="rounded-full bg-surface px-2 py-0.5 text-xs font-semibold text-muted tabular-nums">
             {columnDrag.count}
           </span>
         </div>
@@ -680,14 +691,15 @@ function CardContent({ card }: { card: BoardCard }) {
   return (
     <>
       {/* Long names get two lines before they're cut, so you can still tell them apart. */}
-      <p className="line-clamp-2 text-base/[22px] font-bold break-words text-stone-900 dark:text-night-50">
+      <p className="line-clamp-2 text-base/[22px] font-bold break-words text-ink">
         {card.company}
       </p>
-      <p className="truncate text-sm text-stone-600 dark:text-night-300">{card.role}</p>
+      <p className="truncate text-sm text-muted">{card.role}</p>
       {(card.nextInterviewAt || card.followUpOn || card.resume) && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {card.nextInterviewAt && (
-            <span className="inline-flex rounded-full bg-gold-100 px-2 py-0.5 text-xs font-bold text-gold-700 dark:bg-gold-night dark:text-gold-200">
+            <span className="inline-flex items-center gap-1 rounded-full bg-accent-tint px-2 py-0.5 text-xs font-bold text-accent">
+              <ClockIcon className="shrink-0" />
               {shortInterviewTime(card.nextInterviewAt)}
             </span>
           )}
@@ -696,7 +708,7 @@ function CardContent({ card }: { card: BoardCard }) {
         </div>
       )}
       {(applied || where || card.contacts.length > 0) && (
-        <div className="mt-2 space-y-0.5 text-xs text-stone-500 dark:text-night-300/85">
+        <div className="mt-2 space-y-0.5 text-xs text-muted">
           {applied && (
             <p className="flex items-center gap-1">
               <CalendarIcon className="shrink-0" /> {applied}

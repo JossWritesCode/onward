@@ -19,11 +19,11 @@ export default function AuthLayout({
         <Logo size="lg" />
       </div>
       <Card className="w-full max-w-md p-6 sm:p-8">
-        <h1 className="text-2xl font-black tracking-tight">{title}</h1>
-        <p className="mt-1 mb-6 text-stone-500 dark:text-stone-400">{subtitle}</p>
+        <h1 className="font-serif text-[30px]/9 font-medium">{title}</h1>
+        <p className="mt-1 mb-6 text-muted">{subtitle}</p>
         {children}
       </Card>
-      <p className="mt-6 text-stone-600 dark:text-stone-400">{footer}</p>
+      <p className="mt-6 text-muted">{footer}</p>
     </div>
   );
 }

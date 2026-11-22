@@ -1,19 +1,17 @@
-import { ArrowUpRightIcon } from './icons';
+import { OnwardMarkIcon } from './icons';
 
-/** With `compact`, phones show just the icon so the header has room for everything else. */
+/**
+ * The Onward wordmark: a small evergreen mark and the name set in Spectral,
+ * like a title on a notebook cover. With `compact`, phones show just the mark
+ * so the header has room for everything else.
+ */
 export default function Logo({ size = 'md', compact = false }: { size?: 'md' | 'lg'; compact?: boolean }) {
   const large = size === 'lg';
   return (
-    <span className="inline-flex items-center gap-2">
+    <span className="inline-flex items-center gap-1.5">
+      <OnwardMarkIcon className={`shrink-0 text-link ${large ? 'text-[34px]' : 'text-[28px]'}`} strokeWidth={2} />
       <span
-        className={`flex items-center justify-center rounded-xl bg-brand-500 text-white ${
-          large ? 'size-11 text-2xl' : 'size-9 text-xl'
-        }`}
-      >
-        <ArrowUpRightIcon strokeWidth={3} />
-      </span>
-      <span
-        className={`font-brand font-black tracking-tight text-brand-600 dark:text-brand-300 ${large ? 'text-3xl' : 'text-2xl'} ${compact ? 'hidden sm:inline' : ''}`}
+        className={`font-brand font-semibold tracking-[-0.01em] text-ink ${large ? 'text-[34px]/none' : 'text-[26px]/none'} ${compact ? 'hidden sm:inline' : ''}`}
       >
         Onward
       </span>

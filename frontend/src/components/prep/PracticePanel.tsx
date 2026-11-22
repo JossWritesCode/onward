@@ -77,10 +77,15 @@ export default function PracticePanel({ questions, stories }: { questions: reado
 
   return (
     <Card className="overflow-hidden">
-      {/* The question is what you read first, so it gets the big type and the quiet plum page. */}
-      <div className="bg-plum px-6 py-8 text-plum-ink">
-        <p className="text-[13px]/[18px] font-medium opacity-75">Practice question</p>
-        <p className="mt-2 font-serif text-[24px]/8 font-medium text-pretty sm:text-[28px]/9">{question.prompt}</p>
+      {/*
+        Like a prompt in a workbook: a small plum label, then the question in
+        the notebook's serif, set off by a thin plum rule.
+      */}
+      <div className="border-b border-line px-6 pt-7 pb-8">
+        <p className="text-[13px]/[18px] font-semibold tracking-wide text-plum-accent uppercase">Practice prompt</p>
+        <p className="mt-3 border-l-2 border-plum-accent/70 pl-4 font-serif text-[24px]/8 font-medium text-pretty text-ink sm:text-[28px]/9">
+          {question.prompt}
+        </p>
       </div>
 
       <div className="space-y-5 p-6">

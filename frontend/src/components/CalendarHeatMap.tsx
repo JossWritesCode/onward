@@ -1,30 +1,24 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { addDays, formatDay, mondayOf, parseIso, plural } from '../lib/activities';
 
-export type Scale = 'violet' | 'green' | 'amber';
+export type Scale = 'sage' | 'ochre';
 
+// Quiet, earthy steps that still read as clearly different levels, in both
+// themes. Each step is noticeably darker (or, at night, lighter) than the last.
 const SCALES: Record<Scale, string[]> = {
-  violet: [
+  sage: [
     'bg-stone-200 dark:bg-stone-800',
-    'bg-brand-200 dark:bg-brand-900',
-    'bg-brand-300 dark:bg-brand-700',
-    'bg-brand-500 dark:bg-brand-500',
-    'bg-brand-700 dark:bg-brand-300',
+    'bg-brand-300 dark:bg-brand-600',
+    'bg-brand-400 dark:bg-brand-500',
+    'bg-brand-600 dark:bg-brand-400',
+    'bg-brand-900 dark:bg-brand-200',
   ],
-  green: [
+  ochre: [
     'bg-stone-200 dark:bg-stone-800',
-    'bg-emerald-200 dark:bg-emerald-900',
-    'bg-emerald-400 dark:bg-emerald-700',
-    'bg-emerald-600 dark:bg-emerald-500',
-    'bg-emerald-800 dark:bg-emerald-300',
-  ],
-  amber: [
-    'bg-stone-200 dark:bg-stone-800',
-    'bg-gold-100 dark:bg-amber-900',
-    'bg-gold-300 dark:bg-amber-700',
-    'bg-gold-400 dark:bg-amber-500',
-    // The chart's own darkest gold, kept apart from the gold used for text.
-    'bg-[#a86c00] dark:bg-amber-300',
+    'bg-[#e3c486] dark:bg-[#4f3d22]',
+    'bg-[#c99b4f] dark:bg-[#7d5f2e]',
+    'bg-[#9a6d2a] dark:bg-[#b58a45]',
+    'bg-[#664514] dark:bg-[#e2c07e]',
   ],
 };
 

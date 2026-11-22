@@ -28,7 +28,7 @@ export default function TimerPill() {
     <NavLink
       to="/prep"
       aria-label={`Study timer: ${formatClock(remainingMs)} left on ${running.topic}`}
-      className="inline-flex items-center gap-1 rounded-xl bg-brand-100 px-2 py-1.5 text-sm font-black text-brand-700 tabular-nums hover:bg-brand-200 dark:bg-brand-900/60 dark:text-brand-200"
+      className="inline-flex items-center gap-1 rounded-xl bg-tint px-2 py-1.5 text-sm font-semibold text-tint-ink tabular-nums hover:bg-brand-200 dark:hover:bg-brand-800"
     >
       <TimerIcon className="text-lg" />
       {formatClock(remainingMs)}

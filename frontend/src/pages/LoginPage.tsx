@@ -41,7 +41,7 @@ export default function LoginPage() {
       footer={
         <>
           New to Onward?{' '}
-          <Link to="/signup" className="font-extrabold text-brand-600 hover:underline dark:text-brand-300">
+          <Link to="/signup" className="font-extrabold text-link hover:underline">
             Create an account
           </Link>
         </>
@@ -70,7 +70,7 @@ export default function LoginPage() {
           htmlFor="password"
           hint={
             settings?.serverSettings.passwordResetAvailable ? (
-              <Link to="/forgot-password" className="font-bold text-brand-600 hover:underline dark:text-brand-300">
+              <Link to="/forgot-password" className="font-bold text-link hover:underline">
                 Forgot your password?
               </Link>
             ) : undefined

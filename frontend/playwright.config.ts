@@ -24,7 +24,7 @@ export default defineConfig({
     // Fixed, so dates and times read the same on every computer.
     timezoneId: 'America/Toronto',
     locale: 'en-US',
-    // Skips the confetti. Toasts still show.
+    // Keeps animations short. Toasts still show.
     reducedMotion: 'reduce',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',

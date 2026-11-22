@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { ProgressQuery } from '../../gql/graphql';
 import { activityLabel, addDays, formatDay, mondayOf, parseIso, plural } from '../../lib/activities';
-import { SnowflakeIcon, StarIcon } from '../icons';
+import { CheckIcon, SnowflakeIcon } from '../icons';
 
 type Activity = ProgressQuery['progress']['activities'][number];
 
@@ -9,10 +9,11 @@ const DAY_LABELS = ['Mon', '', 'Wed', '', 'Fri', '', ''];
 
 function intensity(count: number) {
   if (count === 0) return 'bg-stone-200 dark:bg-stone-800';
-  if (count === 1) return 'bg-brand-200 dark:bg-brand-900';
-  if (count === 2) return 'bg-brand-300 dark:bg-brand-700';
-  if (count <= 4) return 'bg-brand-500 dark:bg-brand-500';
-  return 'bg-brand-700 dark:bg-brand-300';
+  // Sage steps that stay clearly apart from empty days in both themes.
+  if (count === 1) return 'bg-brand-300 dark:bg-brand-600';
+  if (count === 2) return 'bg-brand-400 dark:bg-brand-500';
+  if (count <= 4) return 'bg-brand-600 dark:bg-brand-400';
+  return 'bg-brand-900 dark:bg-brand-200';
 }
 
 /** How many weeks fit: a year on computers, about four months on phones. */
@@ -33,13 +34,13 @@ export default function HeatMap({
   activities,
   today,
   frozenDates,
-  perfectDates,
+  goalDates,
 }: {
   activities: readonly Activity[];
   today: string;
   frozenDates: readonly string[];
   /** Days every goal was done. They show in gold. */
-  perfectDates: readonly string[];
+  goalDates: readonly string[];
 }) {
   const weeks = useWeeks();
   const [selected, setSelected] = useState(today);
@@ -61,7 +62,7 @@ export default function HeatMap({
     return map;
   }, [activities]);
   const frozen = useMemo(() => new Set(frozenDates), [frozenDates]);
-  const perfect = useMemo(() => new Set(perfectDates), [perfectDates]);
+  const goalsDone = useMemo(() => new Set(goalDates), [goalDates]);
 
   const start = addDays(mondayOf(today), -(weeks - 1) * 7);
   const columns = Array.from({ length: weeks }, (_, week) =>
@@ -81,7 +82,7 @@ export default function HeatMap({
           {/* Day labels */}
           <span aria-hidden="true" />
           {DAY_LABELS.map((label, index) => (
-            <span key={index} aria-hidden="true" className="pr-1 text-[10px] leading-[var(--cell)] text-stone-400">
+            <span key={index} aria-hidden="true" className="pr-1 text-[10px] leading-[var(--cell)] text-muted">
               {label}
             </span>
           ))}
@@ -92,18 +93,18 @@ export default function HeatMap({
             const monthLabel = firstDay.getUTCMonth() !== previousMonth ? formatDay(days[0], { month: 'short' }) : '';
 
             return [
-              <span key={`m${week}`} aria-hidden="true" className="h-4 text-[10px] whitespace-nowrap text-stone-400">
+              <span key={`m${week}`} aria-hidden="true" className="h-4 text-[10px] whitespace-nowrap text-muted">
                 {monthLabel}
               </span>,
               ...days.map((date) => {
                 if (date > today) return <span key={date} className="size-[var(--cell)]" />;
                 const count = byDay.get(date)?.length ?? 0;
                 const isFrozen = count === 0 && frozen.has(date);
-                const isPerfect = perfect.has(date);
+                const isGoalDay = goalsDone.has(date);
                 const day = formatDay(date, { weekday: 'long', month: 'long', day: 'numeric' });
                 const description = isFrozen
                   ? `${day}: covered by a streak freeze`
-                  : `${day}: ${plural(count, 'thing')}${isPerfect ? ', a perfect day' : ''}`;
+                  : `${day}: ${plural(count, 'thing')}${isGoalDay ? ', goals completed' : ''}`;
                 return (
                   <button
                     key={date}
@@ -113,9 +114,9 @@ export default function HeatMap({
                     title={description}
                     onClick={() => setSelected(date)}
                     onMouseEnter={() => setSelected(date)}
-                    className={`size-[var(--cell)] rounded-[3px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
-                      isPerfect ? 'bg-gold-400' : isFrozen ? 'bg-sky-300 dark:bg-sky-700' : intensity(count)
-                    } ${selected === date ? 'ring-2 ring-stone-800 ring-offset-1 dark:ring-stone-100 dark:ring-offset-stone-900' : ''} ${
+                    className={`size-[var(--cell)] rounded-[3px] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
+                      isGoalDay ? 'bg-gold-400' : isFrozen ? 'bg-sky-300 dark:bg-sky-700' : intensity(count)
+                    } ${selected === date ? 'ring-2 ring-ink ring-offset-1 ring-offset-surface' : ''} ${
                       date === today ? 'outline-2 outline-offset-1 outline-gold-400' : ''
                     }`}
                   />
@@ -126,7 +127,7 @@ export default function HeatMap({
         </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs text-stone-500 dark:text-stone-400">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs text-muted">
         <span>
           Active on {plural(activeDays, 'day')} in the last {weeks === 53 ? 'year' : '4 months'}
         </span>
@@ -137,23 +138,23 @@ export default function HeatMap({
           ))}
           More
           <span className="ml-2 size-3 rounded-[3px] bg-gold-400" />
-          Perfect day
+          Goals completed
           <span className="ml-2 size-3 rounded-[3px] bg-sky-300 dark:bg-sky-700" />
           Freeze
         </span>
       </div>
 
-      <div className="mt-4 rounded-xl bg-stone-100 px-4 py-3 dark:bg-stone-800/60" aria-live="polite">
-        <p className="flex items-center gap-2 font-extrabold">
+      <div className="mt-4 rounded-lg bg-stone-100 px-4 py-3 dark:bg-night-900" aria-live="polite">
+        <p className="flex flex-wrap items-center gap-2 font-semibold">
           {selected === today ? 'Today' : formatDay(selected, { weekday: 'long', month: 'long', day: 'numeric' })}
-          {perfect.has(selected) && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-gold-100 px-2 py-0.5 text-xs text-gold-700 dark:bg-amber-950/60 dark:text-amber-200">
-              <StarIcon /> Perfect day
+          {goalsDone.has(selected) && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-gold-100 px-2 py-0.5 text-xs text-gold-700 dark:bg-gold-night dark:text-gold-200">
+              <CheckIcon /> Goals completed
             </span>
           )}
         </p>
         {selectedActivities.length === 0 ? (
-          <p className="text-sm text-stone-500 dark:text-stone-400">
+          <p className="text-sm text-muted">
             {frozen.has(selected) ? (
               <span className="inline-flex items-center gap-1">
                 <SnowflakeIcon /> A streak freeze covered this day.
@@ -165,7 +166,7 @@ export default function HeatMap({
             )}
           </p>
         ) : (
-          <ul className="mt-1 space-y-0.5 text-sm text-stone-600 dark:text-stone-300">
+          <ul className="mt-1 space-y-0.5 text-sm text-muted">
             {selectedActivities.map((activity) => (
               <li key={activity.id}>
                 {activityLabel(activity)}

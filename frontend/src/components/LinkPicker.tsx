@@ -80,7 +80,7 @@ export default function LinkPicker({
           return (
             <label
               key={option.id}
-              className={`flex cursor-pointer items-center gap-2 rounded-xl border-2 px-3 py-1.5 text-sm font-bold transition has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-brand-500/30 ${
+              className={`flex cursor-pointer items-center gap-2 rounded-xl border-2 px-3 py-1.5 text-sm font-bold transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-focus ${
                 checked
                   ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-900/40 dark:text-brand-200'
                   : 'border-stone-200 text-stone-600 hover:border-brand-300 dark:border-stone-700 dark:text-stone-300'

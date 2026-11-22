@@ -103,7 +103,7 @@ function LeetcodeCard({ leetcode, today }: { leetcode: Engineering['leetcode']; 
   return (
     <Card className="p-6">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-[22px]/7 font-semibold">LeetCode</h2>
+        <h2 className="font-serif text-[26px]/8 font-medium">LeetCode</h2>
         {leetcode && (
           <a
             href={`https://leetcode.com/u/${leetcode.username}/`}
@@ -122,11 +122,11 @@ function LeetcodeCard({ leetcode, today }: { leetcode: Engineering['leetcode']; 
         <>
           <StaleNote error={leetcode.error} fetchedAt={leetcode.fetchedAt} />
           {/* Your own pattern of practice comes first, then the numbers behind it. */}
-          <CalendarHeatMap days={leetcode.days} today={today} scale="amber" unit="submission" />
+          <CalendarHeatMap days={leetcode.days} today={today} scale="ochre" unit="submission" />
           <div className="mt-6 grid gap-x-10 gap-y-5 sm:grid-cols-[auto_1fr] sm:items-start">
             <div>
               <p className="flex items-center gap-2">
-                <span className="text-[40px]/[44px] font-semibold tabular-nums">{leetcode.streak}</span>
+                <span className="font-serif text-[44px]/[48px] font-medium tabular-nums lining-nums">{leetcode.streak}</span>
                 <span className="text-muted">{leetcode.streak === 1 ? 'day' : 'days'}</span>
                 <FlameIcon className="text-xl text-gold-500" />
               </p>
@@ -177,7 +177,7 @@ function GithubCard({ github, today }: { github: Engineering['github']; today: s
   return (
     <Card className="p-6">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-[22px]/7 font-semibold">GitHub</h2>
+        <h2 className="font-serif text-[26px]/8 font-medium">GitHub</h2>
         {github && (
           <a
             href={`https://github.com/${github.username}`}
@@ -194,7 +194,7 @@ function GithubCard({ github, today }: { github: Engineering['github']; today: s
       ) : (
         <>
           <StaleNote error={github.error} fetchedAt={github.fetchedAt} />
-          {github.days.length > 0 && <CalendarHeatMap days={github.days} today={today} scale="green" unit="contribution" />}
+          {github.days.length > 0 && <CalendarHeatMap days={github.days} today={today} scale="sage" unit="contribution" />}
           {github.fetchedAt && !github.error && (
             <p className="mt-5 text-sm/5 text-muted">
               <span className="text-lg font-semibold text-ink tabular-nums">{github.totalContributions}</span>{' '}
@@ -222,7 +222,7 @@ function StudyCard({
   return (
     <Card className="p-6">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="flex items-center gap-2 text-[22px]/7 font-semibold">
+        <h2 className="flex items-center gap-2 font-serif text-[26px]/8 font-medium">
           <TimerIcon className="text-muted" /> Hours studied
         </h2>
         <Link to="/prep" className="text-sm/5 font-semibold text-link hover:underline">
@@ -238,7 +238,7 @@ function StudyCard({
         ].map(([label, minutes]) => (
           <div key={label} className="flex flex-col">
             <dt className="order-2 text-[13px]/[18px] text-muted">{label}</dt>
-            <dd className="order-1 text-[28px]/9 font-semibold tabular-nums">
+            <dd className="order-1 font-serif text-[32px]/9 font-medium tabular-nums lining-nums">
               {hoursDecimal(Number(minutes))}
               <span className="text-sm font-medium text-muted"> h</span>
             </dd>
@@ -314,7 +314,7 @@ function AddTimeForm({ topics, today }: { topics: readonly string[]; today: stri
     const { data } = await logStudySession({ variables: { topic, minutes: value, studiedOn: day } });
     const result = data?.logStudySession;
     if (result?.counted) {
-      celebrateStudy(value, topic.trim());
+      celebrateStudy(value, topic.trim(), { timer: false });
       setMinutes('');
       setError(null);
       setOpen(false);

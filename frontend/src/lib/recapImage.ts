@@ -1,49 +1,53 @@
 // Draws the weekly recap as a square image for sharing in group chats and
 // social media. It looks like a page from a journal, the same as the recap on
 // the Progress page: a dated heading, big numbers with their labels, and a
-// short line that ends in Onward's rising arrow. Plain canvas drawing, so it
-// needs no libraries.
+// short line that ends in Onward's mark. Plain canvas drawing, so it needs no
+// libraries. The stats and their words come from recap.ts.
 
-export type RecapStat = { value: number; label: string };
+import { ONWARD_MARK_PATHS } from './mark';
+import type { RecapStat } from './recap';
 
+export type { RecapStat };
+
+// The light theme's paper, ink and evergreen, so a shared image looks like the app.
 const PAPER = '#F7F3EB';
-const INK = '#241F1C';
-const MUTED = '#625A50';
-const LINE = '#D8D0C5';
-const VIOLET = '#5B3BB5';
-const FLAME = '#E8A317';
+const INK = '#282823';
+const MUTED = '#5F5A50';
+const LINE = '#DDD5C8';
+const EVERGREEN = '#365543';
 
 const SERIF = 'Spectral, Georgia, serif';
 const SANS = '"DM Sans", system-ui, sans-serif';
 
-// The same drawings as the app's icons (src/components/icons.tsx), on a 24 by 24 grid.
-const ARROW = 'M7 17 17 7M9 7h8v8';
-const FLAME_PATHS = [
-  'M12 21c-3.9 0-7-2.8-7-6.6 0-3.1 2.1-5 3.6-7 .4 1.7 1.3 2.8 2.6 3.4C11.4 7.2 13 4.4 15.4 3c-.3 2.6.5 4.4 1.9 6 1.2 1.4 1.7 2.9 1.7 4.7C19 17.8 15.9 21 12 21Z',
-  'M12 21c-1.7 0-3-1.3-3-3 0-1.9 1.6-2.8 2.3-4.4.9 1 2.2 1.6 2.9 2.8.5.8.8 1.4.8 2.1 0 1.4-1.3 2.5-3 2.5Z',
-];
 
 const SIZE = 1080;
 const MARGIN = 96;
 const WIDTH = SIZE - MARGIN * 2;
 
-function drawIcon(ctx: CanvasRenderingContext2D, paths: string[], x: number, y: number, size: number, color: string) {
+function drawIcon(ctx: CanvasRenderingContext2D, paths: readonly string[], x: number, y: number, size: number, color: string) {
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(size / 24, size / 24);
   ctx.strokeStyle = color;
-  ctx.lineWidth = 2.25;
+  ctx.lineWidth = 2;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   for (const d of paths) ctx.stroke(new Path2D(d));
   ctx.restore();
 }
 
-/** Shrinks the font until the text fits on one line, but never below `min`. */
-function fitFont(ctx: CanvasRenderingContext2D, text: string, font: (size: number) => string, size: number, min: number) {
+/** Shrinks the font until the text fits in `width`, but never below `min`. */
+function fitFont(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  font: (size: number) => string,
+  size: number,
+  min: number,
+  width = WIDTH,
+) {
   let current = size;
   ctx.font = font(current);
-  while (ctx.measureText(text).width > WIDTH && current > min) {
+  while (ctx.measureText(text).width > width && current > min) {
     current -= 2;
     ctx.font = font(current);
   }
@@ -102,8 +106,7 @@ export async function drawRecapImage({
     await Promise.all([
       document.fonts.load(`500 76px ${SERIF}`),
       document.fonts.load(`500 34px ${SANS}`),
-      document.fonts.load(`600 34px ${SANS}`),
-      document.fonts.load('900 40px Nunito'),
+      document.fonts.load(`600 40px ${SERIF}`),
     ]);
   } catch {
     // Falls back to the system fonts.
@@ -143,23 +146,23 @@ export async function drawRecapImage({
     ctx.font = `500 136px ${SERIF}`;
     ctx.fillText(String(stat.value), x - 4, y + 112);
     ctx.fillStyle = MUTED;
-    ctx.font = `500 36px ${SANS}`;
+    // Longer labels, like "days with goals complete", get a little smaller instead of being cut.
+    fitFont(ctx, stat.label, (size) => `500 ${size}px ${SANS}`, 36, 28, columnWidth);
     const [label] = wrapLines(stat.label, columnWidth, 1, (text) => ctx.measureText(text).width);
     ctx.fillText(label, x, y + 160);
   });
 
-  // The short rule that ends in the rising arrow.
-  let y = top + Math.ceil(shown.length / columns) * rowHeight + 6;
-  ctx.fillStyle = VIOLET;
-  ctx.fillRect(MARGIN, y - 2, 150, 4);
-  drawIcon(ctx, [ARROW], MARGIN + 136, y - 25, 40, VIOLET);
+  // The short rule that ends in Onward's mark.
+  let y = top + Math.ceil(shown.length / columns) * rowHeight + 18;
+  ctx.fillStyle = EVERGREEN;
+  ctx.fillRect(MARGIN, y - 1.5, 140, 3);
+  drawIcon(ctx, ONWARD_MARK_PATHS, MARGIN + 128, y - 30, 44, EVERGREEN);
   y += 80;
 
   if (streak > 0) {
-    drawIcon(ctx, FLAME_PATHS, MARGIN - 4, y - 38, 48, FLAME);
     ctx.fillStyle = INK;
-    ctx.font = `600 38px ${SANS}`;
-    ctx.fillText(`${streak}-day streak`, MARGIN + 56, y);
+    ctx.font = `500 38px ${SANS}`;
+    ctx.fillText(`${streak}-day streak`, MARGIN, y);
     y += 64;
   }
 
@@ -172,15 +175,12 @@ export async function drawRecapImage({
     lines.forEach((line, index) => ctx.fillText(line, MARGIN, y + index * 44));
   }
 
-  // Wordmark, like the app's header: the arrow in a violet square, then "Onward".
+  // The wordmark, like the app's header: the evergreen mark, then "Onward" in Spectral.
   const markY = SIZE - 76 - 44;
-  ctx.fillStyle = VIOLET;
-  ctx.beginPath();
-  ctx.roundRect(MARGIN, markY, 44, 44, 12);
-  ctx.fill();
-  drawIcon(ctx, [ARROW], MARGIN + 7, markY + 7, 30, '#FFFFFF');
-  ctx.font = '900 34px Nunito, sans-serif';
-  ctx.fillText('Onward', MARGIN + 58, markY + 34);
+  drawIcon(ctx, ONWARD_MARK_PATHS, MARGIN - 4, markY - 2, 48, EVERGREEN);
+  ctx.fillStyle = INK;
+  ctx.font = `600 40px ${SERIF}`;
+  ctx.fillText('Onward', MARGIN + 50, markY + 36);
 
   return new Promise((resolve, reject) =>
     canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Could not create the image.'))), 'image/png'),

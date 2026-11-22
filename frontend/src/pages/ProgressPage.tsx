@@ -1,13 +1,14 @@
 import { useQuery } from '@apollo/client';
 import { ProgressQuery } from '../graphql/operations';
 import { addDays, plural } from '../lib/activities';
+import { goalsStreakLabel } from '../lib/celebrate';
 import { todayIso } from '../lib/format';
 import DailyGoalsCard from '../components/progress/DailyGoalsCard';
 import HeatMap from '../components/progress/HeatMap';
 import LogWin from '../components/progress/LogWin';
 import RecentActivity from '../components/progress/RecentActivity';
 import WeeklyRecap from '../components/progress/WeeklyRecap';
-import { FlameIcon, SnowflakeIcon, StarIcon } from '../components/icons';
+import { SnowflakeIcon } from '../components/icons';
 import { Card, ErrorBanner, PageHeader, Spinner } from '../components/ui';
 
 export default function ProgressPage() {
@@ -21,86 +22,84 @@ export default function ProgressPage() {
   const { today, streak, activities, perfectDay, perfectDays } = data.progress;
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <PageHeader
-        title="Your progress"
-        titleClassName="font-serif text-[32px]/[36px] font-medium sm:text-[40px]/[44px]"
-        subtitle="Every step counts, whether or not it pays off right away."
-      />
+    <div className="mx-auto max-w-6xl">
+      <PageHeader title="Your progress" subtitle="Every step counts, whether or not it pays off right away." />
 
-      <div className="space-y-10">
-        <div className="grid items-start gap-10 lg:grid-cols-[1fr_22rem] lg:gap-12">
-          <div className="min-w-0 space-y-10">
-            <StreakCard
-              current={streak.current}
-              longest={streak.longest}
-              freezes={streak.freezes}
-              activeToday={streak.activeToday}
-              perfectStreak={perfectDay.streak}
-              perfectToday={perfectDay.today}
-            />
-            <DailyGoalsCard />
-            <LogWin />
-          </div>
-          <WeeklyRecap activities={activities} today={today} streak={streak.current} perfectDays={perfectDays} />
+      {/*
+        What you did this week comes first, with the record of each step under
+        it. Today's goals and logging sit alongside, and your streak is a quiet
+        note at the end. On phones the goals come right after the week.
+      */}
+      <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:grid-rows-[auto_1fr] lg:gap-x-12">
+        <div className="min-w-0 lg:col-start-1 lg:row-start-1">
+          <WeeklyRecap activities={activities} today={today} streak={streak.current} goalDays={perfectDays} />
         </div>
 
-        <Card className="p-6">
-          <h2 className="mb-4 text-[22px]/7 font-semibold">Your activity</h2>
-          <HeatMap activities={activities} today={today} frozenDates={streak.frozenDates} perfectDates={perfectDays} />
-        </Card>
+        <div className="min-w-0 space-y-10 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+          <DailyGoalsCard />
+          <LogWin />
+          <StreakNote
+            current={streak.current}
+            longest={streak.longest}
+            freezes={streak.freezes}
+            activeToday={streak.activeToday}
+            goalStreak={perfectDay.streak}
+            goalsToday={perfectDay.today}
+          />
+        </div>
 
-        <RecentActivity activities={activities} today={today} />
+        <div className="min-w-0 lg:col-start-1 lg:row-start-2">
+          <RecentActivity activities={activities} today={today} />
+        </div>
       </div>
+
+      <Card className="mt-10 p-6">
+        <h2 className="mb-4 font-serif text-[26px]/8 font-medium">Your activity</h2>
+        <HeatMap activities={activities} today={today} frozenDates={streak.frozenDates} goalDates={perfectDays} />
+      </Card>
     </div>
   );
 }
 
-function StreakCard({
+/** Your streak, kept small: it's a nice extra, not the point. How it's earned hasn't changed. */
+function StreakNote({
   current,
   longest,
   freezes,
   activeToday,
-  perfectStreak,
-  perfectToday,
+  goalStreak,
+  goalsToday,
 }: {
   current: number;
   longest: number;
   freezes: number;
   activeToday: boolean;
-  perfectStreak: number;
-  perfectToday: boolean;
+  goalStreak: number;
+  goalsToday: boolean;
 }) {
   const message = activeToday
-    ? "You showed up today. See you tomorrow."
+    ? 'You showed up today. See you tomorrow.'
     : current > 0
       ? 'Do one thing today to keep your streak going.'
       : 'Do one thing today to start a streak. Any step counts.';
 
   return (
-    <section aria-labelledby="streak-heading" className="border-b border-line pb-8">
-      <h2 id="streak-heading" className="sr-only">
-        Your streak
+    <section aria-labelledby="streak-heading" className="border-t border-line pt-6">
+      <h2 id="streak-heading" className="text-sm/5 font-semibold text-muted">
+        Streak
       </h2>
-      <p className="flex items-baseline gap-2">
-        <span className="font-serif text-[56px]/[58px] font-medium tracking-tight tabular-nums lining-nums">
-          {current}
-        </span>
-        <span className="font-serif text-[22px]/7 text-muted">{current === 1 ? 'day' : 'days'}</span>
-        <FlameIcon
-          className={`shrink-0 self-center text-2xl ${activeToday ? 'text-gold-500' : 'text-stone-400'}`}
-          strokeWidth={2}
-        />
+      <p className="mt-1 flex items-baseline gap-1.5">
+        <span className="font-serif text-[30px]/9 font-medium tabular-nums lining-nums">{current}</span>
+        <span className="font-serif text-lg text-muted">{current === 1 ? 'day' : 'days'}</span>
       </p>
-      <p className="mt-3 text-lg/7">{message}</p>
+      <p className="mt-1 text-sm/5">{message}</p>
 
-      <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-[13px]/[18px] text-muted">
+      <ul className="mt-3 space-y-1 text-[13px]/[18px] text-muted">
         <li>Longest streak: {plural(longest, 'day')}</li>
-        {(perfectStreak > 0 || perfectToday) && (
-          <li className="inline-flex items-center gap-1.5">
-            <StarIcon className="text-gold-500" />
-            {perfectStreak === 1 ? '1 perfect day' : `${perfectStreak} perfect days in a row`}
-            {perfectToday && ', including today'}
+        {(goalStreak > 0 || goalsToday) && (
+          <li>
+            {goalsStreakLabel(goalStreak)}
+            {goalsToday && ', including today'}
           </li>
         )}
         <li
@@ -111,7 +110,7 @@ function StreakCard({
             {[0, 1].map((slot) => (
               <SnowflakeIcon
                 key={slot}
-                className={slot < freezes ? 'text-sky-600 dark:text-sky-400' : 'text-stone-300 dark:text-stone-600'}
+                className={slot < freezes ? 'text-sky-700 dark:text-sky-300' : 'text-stone-300 dark:text-stone-600'}
               />
             ))}
           </span>

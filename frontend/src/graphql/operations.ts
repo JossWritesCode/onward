@@ -451,7 +451,7 @@ export const UpdateTimeZoneMutation = graphql(`
   }
 `);
 
-// Small and cheap, for the flame in the header on every page.
+// Small and cheap, for the Progress link in the header on every page.
 export const StreakQuery = graphql(`
   query Streak {
     progress {

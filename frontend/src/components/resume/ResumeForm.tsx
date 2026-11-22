@@ -16,7 +16,7 @@ const DATE_HINT = 'Like 2022-08, or Present.';
 const iconButton =
   'rounded-lg p-1.5 text-stone-400 transition hover:bg-stone-200/60 hover:text-stone-700 disabled:opacity-30 ' +
   'disabled:hover:bg-transparent dark:hover:bg-stone-800 dark:hover:text-stone-200 ' +
-  'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30';
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus';
 
 /**
  * A list of things you can add to, remove from, and reorder: jobs, schools,

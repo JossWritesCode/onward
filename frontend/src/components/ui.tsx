@@ -11,15 +11,15 @@ type Variant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'ghostDanger' | 'h
 
 const base =
   'inline-flex min-h-10 items-center justify-center gap-2 rounded-lg text-sm/5 font-semibold transition select-none ' +
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ' +
   'disabled:cursor-not-allowed disabled:opacity-60';
 
-// Flat buttons. One filled violet action per area, with quieter ones beside it.
-const filled = 'bg-action text-white hover:bg-action-hover px-4 py-2.5';
+// Flat buttons. One filled evergreen action per area, with quieter ones beside it.
+const filled = 'bg-action text-on-action hover:bg-action-hover px-4 py-2.5';
 const variants: Record<Variant, string> = {
   primary: filled,
   secondary:
-    'bg-surface text-link border border-control hover:bg-stone-100 px-4 py-2 dark:hover:bg-stone-800',
+    'bg-surface text-link border border-control hover:bg-tint px-4 py-2',
   danger: 'bg-rose-700 text-white hover:bg-rose-800 px-4 py-2.5 dark:bg-rose-600 dark:hover:bg-rose-500',
   ghost: 'text-muted hover:bg-stone-200/60 hover:text-ink px-3 py-2 dark:hover:bg-stone-800',
   ghostDanger:
@@ -87,7 +87,7 @@ export function Field({
     <div className={className}>
       <label htmlFor={htmlFor} className="mb-1.5 block text-sm/5 font-semibold text-ink">
         {label}
-        {required && <span className="text-brand-500"> *</span>}
+        {required && <span className="text-link"> *</span>}
       </label>
       {children}
       {hint && !error && <p className="mt-1 text-[13px]/[18px] text-muted">{hint}</p>}
@@ -121,7 +121,7 @@ export function ErrorBanner({ messages }: { messages: readonly string[] }) {
 export function Spinner({ label = 'Loading' }: { label?: string }) {
   return (
     <div className="flex justify-center py-16" role="status">
-      <span className="size-9 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500" />
+      <span className="size-9 animate-spin rounded-full border-4 border-tint border-t-link" />
       <span className="sr-only">{label}</span>
     </div>
   );
@@ -148,7 +148,7 @@ export function EmptyState({
     <div className="flex max-w-xl flex-col items-start gap-4 py-6">
       {illustration ?? (icon && <span className="text-3xl text-muted">{icon}</span>)}
       <div>
-        <h2 className="text-[22px]/7 font-semibold">{title}</h2>
+        <h2 className="font-serif text-[26px]/8 font-medium">{title}</h2>
         <p className="mt-2 text-muted">{body}</p>
       </div>
       {action}
@@ -160,16 +160,19 @@ export function PageHeader({
   title,
   subtitle,
   action,
-  titleClassName = 'text-[32px]/[36px] font-semibold sm:text-[40px]/[44px]',
+  className = 'mb-8',
+  titleClassName = 'font-serif text-[34px]/[38px] font-medium sm:text-[42px]/[46px]',
 }: {
   title: string;
   subtitle?: string;
   action?: ReactNode;
+  className?: string;
   titleClassName?: string;
 }) {
   return (
-    <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+    <div className={`flex flex-wrap items-end justify-between gap-4 ${className}`}>
       <div>
+        {/* Page headings use the notebook's serif, like a title written at the top of a page. */}
         <h1 className={`tracking-[-0.01em] ${titleClassName}`}>{title}</h1>
         {subtitle && <p className="mt-2 text-muted">{subtitle}</p>}
       </div>

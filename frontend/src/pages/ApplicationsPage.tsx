@@ -37,18 +37,19 @@ export default function ApplicationsPage() {
 
   return (
     <>
-      <QuoteBanner />
-
       <PageHeader
         title="Your job hunt"
-        titleClassName="text-[32px]/[38px] font-semibold"
         subtitle={
           total > 0
             ? `${total} ${total === 1 ? 'application' : 'applications'} tracked, ${interviewing} interviewing`
             : 'Everything you apply to, all in one place.'
         }
         action={total > 0 ? headerActions : undefined}
+        className="mb-4"
       />
+
+      {/* The quote sits small under the heading, so your applications stay close to the top. */}
+      <QuoteBanner />
 
       <TodayStrip />
 
@@ -70,18 +71,18 @@ export default function ApplicationsPage() {
             <div
               role="group"
               aria-label="View"
-              className="inline-flex gap-0.5 rounded-xl border border-stone-200 bg-white p-1 dark:border-night-700 dark:bg-night-900"
+              className="inline-flex gap-0.5 rounded-xl border border-line bg-surface p-1"
             >
               <ViewButton active={view === 'board'} onClick={() => setView('board')} icon={<BoardIcon />} label="Board" />
               <ViewButton active={view === 'list'} onClick={() => setView('list')} icon={<ListIcon />} label="List" />
             </div>
             {view === 'board' && (
-              <p className="hidden text-sm text-stone-500 md:block dark:text-night-300">
+              <p className="hidden text-sm text-muted md:block">
                 Drag cards between columns to update them. Drag a column by its grip to reorder it.
               </p>
             )}
             {view === 'board' && (
-              <p className="text-sm text-stone-500 md:hidden dark:text-night-300">Press and hold a card to move it. Reorder columns from “Add or edit columns”.</p>
+              <p className="text-sm text-muted md:hidden">Press and hold a card to move it. Reorder columns from “Add or edit columns”.</p>
             )}
             {view === 'list' && (
               <ButtonLink to="/columns" variant="ghost" className="text-sm">
@@ -113,10 +114,10 @@ function ViewButton({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 ${
+      className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
         active
-          ? 'bg-brand-50 text-brand-700 dark:bg-brand-tint dark:text-brand-250'
-          : 'text-stone-500 hover:bg-stone-100 hover:text-stone-800 dark:text-night-300 dark:hover:bg-night-850 dark:hover:text-night-50'
+          ? 'bg-tint text-tint-ink'
+          : 'text-muted hover:bg-stone-100 hover:text-ink dark:hover:bg-night-850'
       }`}
     >
       {icon}

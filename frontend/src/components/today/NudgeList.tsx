@@ -43,7 +43,7 @@ const FOLLOW_UP_COPY: Record<FollowUpStep, { title: (company: string) => string;
 };
 
 const ACTION_CLASS =
-  'shrink-0 rounded-lg bg-brand-500 px-2.5 py-1 text-xs font-extrabold whitespace-nowrap text-white hover:bg-brand-600 disabled:opacity-60';
+  'shrink-0 rounded-lg bg-action px-2.5 py-1 text-xs font-extrabold whitespace-nowrap text-on-action hover:bg-action-hover disabled:opacity-60';
 const SECONDARY_CLASS =
   'shrink-0 rounded-lg px-2 py-1 text-xs font-extrabold whitespace-nowrap text-stone-600 hover:bg-stone-200 disabled:opacity-60 dark:text-stone-300 dark:hover:bg-stone-700';
 const ICON_BUTTON_CLASS =
@@ -72,7 +72,7 @@ export default function NudgeList({ nudges, today }: { nudges: readonly Nudge[];
         <button
           type="button"
           onClick={() => setShowAll(true)}
-          className="mt-2 text-sm font-extrabold text-brand-600 sm:hidden dark:text-brand-300"
+          className="mt-2 text-sm font-extrabold text-link sm:hidden"
         >
           Show {hiddenOnPhones} more
         </button>
@@ -107,14 +107,12 @@ function NudgeRow({ nudge, today, phoneHidden }: { nudge: Nudge; today: string; 
   async function log(
     kind: 'FOLLOW_UP' | 'NETWORKING_MESSAGE',
     links: { jobApplicationId?: string; contactId?: string },
-    button: HTMLElement,
   ) {
-    const rect = button.getBoundingClientRect();
     try {
       const { data } = await logActivity({ variables: { kind, ...links } });
       if (data?.logActivity.activity) {
         setHiding(true);
-        celebrateWin(kind, { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+        celebrateWin(kind);
       }
     } catch {
       // The button stays, so you can try again.
@@ -129,7 +127,7 @@ function NudgeRow({ nudge, today, phoneHidden }: { nudge: Nudge; today: string; 
         setHiding(true);
         celebrateLetGo();
       } else if (result) {
-        showToast('gentle', "Couldn't let it go yet", result.errors.map((error) => error.message).join(' '));
+        showToast('error', "Couldn't let it go yet", result.errors.map((error) => error.message).join(' '));
       }
     } catch {
       // The button stays, so you can try again.
@@ -203,7 +201,7 @@ function NudgeRow({ nudge, today, phoneHidden }: { nudge: Nudge; today: string; 
           <button
             type="button"
             disabled={logging}
-            onClick={(e) => void log('FOLLOW_UP', { jobApplicationId: application.id }, e.currentTarget)}
+            onClick={() => void log('FOLLOW_UP', { jobApplicationId: application.id })}
             className={ACTION_CLASS}
           >
             I followed up
@@ -220,7 +218,7 @@ function NudgeRow({ nudge, today, phoneHidden }: { nudge: Nudge; today: string; 
         <button
           type="button"
           disabled={logging}
-          onClick={(e) => void log('FOLLOW_UP', { jobApplicationId: application.id }, e.currentTarget)}
+          onClick={() => void log('FOLLOW_UP', { jobApplicationId: application.id })}
           className={ACTION_CLASS}
         >
           I followed up
@@ -239,7 +237,7 @@ function NudgeRow({ nudge, today, phoneHidden }: { nudge: Nudge; today: string; 
         <button
           type="button"
           disabled={logging}
-          onClick={(e) => void log('NETWORKING_MESSAGE', { contactId: contact.id }, e.currentTarget)}
+          onClick={() => void log('NETWORKING_MESSAGE', { contactId: contact.id })}
           className={ACTION_CLASS}
         >
           I reached out
@@ -254,7 +252,7 @@ function NudgeRow({ nudge, today, phoneHidden }: { nudge: Nudge; today: string; 
   return (
     <li className={`${phoneHidden ? 'hidden sm:flex' : 'flex'} flex-wrap items-center gap-x-2 gap-y-1.5 rounded-xl bg-stone-100 py-2 pr-1.5 pl-3 dark:bg-stone-800/60`}>
       <span className="flex min-w-0 flex-1 basis-56 items-start gap-2">
-        <BellIcon className="mt-0.5 shrink-0 text-brand-500" />
+        <BellIcon className="mt-0.5 shrink-0 text-accent" />
         <span className="min-w-0">
           <span className="block text-sm font-extrabold">{title}</span>
           <span className="block text-xs text-stone-500 dark:text-stone-400">{body}</span>

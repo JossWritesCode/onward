@@ -50,7 +50,7 @@ export default function SettingsPage() {
         <section aria-labelledby="account-heading" className="space-y-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="min-w-0">
-              <h2 id="account-heading" className="text-[22px]/7 font-semibold">
+              <h2 id="account-heading" className="font-serif text-[26px]/8 font-medium">
                 Your account
               </h2>
               {me?.emailAddress && (
@@ -99,20 +99,20 @@ function Appearance() {
 
   return (
     <section aria-labelledby="appearance-heading">
-      <h2 id="appearance-heading" className="text-[22px]/7 font-semibold">
+      <h2 id="appearance-heading" className="font-serif text-[26px]/8 font-medium">
         Appearance
       </h2>
       <p className="mt-1 mb-5 text-muted">Light, dark, or whatever your computer uses. This browser remembers your pick.</p>
       <fieldset>
         <legend className="mb-2 text-sm/5 font-semibold">Theme</legend>
-        {/* One control with three parts. The one you picked is filled in violet. */}
+        {/* One control with three parts. The one you picked is filled in evergreen. */}
         <div className="grid grid-cols-3 gap-1 rounded-lg border border-control bg-surface p-1 sm:inline-grid sm:min-w-96">
           {THEMES.map(({ value, label, Icon }) => (
             <label
               key={value}
               className={
                 'flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-md px-3 py-2 text-sm/5 font-medium transition ' +
-                'has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-link ' +
+                'has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus ' +
                 (theme === value ? 'bg-action text-white' : 'text-muted hover:bg-stone-200/60 hover:text-ink dark:hover:bg-stone-800')
               }
             >
@@ -148,7 +148,7 @@ function Invites() {
       await navigator.clipboard.writeText(linkFor(code));
       showToast('celebrate', 'Invite link copied', 'Send it to your friend. It works once.');
     } catch {
-      showToast('gentle', "Couldn't copy", `Share this code instead: ${code}`);
+      showToast('error', "Couldn't copy", `Share this code instead: ${code}`);
     }
   }
 

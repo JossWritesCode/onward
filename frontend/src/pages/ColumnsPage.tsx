@@ -33,7 +33,7 @@ export default function ColumnsPage() {
     <div className="mx-auto max-w-3xl">
       <Link
         to="/applications"
-        className="mb-4 inline-flex items-center gap-1.5 font-bold text-stone-500 hover:text-brand-600 dark:text-stone-400"
+        className="mb-4 inline-flex items-center gap-1.5 font-bold text-stone-500 hover:text-link dark:text-stone-400"
       >
         <ArrowLeftIcon /> Back to your board
       </Link>
@@ -116,7 +116,7 @@ function StageRow({
             onClick={onMoveUp}
             disabled={isFirst}
             aria-label={`Move ${stage.name} left`}
-            className="rounded-md p-0.5 text-stone-400 hover:bg-stone-100 hover:text-brand-600 disabled:opacity-30 dark:hover:bg-stone-800"
+            className="rounded-md p-0.5 text-stone-400 hover:bg-stone-100 hover:text-link disabled:opacity-30 dark:hover:bg-stone-800"
           >
             <ChevronUpIcon />
           </button>
@@ -125,7 +125,7 @@ function StageRow({
             onClick={onMoveDown}
             disabled={isLast}
             aria-label={`Move ${stage.name} right`}
-            className="rounded-md p-0.5 text-stone-400 hover:bg-stone-100 hover:text-brand-600 disabled:opacity-30 dark:hover:bg-stone-800"
+            className="rounded-md p-0.5 text-stone-400 hover:bg-stone-100 hover:text-link disabled:opacity-30 dark:hover:bg-stone-800"
           >
             <ChevronDownIcon />
           </button>
