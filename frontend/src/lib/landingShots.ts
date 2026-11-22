@@ -18,6 +18,9 @@ export const SHOT_SIZES = {
   'stage-interview': [864, 717],
   // One application card with its resume and follow-up date.
   card: [864, 594],
+  // Tailoring a resume with your own AI: the message copied, the reply pasted back. Also at phone width.
+  tailor: [1416, 1986],
+  'tailor-phone': [1146, 2118],
   // An interview's prep checklist and a practice prompt, each also at phone width.
   checklist: [1416, 1149],
   'checklist-phone': [1146, 1581],

@@ -68,6 +68,7 @@ export default function LandingPage() {
           </div>
 
           <DetailsStep />
+          <TailorStep />
           <PrepStep />
           <ProgressStep />
         </section>
@@ -180,10 +181,53 @@ function DetailsStep() {
   );
 }
 
-function PrepStep() {
+/**
+ * Tailoring with the AI you already use. Onward writes the message and reads
+ * the reply, so there's no separate AI service to pay for.
+ */
+function TailorStep() {
+  const steps = [
+    'Copy the message Onward writes, with your resume and the job inside.',
+    'Paste it into ChatGPT, or any AI chat you already use.',
+    'Paste the reply back, and your tailored resume is ready.',
+  ];
+
   return (
     <Step
       flip
+      title="Tailor your resume with the AI you already use."
+      body="Many job apps charge a monthly fee to tailor your resume with AI. Onward doesn’t. It works with the AI you already have, by copy and paste, so there’s no extra subscription."
+      extra={
+        <ol className="mt-6 space-y-3">
+          {steps.map((step, index) => (
+            <li key={step} className="flex gap-3">
+              <span className="w-5 shrink-0 font-serif text-xl/7 font-medium text-link tabular-nums lining-nums" aria-hidden="true">
+                {index + 1}
+              </span>
+              <span className="text-base/7">{step}</span>
+            </li>
+          ))}
+        </ol>
+      }
+    >
+      <div className="mx-auto w-full max-w-md">
+        {/* No fade here: the crop ends just under the button, and a fade would make it look switched off. */}
+        <Frame>
+          <Screenshot
+            shot="tailor"
+            phone="tailor-phone"
+            sizes="(min-width: 768px) 448px, 100vw"
+            alt="The Resume section of an application for Kestrel Maps. The message for ChatGPT has just been copied, ChatGPT’s reply is pasted into the box below it, and the Make tailored resume button is ready."
+          />
+        </Frame>
+      </div>
+    </Step>
+  );
+}
+
+function PrepStep() {
+  return (
+    <Step
       title="Prepare a little at a time."
       body="When an interview is on the calendar, it gets its own short checklist. Tick off a step, or practice one question out loud. A few minutes a day adds up."
     >
@@ -257,12 +301,26 @@ function Closing() {
 }
 
 /** One step of the walkthrough: a few words beside a screenshot. `flip` puts the picture first on wide screens. */
-function Step({ title, body, flip = false, children }: { title: string; body: string; flip?: boolean; children: ReactNode }) {
+function Step({
+  title,
+  body,
+  extra,
+  flip = false,
+  children,
+}: {
+  title: string;
+  body: string;
+  /** Anything that goes under the words, like a short list. */
+  extra?: ReactNode;
+  flip?: boolean;
+  children: ReactNode;
+}) {
   return (
     <div className={`${PAGE} grid items-center gap-10 py-14 sm:py-20 md:grid-cols-2 md:gap-14 lg:gap-24`}>
       <div className={`max-w-md ${flip ? 'md:order-2' : ''}`}>
         <h3 className="font-serif text-[32px]/[38px] font-medium tracking-[-0.01em] sm:text-[38px]/[44px]">{title}</h3>
         <p className="mt-4 text-lg/8 text-muted">{body}</p>
+        {extra}
       </div>
       <div className={flip ? 'md:order-1' : ''}>{children}</div>
     </div>

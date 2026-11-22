@@ -36,7 +36,12 @@ test('"See how it works" takes you to the walkthrough, keyboard focus included',
   // The walkthrough's heading scrolls up to the top of the window.
   await expect.poll(() => walkthrough.evaluate((el) => el.getBoundingClientRect().top)).toBeLessThan(80);
   await expect(walkthrough).toBeFocused();
-  for (const step of ['Keep the details together.', 'Prepare a little at a time.', 'See what you did this week.']) {
+  for (const step of [
+    'Keep the details together.',
+    'Tailor your resume with the AI you already use.',
+    'Prepare a little at a time.',
+    'See what you did this week.',
+  ]) {
     await expect(page.getByRole('heading', { name: step })).toBeAttached();
   }
 });
