@@ -1,13 +1,13 @@
 # Render Blueprint: one web service (Rails serving the API and the React app)
 # and one PostgreSQL database. See docs/hosting.md.
 #
-# Cost: the free web service ($0, sleeps after 15 minutes without visitors)
-# plus the smallest paid database ($6/month, keeps your data with backups).
+# Cost: the Starter web service ($7/month, stays awake so there's no slow
+# first load) plus the smallest paid database ($6/month, keeps your data with backups).
 services:
   - type: web
     name: onward
     runtime: ruby
-    plan: free
+    plan: starter
     buildCommand: backend/bin/render-build
     startCommand: cd backend && bundle exec puma -C config/puma.rb
     healthCheckPath: /up
