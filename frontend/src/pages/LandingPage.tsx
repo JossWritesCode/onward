@@ -73,6 +73,8 @@ export default function LandingPage() {
           <ProgressStep />
         </section>
 
+        <MakerNote />
+
         <Closing />
       </main>
     </div>
@@ -280,6 +282,40 @@ function ProgressStep() {
         </Frame>
       </div>
     </div>
+  );
+}
+
+/**
+ * Who made Onward, and the optional extra for people looking in tech. It
+ * leads with "any job search" so nobody thinks Onward is only for engineers.
+ */
+function MakerNote() {
+  return (
+    <section aria-labelledby="maker-heading" className={`${PAGE} grid items-center gap-10 pb-20 sm:pb-28 md:grid-cols-2 md:gap-14 lg:gap-24`}>
+      <div className="max-w-lg">
+        <h2 id="maker-heading" className="font-serif text-[32px]/[38px] font-medium tracking-[-0.01em] text-balance sm:text-[38px]/[44px]">
+          <span className="block">Made by a software engineer,</span> <span className="block">for any job search.</span>
+        </h2>
+        <p className="mt-4 text-lg/8 text-muted">
+          Onward was built by a software engineer who wanted a calmer way to look for work. It works the same in any
+          field.
+        </p>
+        <p className="mt-4 text-lg/8 text-muted">
+          Looking in tech? Turn on the software engineering track in Settings to count LeetCode practice toward your
+          streak and see your GitHub activity and study hours in one place. It stays out of sight unless you switch it
+          on.
+        </p>
+      </div>
+      <div className="mx-auto w-full max-w-md">
+        <Frame fade="always">
+          <Screenshot
+            shot="engineering"
+            sizes="(min-width: 768px) 448px, 100vw"
+            alt="The Software engineering track in Settings: it adds an Engineering page with your LeetCode streak, GitHub contributions and hours studied. The Show the Engineering page switch is on."
+          />
+        </Frame>
+      </div>
+    </section>
   );
 }
 

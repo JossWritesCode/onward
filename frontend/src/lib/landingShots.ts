@@ -26,6 +26,8 @@ export const SHOT_SIZES = {
   'checklist-phone': [1146, 1581],
   prompt: [1410, 537],
   'prompt-phone': [1140, 537],
+  // The switch in Settings that turns on the software engineering track.
+  engineering: [1440, 633],
   // This week's recap with the first few steps under it, and the recap as it looks on a phone.
   progress: [1560, 1748],
   'progress-phone': [1134, 1464],

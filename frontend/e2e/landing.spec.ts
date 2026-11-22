@@ -44,6 +44,7 @@ test('"See how it works" takes you to the walkthrough, keyboard focus included',
   ]) {
     await expect(page.getByRole('heading', { name: step })).toBeAttached();
   }
+  await expect(page.getByRole('heading', { name: 'Made by a software engineer, for any job search.' })).toBeAttached();
 });
 
 test('signed-in people go straight to their board, without the landing page flashing by', async ({ page }) => {
