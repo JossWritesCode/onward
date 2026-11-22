@@ -4,7 +4,7 @@ import { addDays, formatDay, mondayOf, plural } from '../../lib/activities';
 import { countWeek, recapStats, recapText } from '../../lib/recap';
 import { showToast } from '../../lib/celebrate';
 import { drawRecapImage } from '../../lib/recapImage';
-import { ChevronLeftIcon, ChevronRightIcon, CopyIcon, OnwardMarkIcon, ShareIcon } from '../icons';
+import { ChevronLeftIcon, ChevronRightIcon, CopyIcon, OnwardRuleIcon, ShareIcon } from '../icons';
 import { Button } from '../ui';
 
 type Activity = ProgressQuery['progress']['activities'][number];
@@ -135,10 +135,7 @@ export default function WeeklyRecap({
       )}
 
       <div className="mt-6 flex items-center gap-3 text-sm/5">
-        <span className="flex items-center text-link" aria-hidden="true">
-          <span className="h-px w-12 bg-current" />
-          <OnwardMarkIcon className="-ml-1 text-base" strokeWidth={2} />
-        </span>
+        <OnwardRuleIcon className="shrink-0 text-base text-link" strokeWidth={2} />
         <span className="flex flex-wrap gap-x-4 gap-y-1 text-muted">
           {showStreak && <span>{streak}-day streak</span>}
           {week.closures > 0 && <span>{plural(week.closures, 'door')} closed, which is progress too</span>}

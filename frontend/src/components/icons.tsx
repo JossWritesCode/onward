@@ -1,5 +1,5 @@
 import type { ReactNode, SVGProps } from 'react';
-import { ONWARD_MARK_PATHS } from '../lib/mark';
+import { ONWARD_MARK_PATHS, onwardMarkWithRule } from '../lib/mark';
 
 type IconProps = SVGProps<SVGSVGElement>;
 
@@ -44,6 +44,19 @@ export const ArrowUpRightIcon = (props: IconProps) => (
 export const OnwardMarkIcon = (props: IconProps) => (
   <Icon {...props}>
     {ONWARD_MARK_PATHS.map((d) => (
+      <path key={d} d={d} />
+    ))}
+  </Icon>
+);
+
+/**
+ * A flat rule that rises into Onward's mark, drawn as one stroke. It is wider
+ * than it is tall, so its width grows with the rule. Set the size with font-size.
+ */
+const RULE = 60;
+export const OnwardRuleIcon = (props: IconProps) => (
+  <Icon viewBox={`${4 - RULE} 0 ${RULE + 15} 24`} width={`${(RULE + 15) / 24}em`} {...props}>
+    {onwardMarkWithRule(RULE).map((d) => (
       <path key={d} d={d} />
     ))}
   </Icon>
