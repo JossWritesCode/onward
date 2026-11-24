@@ -411,6 +411,14 @@ export const BookmarkIcon = (props: IconProps) => (
   </Icon>
 );
 
+export const ImageIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="4" y="4" width="16" height="16" rx="2.5" />
+    <circle cx="9" cy="9" r="1.5" />
+    <path d="m20 15-4-4-9 9" />
+  </Icon>
+);
+
 export const DownloadIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="M12 4v11m0 0-4-4m4 4 4-4" />

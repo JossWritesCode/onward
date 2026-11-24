@@ -23,7 +23,7 @@ When a date comes up, the Today strip above the board reminds you. **I followed 
 - Any activity keeps your daily streak going, on your own time zone. You earn a streak freeze for every 7 days in a row (you can hold 2), and a missed day uses one automatically.
 - Pick your own daily goals, like "Apply to 1 job" or "Study for 25 min". They check themselves off as you go.
 - Board moves are logged for you. Log everything else, like networking messages, coffee chats, and tailored resumes, with **Log a win** on the Progress page. You can add your own kinds of wins too.
-- The weekly recap leaves out company names unless you choose to include them.
+- The weekly recap leaves out company names unless you choose to include them. **Share** lets you download the recap as an image, copy the image, or text it to someone. On a phone, texting it sends the image too. On a computer, it opens your messages app with the text filled in.
 
 ## Interview prep
 
