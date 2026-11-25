@@ -1,10 +1,20 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from 'react';
 import type { ProgressQuery } from '../../gql/graphql';
 import { addDays, formatDay, mondayOf, plural } from '../../lib/activities';
 import { countWeek, recapStats, recapText } from '../../lib/recap';
 import { showToast } from '../../lib/celebrate';
 import { drawRecapImage } from '../../lib/recapImage';
-import { ChevronLeftIcon, ChevronRightIcon, CopyIcon, OnwardRuleIcon, ShareIcon } from '../icons';
+import { canCopyImage, downloadBlob, smsHref } from '../../lib/share';
+import {
+  ChatIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CopyIcon,
+  DownloadIcon,
+  ImageIcon,
+  OnwardRuleIcon,
+  ShareIcon,
+} from '../icons';
 import { Button } from '../ui';
 
 type Activity = ProgressQuery['progress']['activities'][number];
@@ -25,6 +35,8 @@ export default function WeeklyRecap({
   const [weeksBack, setWeeksBack] = useState(0);
   const [includeCompanies, setIncludeCompanies] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const start = addDays(mondayOf(today), -7 * weeksBack);
   const end = addDays(start, 6);
@@ -51,37 +63,133 @@ export default function WeeklyRecap({
     }
   }
 
-  async function shareImage() {
+  function drawImage() {
+    return drawRecapImage({
+      title,
+      dateRange,
+      stats: shownStats,
+      streak: showStreak ? streak : 0,
+      companies,
+    });
+  }
+
+  const fileName = `onward-week-of-${start}.png`;
+
+  // Everything the image shows, so a ready image is only reused while it still matches.
+  const imageKey = JSON.stringify([title, dateRange, shownStats, showStreak ? streak : 0, companies]);
+  const [prepared, setPrepared] = useState<{ key: string; file: File } | null>(null);
+  const readyFile = prepared?.key === imageKey ? prepared.file : null;
+
+  // Draw the image as soon as the menu opens. Safari only opens the share sheet
+  // right after a tap, so the image has to be ready before the tap, not made after it.
+  useEffect(() => {
+    if (!menuOpen || readyFile) return;
+    let current = true;
+    drawImage()
+      .then((blob) => {
+        if (current) setPrepared({ key: imageKey, file: new File([blob], fileName, { type: 'image/png' }) });
+      })
+      .catch(() => {
+        // Download and copy draw it again, and show an error if that fails too.
+      });
+    return () => {
+      current = false;
+    };
+    // drawImage reads the same values imageKey is built from.
+  }, [menuOpen, imageKey, readyFile]);
+
+  /** The ready image if there is one, so download and copy don't draw it twice. */
+  function imageBlob(): Promise<Blob> {
+    return readyFile ? Promise.resolve(readyFile) : drawImage();
+  }
+
+  function closeMenu(focusButton = false) {
+    setMenuOpen(false);
+    if (focusButton) menuRef.current?.querySelector<HTMLElement>('[aria-haspopup]')?.focus();
+  }
+
+  // Close the menu when someone clicks or taps anywhere else.
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onPointerDown(event: globalThis.MouseEvent | TouchEvent) {
+      if (!menuRef.current?.contains(event.target as Node)) setMenuOpen(false);
+    }
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('touchstart', onPointerDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('touchstart', onPointerDown);
+    };
+  }, [menuOpen]);
+
+  // Put focus on the first choice when the menu opens, so keyboards can use it right away.
+  useEffect(() => {
+    if (menuOpen) menuRef.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
+  }, [menuOpen]);
+
+  function onMenuKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const items = Array.from(menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
+    const index = items.indexOf(document.activeElement as HTMLElement);
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeMenu(true);
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      items[(index + 1) % items.length]?.focus();
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      items[(index - 1 + items.length) % items.length]?.focus();
+    } else if (event.key === 'Tab') {
+      setMenuOpen(false);
+    }
+  }
+
+  async function downloadImage() {
+    closeMenu(true);
     setSharing(true);
     try {
-      const blob = await drawRecapImage({
-        title,
-        dateRange,
-        stats: shownStats,
-        streak: showStreak ? streak : 0,
-        companies,
-      });
-      const file = new File([blob], `onward-week-of-${start}.png`, { type: 'image/png' });
-
-      // Phones open the share sheet; computers download the image.
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], text: shareText() });
-      } else {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = file.name;
-        link.click();
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-      }
-    } catch (error) {
-      if (!(error instanceof DOMException && error.name === 'AbortError')) {
-        showToast('error', "Couldn't make the image", 'Try again, or copy the text instead.');
-      }
+      downloadBlob(await imageBlob(), fileName);
+      showToast('celebrate', 'Saved', 'Look for it in your downloads.');
+    } catch {
+      showToast('error', "Couldn't make the image", 'Try again, or copy the text instead.');
     } finally {
       setSharing(false);
     }
   }
+
+  async function copyImage() {
+    closeMenu(true);
+    setSharing(true);
+    try {
+      // Hand the clipboard the drawing while it's still being made. Safari only
+      // allows copying during the click itself, so waiting first would fail there.
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': imageBlob() })]);
+      showToast('celebrate', 'Copied', 'Paste it into a message or post.');
+    } catch {
+      showToast('error', "Couldn't copy the image", 'Your browser blocked it. Try downloading it instead.');
+    } finally {
+      setSharing(false);
+    }
+  }
+
+  function textIt(event: MouseEvent<HTMLAnchorElement>) {
+    closeMenu(true);
+    // Phones that can share files open the share sheet, so the picture goes
+    // along with the message. The share has to start right away, during the
+    // tap, so it only happens when the image is already drawn. Otherwise, the
+    // link opens the messages app with the text filled in.
+    if (!readyFile || !navigator.canShare?.({ files: [readyFile] })) return;
+    event.preventDefault();
+    navigator.share({ files: [readyFile], text: shareText() }).catch((error) => {
+      if (!(error instanceof DOMException && error.name === 'AbortError')) {
+        showToast('error', "Couldn't open your messages", 'Try again, or copy the text instead.');
+      }
+    });
+  }
+
+  const menuItem =
+    'flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm/5 text-ink hover:bg-stone-200/60 ' +
+    'focus:bg-stone-200/60 focus:outline-none dark:hover:bg-stone-800 dark:focus:bg-stone-800';
 
   const heading = isThisWeek ? 'This week' : weeksBack === 1 ? 'Last week' : `Week of ${formatDay(start)}`;
   const weekButton =
@@ -144,9 +252,38 @@ export default function WeeklyRecap({
 
       <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-line pt-5">
         <div className="flex flex-wrap gap-2">
-          <Button onClick={shareImage} disabled={sharing}>
-            <ShareIcon /> {sharing ? 'Making image…' : 'Share image'}
-          </Button>
+          <div ref={menuRef} className="relative" onKeyDown={onMenuKeyDown}>
+            <Button
+              onClick={() => setMenuOpen((open) => !open)}
+              disabled={sharing}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              aria-controls="share-menu"
+            >
+              <ShareIcon /> {sharing ? 'Making image…' : 'Share'}
+            </Button>
+            {menuOpen && (
+              <div
+                id="share-menu"
+                role="menu"
+                aria-label="Share your week"
+                aria-busy={!readyFile}
+                className="absolute bottom-full left-0 z-20 mb-2 w-56 overflow-hidden rounded-xl border border-line bg-surface py-1 shadow-lg"
+              >
+                <button type="button" role="menuitem" tabIndex={-1} className={menuItem} onClick={downloadImage}>
+                  <DownloadIcon className="shrink-0 text-muted" /> Download image
+                </button>
+                {canCopyImage() && (
+                  <button type="button" role="menuitem" tabIndex={-1} className={menuItem} onClick={copyImage}>
+                    <ImageIcon className="shrink-0 text-muted" /> Copy image
+                  </button>
+                )}
+                <a role="menuitem" tabIndex={-1} href={smsHref(shareText())} className={menuItem} onClick={textIt}>
+                  <ChatIcon className="shrink-0 text-muted" /> Text it to someone
+                </a>
+              </div>
+            )}
+          </div>
           <Button variant="secondary" onClick={copyText}>
             <CopyIcon /> Copy text
           </Button>

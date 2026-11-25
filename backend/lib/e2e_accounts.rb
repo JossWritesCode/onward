@@ -28,6 +28,7 @@ module E2eAccounts
     tailor-resume
     settings
     landing
+    progress
   ].freeze
   PASSWORD = "password123"
 
