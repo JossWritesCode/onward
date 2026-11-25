@@ -33,4 +33,26 @@ test.describe('sharing the weekly recap', () => {
     const types = await page.evaluate(async () => (await navigator.clipboard.read())[0]?.types ?? []);
     expect(types).toContain('image/png');
   });
+
+  test('texting it shares the image right away when the phone can share files', async ({ page }) => {
+    // Stand in for a phone's share sheet, and note what it was given.
+    await page.evaluate(() => {
+      const shared: { name: string; type: string; text?: string }[] = [];
+      Object.assign(window, { shared });
+      navigator.canShare = () => true;
+      navigator.share = async (data) => {
+        shared.push(...(data?.files ?? []).map((file) => ({ name: file.name, type: file.type, text: data?.text })));
+      };
+    });
+    const menu = page.getByRole('menu', { name: 'Share your week' });
+    await expect(menu).toHaveAttribute('aria-busy', 'false');
+
+    await menu.getByRole('menuitem', { name: 'Text it to someone' }).click();
+    const shared = await page.evaluate(() => (window as unknown as { shared: { name: string; type: string; text?: string }[] }).shared);
+    expect(shared).toHaveLength(1);
+    expect(shared[0].type).toBe('image/png');
+    expect(shared[0].name).toMatch(/^onward-week-of-.*\.png$/);
+    expect(shared[0].text).toContain('My job hunt');
+    await expect(page).toHaveURL(/\/progress$/);
+  });
 });

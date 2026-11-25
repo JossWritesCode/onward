@@ -75,6 +75,34 @@ export default function WeeklyRecap({
 
   const fileName = `onward-week-of-${start}.png`;
 
+  // Everything the image shows, so a ready image is only reused while it still matches.
+  const imageKey = JSON.stringify([title, dateRange, shownStats, showStreak ? streak : 0, companies]);
+  const [prepared, setPrepared] = useState<{ key: string; file: File } | null>(null);
+  const readyFile = prepared?.key === imageKey ? prepared.file : null;
+
+  // Draw the image as soon as the menu opens. Safari only opens the share sheet
+  // right after a tap, so the image has to be ready before the tap, not made after it.
+  useEffect(() => {
+    if (!menuOpen || readyFile) return;
+    let current = true;
+    drawImage()
+      .then((blob) => {
+        if (current) setPrepared({ key: imageKey, file: new File([blob], fileName, { type: 'image/png' }) });
+      })
+      .catch(() => {
+        // Download and copy draw it again, and show an error if that fails too.
+      });
+    return () => {
+      current = false;
+    };
+    // drawImage reads the same values imageKey is built from.
+  }, [menuOpen, imageKey, readyFile]);
+
+  /** The ready image if there is one, so download and copy don't draw it twice. */
+  function imageBlob(): Promise<Blob> {
+    return readyFile ? Promise.resolve(readyFile) : drawImage();
+  }
+
   function closeMenu(focusButton = false) {
     setMenuOpen(false);
     if (focusButton) menuRef.current?.querySelector<HTMLElement>('[aria-haspopup]')?.focus();
@@ -120,7 +148,7 @@ export default function WeeklyRecap({
     closeMenu(true);
     setSharing(true);
     try {
-      downloadBlob(await drawImage(), fileName);
+      downloadBlob(await imageBlob(), fileName);
       showToast('celebrate', 'Saved', 'Look for it in your downloads.');
     } catch {
       showToast('error', "Couldn't make the image", 'Try again, or copy the text instead.');
@@ -135,7 +163,7 @@ export default function WeeklyRecap({
     try {
       // Hand the clipboard the drawing while it's still being made. Safari only
       // allows copying during the click itself, so waiting first would fail there.
-      await navigator.clipboard.write([new ClipboardItem({ 'image/png': drawImage() })]);
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': imageBlob() })]);
       showToast('celebrate', 'Copied', 'Paste it into a message or post.');
     } catch {
       showToast('error', "Couldn't copy the image", 'Your browser blocked it. Try downloading it instead.');
@@ -144,28 +172,19 @@ export default function WeeklyRecap({
     }
   }
 
-  async function textIt(event: MouseEvent<HTMLAnchorElement>) {
+  function textIt(event: MouseEvent<HTMLAnchorElement>) {
     closeMenu(true);
     // Phones that can share files open the share sheet, so the picture goes
-    // along with the message. Everywhere else, the link opens the messages app
-    // with the text filled in.
-    if (!navigator.canShare) return;
+    // along with the message. The share has to start right away, during the
+    // tap, so it only happens when the image is already drawn. Otherwise, the
+    // link opens the messages app with the text filled in.
+    if (!readyFile || !navigator.canShare?.({ files: [readyFile] })) return;
     event.preventDefault();
-    setSharing(true);
-    try {
-      const file = new File([await drawImage()], fileName, { type: 'image/png' });
-      if (navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], text: shareText() });
-      } else {
-        window.location.href = smsHref(shareText());
-      }
-    } catch (error) {
+    navigator.share({ files: [readyFile], text: shareText() }).catch((error) => {
       if (!(error instanceof DOMException && error.name === 'AbortError')) {
         showToast('error', "Couldn't open your messages", 'Try again, or copy the text instead.');
       }
-    } finally {
-      setSharing(false);
-    }
+    });
   }
 
   const menuItem =
@@ -248,6 +267,7 @@ export default function WeeklyRecap({
                 id="share-menu"
                 role="menu"
                 aria-label="Share your week"
+                aria-busy={!readyFile}
                 className="absolute bottom-full left-0 z-20 mb-2 w-56 overflow-hidden rounded-xl border border-line bg-surface py-1 shadow-lg"
               >
                 <button type="button" role="menuitem" tabIndex={-1} className={menuItem} onClick={downloadImage}>
