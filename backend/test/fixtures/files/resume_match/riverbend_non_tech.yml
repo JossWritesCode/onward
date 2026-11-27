@@ -1,0 +1,103 @@
+# A teacher moving into program coordination. A non-tech posting, where the
+# requirements are general skills, languages, and licenses.
+name: Maria Lopez and a youth program coordinator posting
+covers: [ non_tech ]
+
+resume:
+  name: Maria Lopez
+  title: Fourth Grade Teacher
+  skills:
+    - label: Skills
+      items: [ Classroom management, Spanish (fluent), Google Workspace, Microsoft Excel ]
+  experience:
+    - title: Fourth Grade Teacher
+      company: Oak Hollow Elementary
+      start: "2019-08"
+      end: Present
+      bullets:
+        - Planned and ran a family science night for 300 guests each spring
+        - Tracked a $4,000 classroom supply budget in Excel
+        - Taught a bilingual class and wrote weekly updates to families in English and Spanish
+  sections:
+    - heading: Volunteering
+      items:
+        - title: Volunteer Lead, Hillside Food Pantry
+          bullets:
+            - Recruited and scheduled 25 volunteers for Saturday shifts
+    - heading: Certifications
+      items:
+        - title: CPR and First Aid
+          date: "2025"
+  education:
+    - school: Clearwater State University
+      degree: BA in Elementary Education
+      date: "2019"
+
+posting: |
+  Program Coordinator, Riverbend Youth Center
+
+  Riverbend Youth Center runs after-school and summer programs for 200 kids in our neighborhood. Our program coordinator keeps the calendar full and the families informed.
+
+  Responsibilities
+  - Plan weekly activities and three big family events a year
+  - Keep the program on budget and report on spending each quarter
+  - Recruit, schedule, and thank our volunteers
+
+  Qualifications
+  - Experience planning events or programs
+  - Budgeting and tracking spending in Microsoft Excel
+  - Fluent in English and Spanish
+  - A valid driver's license
+  - CPR and first aid certification
+
+  Preferred
+  - Grant writing
+  - Experience with Canva for flyers and social posts
+
+expected:
+  score_band: [ 70, 80 ]
+  requirements:
+    - skills: [ event_planning ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.0 ]
+      group: counted
+    - skills: [ budgeting ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.1 ]
+      group: counted
+    - skills: [ excel ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.1, skills.0.items.3 ]
+      group: counted
+    - skills: [ spanish ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.2, skills.0.items.1 ]
+      group: counted
+    - skills: [ drivers_license ]
+      importance: must
+      credit: none
+      group: maybe_missing
+      note: People rarely put this on a résumé. Ask, don't assume.
+    - skills: [ cpr_first_aid ]
+      importance: must
+      credit: shown
+      evidence: [ sections.1.items.0 ]
+      group: counted
+    - skills: [ volunteer_management ]
+      importance: nice
+      credit: shown
+      evidence: [ sections.0.items.0.bullets.0 ]
+      group: easy_to_miss
+      note: Only in the volunteering section, far down the page. It's a responsibility here, so it counts as a nice-to-have.
+    - skills: [ grant_writing ]
+      importance: nice
+      credit: none
+      group: maybe_missing
+    - skills: [ canva ]
+      importance: nice
+      credit: none
+      group: maybe_missing

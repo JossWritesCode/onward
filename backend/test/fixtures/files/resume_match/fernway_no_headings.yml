@@ -1,0 +1,61 @@
+# A posting written as one paragraph, with no headings. With nothing to say
+# which parts are optional, every requirement counts as a must-have.
+name: Priya Nair and a data analyst posting with no headings
+covers: [ no_headings ]
+today: "2026-11-26"
+
+resume:
+  name: Priya Nair
+  title: Data Analyst
+  skills:
+    - label: Tools
+      items: [ SQL, Python, pandas, Power BI, Excel ]
+  experience:
+    - title: Data Analyst
+      company: Maplewood Grocers
+      start: "2023-06"
+      end: Present
+      bullets:
+        - Wrote SQL queries to track sales and waste across 18 stores
+        - Built Power BI dashboards that 12 store managers check every week
+        - Automated a weekly sales report with Python and pandas, which helped the team go from weekly to daily numbers
+  education:
+    - school: Lakeshore State University
+      degree: BS in Statistics
+      date: "2023"
+
+posting: |
+  Data Analyst at Fernway Outdoor Co.
+
+  We sell camping gear online and in four stores, and we want to understand our customers better. You'll pull data from our warehouse with SQL, build dashboards in Tableau that store managers check every morning, and clean up messy spreadsheets in Excel when that's what it takes. We work in Python for anything automated, and you'll design A/B tests for our email campaigns. You'll present what you find to the buying team each month, so you should be comfortable explaining numbers to people who don't love numbers. We're a small team of four analysts and we like people who ask good questions.
+
+expected:
+  score_band: [ 60, 70 ]
+  no_headings: true
+  not_scored: [ presenting, explaining numbers ]
+  requirements:
+    - skills: [ sql ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.0 ]
+      group: counted
+    - skills: [ tableau ]
+      importance: must
+      credit: related
+      evidence: [ experience.0.bullets.1 ]
+      group: maybe_missing
+      note: Power BI is close to Tableau. Ask whether Priya has used Tableau too.
+    - skills: [ excel ]
+      importance: must
+      credit: named
+      evidence: [ skills.0.items.4 ]
+      group: easy_to_miss
+    - skills: [ python ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.2 ]
+      group: counted
+    - skills: [ ab_testing ]
+      importance: must
+      credit: none
+      group: maybe_missing

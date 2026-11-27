@@ -1,0 +1,79 @@
+# A Java developer against a posting that wants both Java and JavaScript.
+# Java must never be counted as JavaScript, or the other way around.
+name: Dana Okafor and a posting that wants Java and JavaScript
+covers: [ java_vs_javascript, years ]
+today: "2026-11-26"
+
+resume:
+  name: Dana Okafor
+  title: Software Engineer
+  skills:
+    - label: Languages and tools
+      items: [ Java, Spring Boot, SQL, Oracle, Maven, JavaFX ]
+  experience:
+    - title: Software Engineer
+      company: Harborview Bank
+      start: "2021-02"
+      end: Present
+      bullets:
+        - Built Spring Boot services in Java that process 2,000 loan applications a day
+        - Wrote SQL reports on Oracle for the risk team
+        - Kept a JavaFX desktop tool running for branch staff
+
+posting: |
+  Software Engineer, Kestrel Insurance
+
+  Kestrel Insurance is moving its claims tools from an old desktop app to the web. We need an engineer who knows our Java backend and can help build the new screens.
+
+  What you'll do
+  - Add features to the services that handle claims
+  - Build new claims screens in the browser
+
+  What you need
+  - 3+ years of professional software development
+  - Java and Spring Boot
+  - JavaScript
+  - SQL
+
+  Nice to have
+  - React
+  - Experience in insurance
+
+expected:
+  score_band: [ 65, 75 ]
+  requirements:
+    - skills: [ years ]
+      years: 3
+      importance: must
+      credit: 1
+      evidence: [ experience.0 ]
+      group: counted
+      note: About 5.8 years.
+    - skills: [ java ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.0 ]
+      group: counted
+    - skills: [ spring_boot ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.0 ]
+      group: counted
+    - skills: [ javascript ]
+      importance: must
+      credit: none
+      group: maybe_missing
+      note: Java and JavaFX aren't JavaScript. No credit.
+    - skills: [ sql ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.1 ]
+      group: counted
+    - skills: [ react ]
+      importance: nice
+      credit: none
+      group: maybe_missing
+    - skills: [ insurance ]
+      importance: nice
+      credit: none
+      group: maybe_missing

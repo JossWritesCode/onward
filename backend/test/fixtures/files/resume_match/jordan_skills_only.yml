@@ -1,0 +1,77 @@
+# A new graduate whose résumé has a skills list and a degree, but no jobs or
+# projects yet. Skills that are only listed get partial credit.
+name: Jordan Ellis, with only a skills list, and the frontend posting
+covers: [ skills_only_resume ]
+today: "2026-11-26"
+posting_from: lantern_frontend
+
+resume:
+  name: Jordan Ellis
+  skills:
+    - label: Skills
+      items: [ React, TypeScript, JavaScript, CSS, HTML, Node.js, PostgreSQL, Jest ]
+  education:
+    - school: Pinecrest University
+      degree: BS in Computer Science
+      date: "2026-05"
+
+expected:
+  score_band: [ 40, 50 ]
+  requirements:
+    - skills: [ years ]
+      years: 3
+      importance: must
+      credit: none
+      group: gap
+      note: No work history yet. Don't stretch dates. Projects with real detail would help most.
+    - skills: [ react ]
+      importance: must
+      credit: named
+      evidence: [ skills.0.items.0 ]
+      group: easy_to_miss
+    - skills: [ typescript ]
+      importance: must
+      credit: named
+      evidence: [ skills.0.items.1 ]
+      group: easy_to_miss
+    - skills: [ graphql ]
+      importance: must
+      credit: none
+      group: maybe_missing
+    - skills: [ css ]
+      importance: must
+      credit: named
+      evidence: [ skills.0.items.3 ]
+      group: easy_to_miss
+    - skills: [ accessibility ]
+      importance: must
+      credit: none
+      group: maybe_missing
+    - skills: [ jest, playwright, cypress ]
+      importance: must
+      credit: named
+      evidence: [ skills.0.items.7 ]
+      group: easy_to_miss
+    - skills: [ degree ]
+      field: computer science
+      importance: must
+      credit: shown
+      evidence: [ education.0 ]
+      group: counted
+    - skills: [ node ]
+      importance: nice
+      credit: named
+      evidence: [ skills.0.items.5 ]
+      group: easy_to_miss
+    - skills: [ github_actions ]
+      importance: nice
+      credit: none
+      group: maybe_missing
+    - skills: [ aws ]
+      importance: nice
+      credit: none
+      group: maybe_missing
+    - skills: [ healthcare, hipaa ]
+      importance: nice
+      credit: none
+      group: maybe_missing

@@ -1,0 +1,133 @@
+# Sam Rivera, a bootcamp-trained frontend developer, against a frontend
+# posting that fits well. This is the worked example in issue #19:
+# about 70%, with 6 of 8 must-haves and 1 of 4 nice-to-haves, plus 1 partly.
+name: Sam Rivera and a frontend posting that fits
+covers: [ worked_example, years ]
+today: "2026-11-26"
+
+resume:
+  name: Sam Rivera
+  title: Frontend Developer
+  skills:
+    - label: Skills
+      items: [ JavaScript, React, HTML, CSS, Jest, Git, GitHub Actions ]
+  experience:
+    - title: Frontend Developer
+      company: Brightline Books
+      start: "2022-03"
+      end: Present
+      bullets:
+        - Built React components for a checkout flow used by 40,000 shoppers a month
+        - Wrote Jest unit tests and Cypress end-to-end tests that cut checkout bugs by a third
+        - Fixed color contrast and keyboard traps after an accessibility audit
+    - title: Junior Web Developer
+      company: Copper Kettle Agency
+      start: "2021-01"
+      end: "2022-02"
+      bullets:
+        - Built marketing sites in HTML, CSS, and JavaScript
+  sections:
+    - heading: Projects
+      items:
+        - title: Trailhead
+          bullets:
+            - Built a GraphQL API with Node and Apollo Server for a hiking log app, with a React front end
+  education:
+    - school: Ridgeway College
+      degree: BA in English
+      date: "2019"
+    - school: Hack Academy
+      degree: Certificate, coding bootcamp
+      date: "2020"
+
+posting: |
+  Frontend Engineer, Lantern Health
+
+  Lantern Health helps clinics send appointment reminders that patients actually read. We're hiring a frontend engineer to work on the web app patients use every day.
+
+  What you'll do
+  - Build and improve the screens patients use to book and manage visits
+  - Work with our designers so every screen is easy for everyone to use
+  - Help the team ship small changes often
+
+  Requirements
+  - 3+ years building web apps with React and TypeScript
+  - Experience building or consuming GraphQL APIs
+  - Strong CSS skills and a working knowledge of accessibility (WCAG)
+  - Automated tests with Jest, Playwright, or Cypress
+  - Bachelor's degree in Computer Science or a related field
+
+  Nice to have
+  - Node.js
+  - CI/CD with GitHub Actions
+  - AWS
+  - Experience in healthcare or with HIPAA
+
+expected:
+  score_band: [ 65, 75 ]
+  requirements:
+    - skills: [ years ]
+      years: 3
+      importance: must
+      credit: 1
+      evidence: [ experience.0, experience.1 ]
+      group: counted
+      note: About 5.9 years from the two jobs, more than the 3 asked for.
+    - skills: [ react ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.0, sections.0.items.0.bullets.0, skills.0.items.1 ]
+      group: counted
+    - skills: [ typescript ]
+      importance: must
+      credit: none
+      group: maybe_missing
+      note: Not mentioned anywhere. Ask whether Sam has used it.
+    - skills: [ graphql ]
+      importance: must
+      credit: shown
+      evidence: [ sections.0.items.0.bullets.0 ]
+      group: easy_to_miss
+      note: Only in the Trailhead project, and not in the skills list.
+    - skills: [ css ]
+      importance: must
+      credit: shown
+      evidence: [ experience.1.bullets.0, skills.0.items.3 ]
+      group: counted
+    - skills: [ accessibility ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.2 ]
+      group: easy_to_miss
+      note: The posting says WCAG and the résumé says accessibility audit. Same thing, but worth naming WCAG if the audit used it.
+    - skills: [ jest, playwright, cypress ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.1 ]
+      group: counted
+      note: One requirement. Any of the three satisfies it.
+    - skills: [ degree ]
+      field: computer science
+      importance: must
+      credit: none
+      group: gap
+      note: A BA in English and a bootcamp certificate. Don't change education. The work history is the case to make.
+    - skills: [ node ]
+      importance: nice
+      credit: shown
+      evidence: [ sections.0.items.0.bullets.0 ]
+      group: easy_to_miss
+    - skills: [ github_actions ]
+      importance: nice
+      credit: named
+      evidence: [ skills.0.items.6 ]
+      group: easy_to_miss
+      note: Only in the skills list. Worth a bullet if Sam set it up.
+    - skills: [ aws ]
+      importance: nice
+      credit: none
+      group: maybe_missing
+    - skills: [ healthcare, hipaa ]
+      importance: nice
+      credit: none
+      group: maybe_missing

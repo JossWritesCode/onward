@@ -1,0 +1,16 @@
+# A posting too short to judge. Onward shows what it found and no number.
+name: A three-line posting
+covers: [ short_posting ]
+resume_from: lantern_frontend
+
+posting: |
+  React developer needed. Remote. Apply today.
+
+expected:
+  not_enough_information: too_short
+  requirements:
+    - skills: [ react ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.0 ]
+      group: counted

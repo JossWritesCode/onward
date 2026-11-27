@@ -1,0 +1,50 @@
+# Priya Nair's data résumé against the Go posting. A poor fit. Her résumé
+# says "go from weekly to daily", which must not count as Go.
+name: Priya Nair and a Go posting that doesn't fit
+covers: [ poor_fit, go_word ]
+today: "2026-11-26"
+resume_from: fernway_no_headings
+posting_from: quillfeather_go
+fit: poor
+
+expected:
+  score_band: [ 20, 30 ]
+  requirements:
+    - skills: [ years ]
+      years: 2
+      importance: must
+      credit: 1
+      evidence: [ experience.0 ]
+      group: counted
+      note: About 3.5 years.
+    - skills: [ go ]
+      importance: must
+      credit: none
+      group: maybe_missing
+      note: '"Go from weekly to daily" is the word, not the language.'
+    - skills: [ postgresql ]
+      importance: must
+      credit: related
+      evidence: [ experience.0.bullets.0 ]
+      group: maybe_missing
+      note: SQL is close. Ask which database it was.
+    - skills: [ docker ]
+      importance: must
+      credit: none
+      group: maybe_missing
+    - skills: [ grpc, rest ]
+      importance: must
+      credit: none
+      group: maybe_missing
+    - skills: [ kubernetes ]
+      importance: nice
+      credit: none
+      group: maybe_missing
+    - skills: [ redis ]
+      importance: nice
+      credit: none
+      group: maybe_missing
+    - skills: [ stripe ]
+      importance: nice
+      credit: none
+      group: maybe_missing

@@ -1,0 +1,81 @@
+# The posting asks for 5+ years and the résumé shows about 3.6, so the years
+# requirement gets partial credit (3.6 of 5) and is a real gap: dates aren't
+# something to change.
+name: Aisha Karim and a QA posting that asks for more years
+covers: [ years ]
+today: "2026-11-26"
+
+resume:
+  name: Aisha Karim
+  title: QA Engineer
+  skills:
+    - label: Testing
+      items: [ Playwright, Python, Postman, Jenkins, SQL, Jira ]
+  experience:
+    - title: QA Engineer
+      company: Pebble Payments
+      start: "2023-05"
+      end: Present
+      bullets:
+        - Wrote Playwright tests in Python for the checkout and refund flows
+        - Tested REST APIs with Postman before each release
+        - Ran the test suite in Jenkins on every merge and triaged the failures
+
+posting: |
+  QA Automation Engineer, Northstar Ticketing
+
+  Northstar sells tickets for concerts and theater in 40 cities. When a big show goes on sale, everything has to work, and you'll help make sure it does.
+
+  In this role you will
+  - Write and maintain tests for our web and mobile checkout
+  - Work with developers to catch problems before release
+
+  Requirements
+  - 5+ years of experience in software QA
+  - Selenium or Playwright
+  - Python
+  - API testing with Postman or a similar tool
+  - Running tests in CI (Jenkins, GitHub Actions, or CircleCI)
+
+  Nice to have
+  - Mobile testing with Appium
+  - Load testing with JMeter or k6
+
+expected:
+  score_band: [ 80, 90 ]
+  requirements:
+    - skills: [ years ]
+      years: 5
+      importance: must
+      credit: 0.72
+      evidence: [ experience.0 ]
+      group: gap
+      note: About 3.6 of the 5 years asked for. Don't change dates. Point to what was shipped in that time.
+    - skills: [ selenium, playwright ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.0 ]
+      group: counted
+    - skills: [ python ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.0 ]
+      group: counted
+    - skills: [ postman ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.1 ]
+      group: counted
+    - skills: [ jenkins, github_actions, circleci ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.2 ]
+      group: counted
+    - skills: [ appium ]
+      importance: nice
+      credit: none
+      group: maybe_missing
+    - skills: [ jmeter, k6 ]
+      importance: nice
+      credit: none
+      group: maybe_missing
