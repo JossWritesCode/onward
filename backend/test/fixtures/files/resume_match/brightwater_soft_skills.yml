@@ -1,0 +1,27 @@
+# A posting that's almost all soft skills. Soft skills aren't scored, and one
+# real requirement isn't enough for a fair number.
+name: Maria Lopez and a posting that's mostly soft skills
+covers: [ soft_skills ]
+resume_from: riverbend_non_tech
+
+posting: |
+  Customer Success Associate, Brightwater Software
+
+  Are you a people person? Brightwater makes booking software for yoga studios, and we're looking for a friendly, curious team player to help our customers get the most out of it. You'll answer questions, run short training calls, and make every studio owner feel heard.
+
+  About you
+  - Excellent written and verbal communication
+  - A self-starter who thrives in a fast-paced environment
+  - Empathy, patience, and a positive attitude
+  - Strong attention to detail
+  - Comfortable with Salesforce
+  - A team player who loves to learn
+
+expected:
+  not_enough_information: too_few_requirements
+  not_scored: [ communication, self-starter, empathy, patience, attention to detail, team player ]
+  requirements:
+    - skills: [ salesforce ]
+      importance: must
+      credit: none
+      group: maybe_missing

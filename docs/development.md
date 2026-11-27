@@ -61,6 +61,31 @@ A template is one React component that takes the resume's content, a page size, 
 2. Add it to `TEMPLATE_DETAILS` in `frontend/src/lib/resume/style.ts` and to `TEMPLATES` in `frontend/src/lib/resume/types.ts`.
 3. Add it to `Resume::TEMPLATES` and `Types::ResumeTemplateEnum` in the backend, then run `bin/rails graphql:dump_schema`.
 
+## Job match cases
+
+Job match (issue #19) is checked against sample résumés and postings with answers worked out by hand. They're in `backend/test/fixtures/files/resume_match/`, one case per `.yml` file. Everyone in them is made up. `backend/test/models/resume_match_cases_test.rb` checks every case and, once the posting reader exists, prints how many requirements it found (recall) and how many of those were right (precision).
+
+To add a case, copy one that's close to what you want, then fill in:
+
+- `name`: what the case is about, in a few words.
+- `covers`: which tricky situations it tests, like `no_headings` or `go_word`. The full list is `COVERS` in `backend/test/support/resume_match_cases.rb`.
+- `resume`: the résumé, in the same shape as a saved résumé's content. Or `resume_from: other_case` to reuse one.
+- `posting`: the job description as plain text. Or `posting_from: other_case`.
+- `today`: the date years of experience are counted to, like `"2026-11-26"`. Needed when the posting asks for years.
+- `fit: poor`: for a résumé checked against a posting it doesn't fit. It has to score at least 20 points below the case it came from.
+- `expected`: what a careful person would say. Either `score_band: [ low, high ]` or `not_enough_information:` with a reason, plus a `requirements` list.
+
+Each requirement has:
+
+- `skills`: one or more ids, like `[ react ]`. Several ids mean any one of them counts, as in "Jest, Playwright, or Cypress". Use `[ years ]` with `years: 3` for "3+ years", and `[ degree ]` for a degree.
+- `importance`: `must` or `nice`.
+- `credit`: `shown` (in a job, project, or education), `named` (only in skills, summary, or title), `related` (a close skill), or `none`. A years requirement can use a number instead, like `0.72` for 3.6 of 5 years.
+- `evidence`: where in the résumé the credit comes from, like `experience.0.bullets.2`. Counting starts at 0. Leave it out when there's no credit.
+- `group`: where it shows up. `counted`, `easy_to_miss` (it's there but hidden), `maybe_missing` (ask the person), or `gap` (the résumé says otherwise, so don't add it).
+- `note`: optional, a sentence on why.
+
+Run `bin/rails test test/models/resume_match_cases_test.rb`. If something's off, the message names the file and the requirement, like `kestrel_java.yml: requirement 4 (javascript): with no credit, evidence: should be left out.` The test also works out each case's score from its requirements and checks that it lands inside the band, so a typo in a credit shows up right away.
+
 ## Where things live
 
 ```

@@ -1,0 +1,74 @@
+# The same Sam Rivera résumé against a backend Java posting it doesn't fit.
+# It also checks that JavaScript is never counted as Java.
+name: Sam Rivera and a backend Java posting that doesn't fit
+covers: [ poor_fit, java_vs_javascript, years ]
+today: "2026-11-26"
+resume_from: lantern_frontend
+fit: poor
+
+posting: |
+  Senior Backend Engineer, Ironbridge Freight
+
+  Ironbridge Freight moves pallets for small manufacturers across the Midwest. Our backend team builds the services that price, book, and track every shipment.
+
+  What you'll do
+  - Design and run the services behind quotes, bookings, and tracking
+  - Keep things fast and reliable as shipment volume grows
+  - Mentor other engineers on the team
+
+  You have
+  - 6+ years of professional software development
+  - Deep experience with Java and Spring Boot
+  - PostgreSQL, including schema design and query tuning
+  - Running services on Kubernetes
+  - Event streaming with Kafka
+
+  Bonus points
+  - Go
+  - AWS
+  - Experience in logistics or supply chain
+
+expected:
+  score_band: [ 10, 20 ]
+  not_scored: [ mentoring ]
+  requirements:
+    - skills: [ years ]
+      years: 6
+      importance: must
+      credit: 0.98
+      evidence: [ experience.0, experience.1 ]
+      group: counted
+      note: About 5.9 of the 6 years asked for.
+    - skills: [ java ]
+      importance: must
+      credit: none
+      group: maybe_missing
+      note: Sam has JavaScript, which is a different language. No credit.
+    - skills: [ spring_boot ]
+      importance: must
+      credit: none
+      group: maybe_missing
+    - skills: [ postgresql ]
+      importance: must
+      credit: none
+      group: maybe_missing
+    - skills: [ kubernetes ]
+      importance: must
+      credit: none
+      group: maybe_missing
+    - skills: [ kafka ]
+      importance: must
+      credit: none
+      group: maybe_missing
+    - skills: [ go ]
+      importance: nice
+      credit: none
+      group: maybe_missing
+    - skills: [ aws ]
+      importance: nice
+      credit: none
+      group: maybe_missing
+    - skills: [ logistics, supply_chain ]
+      importance: nice
+      credit: none
+      group: maybe_missing

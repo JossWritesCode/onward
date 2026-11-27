@@ -1,0 +1,8 @@
+# An application with no job description pasted in yet.
+name: No job description yet
+resume_from: lantern_frontend
+posting: ""
+
+expected:
+  not_enough_information: no_posting
+  requirements: []

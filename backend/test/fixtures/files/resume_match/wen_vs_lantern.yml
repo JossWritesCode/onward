@@ -1,0 +1,63 @@
+# Wen Li's backend résumé against the frontend posting. A poor fit.
+name: Wen Li and a frontend posting that doesn't fit
+covers: [ poor_fit ]
+today: "2026-11-26"
+resume_from: quillfeather_go
+posting_from: lantern_frontend
+fit: poor
+
+expected:
+  score_band: [ 15, 25 ]
+  requirements:
+    - skills: [ years ]
+      years: 3
+      importance: must
+      credit: 1
+      evidence: [ experience.0 ]
+      group: counted
+    - skills: [ react ]
+      importance: must
+      credit: none
+      group: maybe_missing
+    - skills: [ typescript ]
+      importance: must
+      credit: none
+      group: maybe_missing
+    - skills: [ graphql ]
+      importance: must
+      credit: none
+      group: maybe_missing
+    - skills: [ css ]
+      importance: must
+      credit: none
+      group: maybe_missing
+    - skills: [ accessibility ]
+      importance: must
+      credit: none
+      group: maybe_missing
+    - skills: [ jest, playwright, cypress ]
+      importance: must
+      credit: none
+      group: maybe_missing
+    - skills: [ degree ]
+      field: computer science
+      importance: must
+      credit: shown
+      evidence: [ education.0 ]
+      group: counted
+    - skills: [ node ]
+      importance: nice
+      credit: none
+      group: maybe_missing
+    - skills: [ github_actions ]
+      importance: nice
+      credit: none
+      group: maybe_missing
+    - skills: [ aws ]
+      importance: nice
+      credit: none
+      group: maybe_missing
+    - skills: [ healthcare, hipaa ]
+      importance: nice
+      credit: none
+      group: maybe_missing

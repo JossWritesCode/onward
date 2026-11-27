@@ -1,0 +1,87 @@
+# "Bachelor's degree or equivalent experience" turns the degree into a
+# nice-to-have. A self-taught developer with four years of work still scores well.
+name: Marcus Webb and a posting that accepts equivalent experience
+covers: [ degree_or_equivalent, years ]
+today: "2026-11-26"
+
+resume:
+  name: Marcus Webb
+  title: Web Developer
+  skills:
+    - label: Skills
+      items: [ Ruby, Rails, PostgreSQL, JavaScript, RSpec, Heroku ]
+  experience:
+    - title: Web Developer
+      company: Saltmarsh Studio
+      start: "2022-09"
+      end: Present
+      bullets:
+        - Built and maintained six Ruby on Rails apps for local businesses, backed by PostgreSQL
+        - Wrote RSpec tests for every new feature and set up a build that runs them on each pull request
+        - Added plain JavaScript to make the booking forms faster
+
+posting: |
+  Full-Stack Developer, Tidewater Credit Union
+
+  Tidewater Credit Union serves 60,000 members on the coast. Our small web team builds the online banking features our members use every day.
+
+  What you'll work on
+  - New features in our member portal, from the database to the browser
+  - Fixing bugs reported by our member service team
+
+  What we're looking for
+  - 2+ years of professional experience building web applications
+  - Ruby on Rails
+  - PostgreSQL
+  - JavaScript
+  - Writing automated tests (RSpec or Minitest)
+  - Bachelor's degree in Computer Science or equivalent experience
+
+  Nice to have
+  - Experience in banking or financial services
+  - Docker
+
+expected:
+  score_band: [ 80, 90 ]
+  requirements:
+    - skills: [ years ]
+      years: 2
+      importance: must
+      credit: 1
+      evidence: [ experience.0 ]
+      group: counted
+      note: About 4.2 years.
+    - skills: [ rails ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.0 ]
+      group: counted
+    - skills: [ postgresql ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.0 ]
+      group: counted
+    - skills: [ javascript ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.2 ]
+      group: counted
+    - skills: [ rspec, minitest ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.1 ]
+      group: counted
+    - skills: [ degree ]
+      field: computer science
+      importance: nice
+      credit: none
+      group: gap
+      note: '"Or equivalent experience" makes this a nice-to-have. Don''t add a degree. Four years of shipped work is the equivalent.'
+    - skills: [ banking, financial_services ]
+      importance: nice
+      credit: none
+      group: maybe_missing
+    - skills: [ docker ]
+      importance: nice
+      credit: none
+      group: maybe_missing

@@ -1,0 +1,91 @@
+# Go the language, in a posting full of "go" the word: "go deep",
+# "go-to person". Only the language is a requirement.
+name: Wen Li and a Go posting that also says go a lot
+covers: [ go_word, years ]
+today: "2026-11-26"
+
+resume:
+  name: Wen Li
+  title: Backend Developer
+  skills:
+    - label: Skills
+      items: [ Go, PostgreSQL, Docker, Kubernetes, Git ]
+  experience:
+    - title: Backend Developer
+      company: Cobalt Parcel
+      start: "2022-01"
+      end: Present
+      bullets:
+        - Rewrote the label printing service in Go, cutting response times in half
+        - Moved three services into Docker containers
+        - Designed the REST APIs our mobile app uses to track parcels
+        - Led the go-live for a new warehouse in Reno
+  education:
+    - school: Pinecrest University
+      degree: BS in Computer Science
+      date: "2021"
+
+posting: |
+  Backend Engineer (Go), Quillfeather
+
+  Quillfeather makes scheduling software for dog groomers. Our API is written in Go, and we want someone who can hit the ground running and go deep on performance.
+
+  What you'll do
+  - Own the services that book appointments and send reminders
+  - Be the go-to person for how our data is stored
+
+  Requirements
+  - 2+ years writing Go in production
+  - PostgreSQL
+  - Docker
+  - gRPC or REST API design
+
+  Nice to have
+  - Kubernetes
+  - Redis
+  - Experience with Stripe payments
+
+expected:
+  score_band: [ 75, 85 ]
+  requirements:
+    - skills: [ years ]
+      years: 2
+      importance: must
+      credit: 1
+      evidence: [ experience.0 ]
+      group: counted
+      note: About 4.9 years.
+    - skills: [ go ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.0 ]
+      group: counted
+      note: '"Go deep", "go-to person", and "go-live" are not the language.'
+    - skills: [ postgresql ]
+      importance: must
+      credit: named
+      evidence: [ skills.0.items.1 ]
+      group: easy_to_miss
+    - skills: [ docker ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.1 ]
+      group: counted
+    - skills: [ grpc, rest ]
+      importance: must
+      credit: shown
+      evidence: [ experience.0.bullets.2 ]
+      group: counted
+    - skills: [ kubernetes ]
+      importance: nice
+      credit: named
+      evidence: [ skills.0.items.3 ]
+      group: easy_to_miss
+    - skills: [ redis ]
+      importance: nice
+      credit: none
+      group: maybe_missing
+    - skills: [ stripe ]
+      importance: nice
+      credit: none
+      group: maybe_missing
